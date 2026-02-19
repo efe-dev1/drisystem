@@ -199,6 +199,15 @@ const Auth = {
         window.location.href = 'index.html';
     },
 
+    async redirectIfNotAuthenticated() {
+        const autenticado = await this.isAuthenticated();
+        if (!autenticado) {
+            window.location.href = 'index.html';
+            return false;
+        }
+        return true;
+    },
+
     async isAuthenticated() {
         let sessao = sessionStorage.getItem('dri_session');
 
@@ -247,6 +256,15 @@ const Auth = {
         const numeros = Math.floor(100 + Math.random() * 900);
         return `${letra}-${numeros}`;
     }
+};
+
+Auth.redirectIfNotAuthenticated = async function() {
+    const autenticado = await this.isAuthenticated();
+    if (!autenticado) {
+        window.location.href = 'index.html';
+        return false;
+    }
+    return true;
 };
 
 window.Auth = Auth;
