@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRI System</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/iUwP1jk.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #161616;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2b2b2b;
+        }
+
+        :root {
+            --navy-dark: #161616;
+            --navy-medium: #0f2740;
+            --navy-light: #2b2b2b;
+            --text-primary: #e5e9f0;
+            --text-secondary: #afafaf;
+            --danger: #dc3545;
+            --success: #28a745;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --purple: #6f42c1;
+            --pink: #e83e8c;
+            --orange: #fd7e14;
+        }
+
+        body {
+            background: url('https://i.imgur.com/8b3rI5q.png') repeat center center fixed;
+            background-size: 300px 300px;
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(4, 4, 4, 0.478);
+            z-index: -1;
+        }
+
+        .header {
+            background: rgb(26, 26, 26);
+            border-bottom: 2px solid rgb(17, 17, 17);
+            width: 100%;
+            padding: 0 30px;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-area img {
+            height: 40px;
+            width: auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .nav {
+            display: flex;
+            gap: 5px;
+            position: relative;
+        }
+
+        .nav-item {
+            padding: 8px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-item:hover {
+            color: white;
+        }
+
+        .submenu {
+            position: absolute;
+            top: 100%;
+            background: rgb(30, 30, 30);
+            border-radius: 8px;
+            padding: 8px 0;
+            min-width: 200px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .submenu.show {
+            display: block;
+        }
+
+        .submenu-item {
+            padding: 10px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .submenu-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        #geralSubmenu { left: 0; }
+        #requerimentosSubmenu { left: 85px; }
+        #escalasSubmenu { left: 260px; }
+
+        .profile {
+            position: relative;
+        }
+
+        .profile-button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 10px 5px 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgb(40, 40, 40);
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .profile-avatar {
+            width: 36px;
+            height: 36px;
+            overflow: hidden;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-nick {
+            font-weight: 500;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: rgb(30, 30, 30);
+            border-radius: 8px;
+            padding: 8px 0;
+            min-width: 160px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .profile-dropdown.show {
+            display: block;
+        }
+
+        .profile-dropdown-item {
+            padding: 10px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .profile-dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .profile-dropdown-item.logout {
+            color: var(--danger);
+        }
+
+        .profile-dropdown-item.logout:hover {
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        .main-content {
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .profile-container {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+
+        .profile-sidebar {
+            width: 350px;
+            flex-shrink: 0;
+        }
+
+        .profile-main {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .card {
+            background: rgb(26, 26, 26);
+            border: 2px solid rgb(17, 17, 17);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+
+        .profile-card {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .avatar-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .avatar-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 10px;
+            border: 2px solid rgb(60, 60, 60);
+            object-fit: cover;
+        }
+
+        .profile-nickname {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            transition: color 0.3s ease;
+        }
+
+        .profile-cargo {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-left: 5px;
+        }
+
+        .name-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .profile-status {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 11px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .status-ativo {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+            border: 2px solid var(--success);
+        }
+
+        .status-bloqueado {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+            border: 2px solid var(--danger);
+        }
+
+        .status-licenca {
+            background: rgba(255, 193, 7, 0.1);
+            color: var(--warning);
+            border: 2px solid var(--warning);
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .section-title {
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid rgb(40, 40, 40);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .edit-btn {
+            background: transparent;
+            border: 2px solid rgb(60, 60, 60);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .edit-btn:hover {
+            border-color: var(--info);
+            color: var(--info);
+        }
+
+        .color-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .color-option {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .color-option:hover {
+            transform: scale(1.05);
+        }
+
+        .color-option.selected {
+            border-color: white;
+            transform: scale(1.05);
+        }
+
+        .medalhas-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .medalha-item {
+            text-align: center;
+            padding: 15px 5px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .medalha-item.earned {
+            border-color: var(--warning);
+        }
+
+        .medalha-icon {
+            font-size: 2rem;
+            color: var(--warning);
+            margin-bottom: 8px;
+        }
+
+        .medalha-nome {
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: white;
+            margin-bottom: 5px;
+            word-break: break-word;
+        }
+
+        .medalha-data {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgb(26, 26, 26);
+            border: 2px solid rgb(17, 17, 17);
+            border-radius: 10px;
+            padding: 25px;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal-title {
+            color: white;
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgb(40, 40, 40);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        .btn-modal {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-modal.primary {
+            background: white;
+            color: var(--navy-dark);
+        }
+
+        .btn-modal.primary:hover {
+            background: #f0f0f0;
+        }
+
+        .btn-modal.secondary {
+            background: transparent;
+            border: 2px solid rgb(80, 80, 80);
+            color: var(--text-secondary);
+        }
+
+        .btn-modal.secondary:hover {
+            border-color: white;
+            color: white;
+        }
+
+        .success-message {
+            background: rgba(40, 167, 69, 0.1);
+            border: 2px solid var(--success);
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 15px;
+            color: var(--success);
+            text-align: center;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        .error-message {
+            background: rgba(220, 53, 69, 0.1);
+            border: 2px solid var(--danger);
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 15px;
+            color: var(--danger);
+            text-align: center;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            grid-column: span 4;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .option-label {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo-area">
+                    <img src="https://i.imgur.com/iUwP1jk.png">
+                    <span class="logo">DRI System</span>
+                </div>
+                <nav class="nav">
+                    <div class="nav-item" id="geralBtn" onclick="toggleSubmenu('geral')">
+                        Geral <i class="ph ph-caret-down"></i>
+                    </div>
+                    <div class="nav-item" onclick="window.location.href='listagem.html'">
+                        Listagem
+                    </div>
+                    <div class="nav-item" id="requerimentosBtn" onclick="toggleSubmenu('requerimentos')">
+                        Requerimentos <i class="ph ph-caret-down"></i>
+                    </div>
+                    <div class="nav-item" id="escalasBtn" onclick="toggleSubmenu('escalas')">
+                        Escalas <i class="ph ph-caret-down"></i>
+                    </div>
+                    <div class="nav-item" onclick="window.location.href='registros.html'">
+                        Registros
+                    </div>
+
+                    <div class="submenu" id="geralSubmenu">
+                        <div class="submenu-item" onclick="window.location.href='home.html'">
+                            <i class="ph ph-house"></i> Início
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='documentacoes.html'">
+                            <i class="ph ph-folder"></i> Documentações
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='reportar.html'">
+                            <i class="ph ph-flag"></i> Reportar falha
+                        </div>
+                    </div>
+
+                    <div class="submenu" id="requerimentosSubmenu">
+                        <div class="submenu-item" onclick="window.location.href='req_membros.html'">
+                            Req de membros
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='registro_funcao.html'">
+                            Registro de função
+                        </div>
+                    </div>
+
+                    <div class="submenu" id="escalasSubmenu">
+                        <div class="submenu-item" onclick="window.location.href='escala_fiscalizador.html'">
+                            Fiscalizador
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='escala_superintendente.html'">
+                            Superintendente
+                        </div>
+                    </div>
+                </nav>
+            </div>
+            <div class="profile">
+                <div class="profile-button" onclick="toggleProfileDropdown()" id="profileButton">
+                    <div class="profile-avatar">
+                        <img id="userAvatar" src="" alt="avatar">
+                    </div>
+                    <span class="profile-nick" id="userNick">carregando...</span>
+                </div>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="meu_perfil.html" class="profile-dropdown-item">
+                        <i class="ph ph-user-circle"></i> Meu perfil
+                    </a>
+                    <div class="profile-dropdown-item logout" onclick="Auth.logout()">
+                        <i class="ph ph-sign-out"></i> Sair
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="profile-container">
+            <div class="profile-sidebar">
+                <div class="card profile-card" id="profileCard">
+                    <div class="section-title">
+                        <span>PERFIL</span>
+                        <button class="edit-btn" onclick="abrirModalPersonalizacao()">
+                            EDITAR
+                        </button>
+                    </div>
+                    
+                    <div class="avatar-container">
+                        <img class="avatar-image" id="profileAvatar" src="" alt="Avatar">
+                    </div>
+                    
+                    <div class="name-container">
+                        <span class="profile-nickname" id="profileNick">Carregando...</span>
+                        <span class="profile-cargo" id="profileCargo">-</span>
+                    </div>
+                    
+                    <div class="profile-status">
+                        <span id="profileStatus" class="status-badge status-ativo">ATIVO</span>
+                    </div>
+
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="diasMembro">0</div>
+                            <div class="stat-label">Dias</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalMedalhas">0</div>
+                            <div class="stat-label">Medalhas</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="registrosFeitos">0</div>
+                            <div class="stat-label">Registros</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-main">
+                <div class="card">
+                    <div class="section-title">
+                        MEDALHAS
+                    </div>
+                    <div class="medalhas-grid" id="medalhasGrid">
+                        <div class="empty-message">Carregando medalhas...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalPersonalizacao">
+        <div class="modal-content">
+            <div class="modal-title">
+                PERSONALIZAR PERFIL
+            </div>
+            
+            <div id="modalError" class="error-message"></div>
+            <div id="modalSuccess" class="success-message"></div>
+
+            <div style="margin-bottom: 15px;">
+                <div class="option-label">COR DO CARD</div>
+                <div class="color-picker-grid">
+                    <div class="color-option" style="background: #80cbd7;" onclick="selecionarCorCard('info')" id="cardInfo"></div>
+                    <div class="color-option" style="background: #373737;" onclick="selecionarCorCard('purple')" id="cardGray"></div>
+                    <div class="color-option" style="background: #243c4d;" onclick="selecionarCorCard('success')" id="cardBlue"></div>
+                    <div class="color-option" style="background: #0c0e16;" onclick="selecionarCorCard('warning')" id="cardWarning"></div>
+                    <div class="color-option" style="background: #222222bb;" onclick="selecionarCorCard('danger')" id="cardDanger"></div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <div class="option-label">COR DO NICK</div>
+                <div class="color-picker-grid">
+                    <div class="color-option" style="background: #17a2b8;" onclick="selecionarCorNick('info')" id="nickInfo"></div>
+                    <div class="color-option" style="background: #6f42c1;" onclick="selecionarCorNick('purple')" id="nickPurple"></div>
+                    <div class="color-option" style="background: #28a745;" onclick="selecionarCorNick('success')" id="nickSuccess"></div>
+                    <div class="color-option" style="background: #ffc107;" onclick="selecionarCorNick('warning')" id="nickWarning"></div>
+                    <div class="color-option" style="background: #dc3545;" onclick="selecionarCorNick('danger')" id="nickDanger"></div>
+                    <div class="color-option" style="background: #ffffff;" onclick="selecionarCorNick('white')" id="nickWhite"></div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-modal secondary" onclick="fecharModalPersonalizacao()">CANCELAR</button>
+                <button class="btn-modal primary" onclick="salvarPersonalizacao()">SALVAR</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/supabase.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let currentUser = null;
+        let activeSubmenu = null;
+        let userCargo = null;
+        let perfilData = null;
+        
+        let personalizacao = {
+            cardCor: 'info',
+            nickCor: 'white'
+        };
+        
+        let cardCorSelecionada = 'info';
+        let nickCorSelecionada = 'white';
+
+        const cores = {
+            info: '#80cbd7',
+            gray: '#373737',
+            blue: '#243c4d',
+            warning: '#0c0e16',
+            danger: '#222222bb'
+        };
+
+        function getBrasiliaTime() {
+            const data = new Date();
+            const offsetBrasilia = -3;
+            const utc = data.getTime() + (data.getTimezoneOffset() * 60000);
+            return new Date(utc + (3600000 * offsetBrasilia));
+        }
+
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function toggleSubmenu(menu) {
+            const submenu = document.getElementById(menu + 'Submenu');
+            if (activeSubmenu && activeSubmenu !== submenu) {
+                activeSubmenu.classList.remove('show');
+            }
+            submenu.classList.toggle('show');
+            activeSubmenu = submenu.classList.contains('show') ? submenu : null;
+        }
+
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.nav-item') && !event.target.closest('.submenu')) {
+                if (activeSubmenu) {
+                    activeSubmenu.classList.remove('show');
+                    activeSubmenu = null;
+                }
+            }
+            if (!event.target.closest('.profile-button') && !event.target.closest('.profile-dropdown')) {
+                document.getElementById('profileDropdown').classList.remove('show');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const autenticado = await Auth.isAuthenticated();
+            if (!autenticado) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = await Auth.getCurrentUser();
+            userCargo = currentUser.cargo;
+
+            const podeAcessarAdmin = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+            const existingAdmin = document.querySelector('.nav-item[onclick*="admin.html"]');
+            if (existingAdmin) existingAdmin.remove();
+
+            if (podeAcessarAdmin) {
+                const nav = document.querySelector('.nav');
+                const adminItem = document.createElement('div');
+                adminItem.className = 'nav-item';
+                adminItem.onclick = () => window.location.href = 'admin.html';
+                adminItem.innerHTML = 'Admin';
+                nav.appendChild(adminItem);
+            }
+
+            document.getElementById('userNick').textContent = currentUser.nick;
+            const avatarUrl = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
+            document.getElementById('userAvatar').src = avatarUrl;
+            
+            const avatarGrande = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=0&size=l`;
+            document.getElementById('profileAvatar').src = avatarGrande;
+            document.getElementById('profileNick').textContent = currentUser.nick;
+
+            await carregarPerfil();
+            await carregarPersonalizacao();
+            await carregarMedalhas();
+            await carregarStatsPerfil();
+        });
+
+        async function carregarPerfil() {
+            try {
+                const { data: usuario } = await window.supabase
+                    .from('usuarios')
+                    .select('*')
+                    .eq('nick', currentUser.nick)
+                    .single();
+
+                perfilData = usuario;
+
+                if (usuario) {
+                    document.getElementById('profileCargo').textContent = usuario.cargo || 'Fiscalizador';
+                    
+                    let statusClass = 'status-ativo';
+                    let statusText = 'ATIVO';
+                    
+                    if (usuario.status === 'BLOQUEADO') {
+                        statusClass = 'status-bloqueado';
+                        statusText = 'BLOQUEADO';
+                    }
+                    if (usuario.status === 'LICENCA') {
+                        statusClass = 'status-licenca';
+                        statusText = 'LICENÇA';
+                    }
+                    if (usuario.status === 'RESERVA') {
+                        statusClass = 'status-licenca';
+                        statusText = 'RESERVA';
+                    }
+
+                    document.getElementById('profileStatus').className = `status-badge ${statusClass}`;
+                    document.getElementById('profileStatus').textContent = statusText;
+                }
+
+            } catch (error) {
+                console.error('Erro ao carregar perfil:', error);
+            }
+        }
+
+        async function carregarPersonalizacao() {
+            try {
+                const { data: config } = await window.supabase
+                    .from('personalizacoes')
+                    .select('*')
+                    .eq('usuario_nick', currentUser.nick)
+                    .maybeSingle();
+
+                if (config) {
+                    personalizacao = {
+                        cardCor: config.card_cor || 'info',
+                        nickCor: config.nick_cor || 'white'
+                    };
+                    
+                    aplicarPersonalizacao();
+                }
+
+            } catch (error) {
+                console.error('Erro ao carregar personalização:', error);
+            }
+        }
+
+        function aplicarPersonalizacao() {
+            const card = document.getElementById('profileCard');
+            const nick = document.getElementById('profileNick');
+            
+            if (card) card.style.backgroundColor = cores[personalizacao.cardCor] || cores.info;
+            if (nick) nick.style.color = cores[personalizacao.nickCor] || cores.white;
+        }
+
+        function abrirModalPersonalizacao() {
+            cardCorSelecionada = personalizacao.cardCor;
+            nickCorSelecionada = personalizacao.nickCor;
+            
+            document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+            
+            const cardElement = document.getElementById(`card${cardCorSelecionada.charAt(0).toUpperCase() + cardCorSelecionada.slice(1)}`);
+            if (cardElement) cardElement.classList.add('selected');
+            
+            const nickElement = document.getElementById(`nick${nickCorSelecionada.charAt(0).toUpperCase() + nickCorSelecionada.slice(1)}`);
+            if (nickElement) nickElement.classList.add('selected');
+            
+            document.getElementById('modalPersonalizacao').classList.add('show');
+        }
+
+        function fecharModalPersonalizacao() {
+            document.getElementById('modalPersonalizacao').classList.remove('show');
+            document.getElementById('modalError').style.display = 'none';
+            document.getElementById('modalSuccess').style.display = 'none';
+        }
+
+        function selecionarCorCard(cor) {
+            cardCorSelecionada = cor;
+            document.querySelectorAll('[onclick*="selecionarCorCard"]').forEach(opt => opt.classList.remove('selected'));
+            const element = document.getElementById(`card${cor.charAt(0).toUpperCase() + cor.slice(1)}`);
+            if (element) element.classList.add('selected');
+        }
+
+        function selecionarCorNick(cor) {
+            nickCorSelecionada = cor;
+            document.querySelectorAll('[onclick*="selecionarCorNick"]').forEach(opt => opt.classList.remove('selected'));
+            const element = document.getElementById(`nick${cor.charAt(0).toUpperCase() + cor.slice(1)}`);
+            if (element) element.classList.add('selected');
+        }
+
+        async function salvarPersonalizacao() {
+            try {
+                const { error } = await window.supabase
+                    .from('personalizacoes')
+                    .upsert({
+                        usuario_nick: currentUser.nick,
+                        card_cor: cardCorSelecionada,
+                        nick_cor: nickCorSelecionada,
+                        data_atualizacao: getBrasiliaTime()
+                    }, { onConflict: 'usuario_nick' });
+
+                if (error) throw error;
+
+                personalizacao = {
+                    cardCor: cardCorSelecionada,
+                    nickCor: nickCorSelecionada
+                };
+                
+                aplicarPersonalizacao();
+
+                document.getElementById('modalSuccess').style.display = 'block';
+                document.getElementById('modalSuccess').innerHTML = 'Personalização salva!';
+                
+                setTimeout(() => {
+                    document.getElementById('modalSuccess').style.display = 'none';
+                    fecharModalPersonalizacao();
+                }, 1500);
+
+            } catch (error) {
+                console.error('Erro ao salvar personalização:', error);
+                document.getElementById('modalError').style.display = 'block';
+                document.getElementById('modalError').innerHTML = 'Erro ao salvar: ' + error.message;
+                
+                setTimeout(() => {
+                    document.getElementById('modalError').style.display = 'none';
+                }, 4000);
+            }
+        }
+
+        async function carregarMedalhas() {
+            try {
+                const { data: medalhas } = await window.supabase
+                    .from('medalhas_usuarios')
+                    .select(`
+                        *,
+                        medalha:medalhas(*)
+                    `)
+                    .eq('usuario_nick', currentUser.nick)
+                    .order('data_recebimento', { ascending: false });
+
+                const grid = document.getElementById('medalhasGrid');
+
+                if (!medalhas || medalhas.length === 0) {
+                    grid.innerHTML = '<div class="empty-message">Nenhuma medalha conquistada ainda</div>';
+                    return;
+                }
+
+                const icones = {
+                    'OURO': 'ph ph-medal',
+                    'PRATA': 'ph ph-medal',
+                    'BRONZE': 'ph ph-medal',
+                    'ESPECIAL': 'ph ph-star',
+                    'PARTICIPAÇÃO': 'ph ph-trophy'
+                };
+
+                grid.innerHTML = medalhas.map(m => {
+                    const data = new Date(m.data_recebimento).toLocaleDateString('pt-BR');
+                    const icone = icones[m.medalha?.tipo] || 'ph ph-medal';
+
+                    return `
+                        <div class="medalha-item earned">
+                            <div class="medalha-icon">
+                                <i class="${icone}"></i>
+                            </div>
+                            <div class="medalha-nome">${m.medalha?.nome || 'Medalha'}</div>
+                            <div class="medalha-data">${data}</div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Erro ao carregar medalhas:', error);
+                document.getElementById('medalhasGrid').innerHTML = '<div class="empty-message">Erro ao carregar medalhas</div>';
+            }
+        }
+
+        async function carregarStatsPerfil() {
+            try {
+                const { data: medalhas } = await window.supabase
+                    .from('medalhas_usuarios')
+                    .select('*')
+                    .eq('usuario_nick', currentUser.nick);
+
+                const { data: registros } = await window.supabase
+                    .from('infracoes')
+                    .select('*')
+                    .eq('fiscalizador_nick', currentUser.nick);
+
+                document.getElementById('totalMedalhas').textContent = medalhas?.length || 0;
+                document.getElementById('registrosFeitos').textContent = registros?.length || 0;
+
+                if (perfilData?.data_criacao) {
+                    const criacao = new Date(perfilData.data_criacao);
+                    const agora = new Date();
+                    const diff = Math.floor((agora - criacao) / (1000 * 60 * 60 * 24));
+                    document.getElementById('diasMembro').textContent = diff;
+                }
+
+            } catch (error) {
+                console.error('Erro ao carregar stats:', error);
+            }
+        }
+    </script>
+</body>
+</html>
