@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentações - DRI System</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/iUwP1jk.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #161616;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2b2b2b;
+        }
+
+        :root {
+            --navy-dark: #161616;
+            --navy-medium: #0f2740;
+            --navy-light: #2b2b2b;
+            --text-primary: #e5e9f0;
+            --text-secondary: #afafaf;
+            --danger: #dc3545;
+            --success: #28a745;
+            --warning: #ffc107;
+            --info: #17a2b8;
+        }
+
+        body {
+            background: url('https://i.imgur.com/zV5nn6J.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(4, 4, 4, 0.811);
+            z-index: -1;
+        }
+
+        .header {
+            background: rgb(26, 26, 26);
+            border-bottom: 2px solid rgb(17, 17, 17);
+            width: 100%;
+            padding: 0 30px;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-area img {
+            height: 40px;
+            width: auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .nav {
+            display: flex;
+            gap: 5px;
+            position: relative;
+        }
+
+        .nav-item {
+            padding: 8px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-item:hover {
+            color: white;
+        }
+
+        .submenu {
+            position: absolute;
+            top: 100%;
+            background: rgb(30, 30, 30);
+            border-radius: 8px;
+            padding: 8px 0;
+            min-width: 200px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .submenu.show {
+            display: block;
+        }
+
+        .submenu-item {
+            padding: 10px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .submenu-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        #geralSubmenu {
+            left: 0;
+        }
+
+        #requerimentosSubmenu {
+            left: 85px;
+        }
+
+        #escalasSubmenu {
+            left: 260px;
+        }
+
+        #adminSubmenu {
+            left: 435px;
+        }
+
+        .profile {
+            position: relative;
+        }
+
+        .profile-button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 10px 5px 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgb(40, 40, 40);
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .profile-avatar {
+            width: 36px;
+            height: 36px;
+            overflow: hidden;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-nick {
+            font-weight: 500;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: rgb(30, 30, 30);
+            border-radius: 8px;
+            padding: 8px 0;
+            min-width: 160px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .profile-dropdown.show {
+            display: block;
+        }
+
+        .profile-dropdown-item {
+            padding: 10px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .profile-dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .profile-dropdown-item.logout {
+            color: var(--danger);
+        }
+
+        .profile-dropdown-item.logout:hover {
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        .main-content {
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .documentacoes-title {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .documentacoes-title i {
+            color: var(--info);
+        }
+
+        .pastas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .pasta-card {
+            background: rgb(26, 26, 26);
+            border: 2px solid rgb(17, 17, 17);
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pasta-card:hover {
+            border-color: var(--info);
+        }
+
+        .pasta-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .pasta-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(23, 162, 184, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: var(--info);
+        }
+
+        .pasta-info {
+            flex: 1;
+        }
+
+        .pasta-nome {
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .pasta-data {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .pasta-descricao {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .pasta-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .pasta-documentos {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .documentos-list {
+            background: rgb(26, 26, 26);
+            border: 2px solid rgb(17, 17, 17);
+            border-radius: 10px;
+            padding: 25px;
+        }
+
+        .documentos-header {
+            margin-bottom: 20px;
+        }
+
+        .documentos-header h2 {
+            color: white;
+            font-weight: 600;
+            font-size: 1.3rem;
+        }
+
+        .documento-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid rgb(40, 40, 40);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .documento-item:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .documento-item:last-child {
+            border-bottom: none;
+        }
+
+        .documento-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: var(--info);
+            margin-right: 15px;
+        }
+
+        .documento-info {
+            flex: 1;
+        }
+
+        .documento-titulo {
+            color: white;
+            font-weight: 500;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .documento-meta {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            display: flex;
+            gap: 15px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgb(26, 26, 26);
+            border: 2px solid rgb(17, 17, 17);
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 700px;
+            width: 90%;
+        }
+
+        .modal-title {
+            color: white;
+            font-weight: 600;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-modal {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-modal.primary {
+            background: white;
+            color: var(--navy-dark);
+        }
+
+        .btn-modal.primary:hover {
+            background: #f0f0f0;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 60px;
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: transparent;
+            border: 2px solid rgb(60, 60, 60);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .back-button:hover {
+            border-color: white;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo-area">
+                    <img src="https://i.imgur.com/iUwP1jk.png">
+                    <span class="logo">DRI System</span>
+                </div>
+                <nav class="nav">
+                    <div class="nav-item" id="geralBtn" onclick="toggleSubmenu('geral')">
+                        Geral <i class="ph ph-caret-down"></i>
+                    </div>
+                    <div class="nav-item" onclick="window.location.href='listagem.html'">
+                        Listagem
+                    </div>
+                    <div class="nav-item" id="requerimentosBtn" onclick="toggleSubmenu('requerimentos')">
+                        Requerimentos <i class="ph ph-caret-down"></i>
+                    </div>
+                    <div class="nav-item" id="escalasBtn" onclick="toggleSubmenu('escalas')">
+                        Escalas <i class="ph ph-caret-down"></i>
+                    </div>
+                    <div class="nav-item" onclick="window.location.href='registros.html'">
+                        Registros
+                    </div>
+
+                    <div class="submenu" id="geralSubmenu">
+                        <div class="submenu-item" onclick="window.location.href='home.html'">
+                            <i class="ph ph-house"></i> Início
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='documentacoes.html'">
+                            <i class="ph ph-folder"></i> Documentações
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='reportar.html'">
+                            <i class="ph ph-flag"></i> Reportar falha
+                        </div>
+                    </div>
+
+                    <div class="submenu" id="requerimentosSubmenu">
+                        <div class="submenu-item" onclick="window.location.href='req_membros.html'">
+                            Req de membros
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='registro_funcao.html'">
+                            Registro de função
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='atualizacao_listagem.html'">
+                            Atualização de listagem
+                        </div>
+                    </div>
+
+                    <div class="submenu" id="escalasSubmenu">
+                        <div class="submenu-item" onclick="window.location.href='escala_fiscalizador.html'">
+                            Fiscalizador
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='escala_superintendente.html'">
+                            Superintendente
+                        </div>
+                    </div>
+                </nav>
+            </div>
+            <div class="profile">
+                <div class="profile-button" onclick="toggleProfileDropdown()" id="profileButton">
+                    <div class="profile-avatar">
+                        <img id="userAvatar" src="" alt="avatar">
+                    </div>
+                    <span class="profile-nick" id="userNick">carregando...</span>
+                </div>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="meu_perfil.html" class="profile-dropdown-item">
+                        <i class="ph ph-user-circle"></i> Meu perfil
+                    </a>
+                    <div class="profile-dropdown-item logout" onclick="Auth.logout()">
+                        <i class="ph ph-sign-out"></i> Sair
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div id="pastasView">
+            <div class="documentacoes-title">
+                Documentações
+            </div>
+            <div class="pastas-grid" id="pastasContainer">
+                <div class="empty-message">Carregando pastas...</div>
+            </div>
+        </div>
+
+        <div id="documentosView" style="display: none;">
+            <div class="back-button" onclick="voltarParaPastas()">
+                <i class="ph ph-arrow-left"></i> VOLTAR
+            </div>
+            <div class="documentos-list">
+                <div class="documentos-header">
+                    <h2 id="pastaSelecionadaNome">-</h2>
+                </div>
+                <div id="documentosLista">
+                    <div class="empty-message">Carregando documentos...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalVerDocumento">
+        <div class="modal-content">
+            <div class="modal-title" id="modalDocumentoTitulo">
+                -
+            </div>
+            <div class="modal-body" id="modalDocumentoConteudo"></div>
+            <div class="modal-footer">
+                <button class="btn-modal primary" onclick="fecharModalVerDocumento()">FECHAR</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/supabase.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let currentUser = null;
+        let activeSubmenu = null;
+        let pastas = [];
+        let documentos = [];
+        let pastaSelecionada = null;
+
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function toggleSubmenu(menu) {
+            const submenu = document.getElementById(menu + 'Submenu');
+            
+            if (activeSubmenu && activeSubmenu !== submenu) {
+                activeSubmenu.classList.remove('show');
+            }
+            
+            submenu.classList.toggle('show');
+            activeSubmenu = submenu.classList.contains('show') ? submenu : null;
+        }
+
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.nav-item') && !event.target.closest('.submenu')) {
+                if (activeSubmenu) {
+                    activeSubmenu.classList.remove('show');
+                    activeSubmenu = null;
+                }
+            }
+            
+            if (!event.target.closest('.profile-button') && !event.target.closest('.profile-dropdown')) {
+                document.getElementById('profileDropdown').classList.remove('show');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const autenticado = await Auth.isAuthenticated();
+            if (!autenticado) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = await Auth.getCurrentUser();
+            const userCargo = currentUser.cargo;
+
+            const podeAcessar = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+            if (!podeAcessar) {
+                window.location.href = 'home.html';
+                return;
+            }
+
+            const podeAcessarAdmin = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+
+            const existingAdmin = document.querySelector('.nav-item[onclick*="admin.html"]');
+            if (existingAdmin) existingAdmin.remove();
+
+            if (podeAcessarAdmin) {
+                const nav = document.querySelector('.nav');
+                const adminItem = document.createElement('div');
+                adminItem.className = 'nav-item';
+                adminItem.onclick = () => window.location.href = 'admin.html';
+                adminItem.innerHTML = 'Admin';
+                nav.appendChild(adminItem);
+            }
+
+            document.getElementById('userNick').textContent = currentUser.nick;
+            const avatarUrl = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
+            document.getElementById('userAvatar').src = avatarUrl;
+
+            await carregarPastas();
+        });
+
+        async function carregarPastas() {
+            try {
+                const { data: pastasData } = await window.supabase
+                    .from('pastas')
+                    .select('*')
+                    .order('nome');
+
+                const { data: documentosData } = await window.supabase
+                    .from('documentos')
+                    .select('*');
+
+                pastas = pastasData || [];
+                documentos = documentosData || [];
+
+                const container = document.getElementById('pastasContainer');
+
+                if (pastas.length === 0) {
+                    container.innerHTML = '<div class="empty-message">Nenhuma pasta encontrada</div>';
+                    return;
+                }
+
+                container.innerHTML = pastas.map(pasta => {
+                    const docsPasta = documentos.filter(d => d.pasta_id === pasta.id).length;
+                    const data = new Date(pasta.data_criacao);
+                    const dataFormatada = data.toLocaleDateString('pt-BR');
+
+                    return `
+                        <div class="pasta-card" onclick="selecionarPasta(${pasta.id})"> <!-- Sem aspas -->
+                            <div class="pasta-header">
+                                <div class="pasta-icon">
+                                    <i class="ph ph-folder"></i>
+                                </div>
+                                <div class="pasta-info">
+                                    <div class="pasta-nome">${pasta.nome}</div>
+                                    <div class="pasta-data">Criado em ${dataFormatada}</div>
+                                </div>
+                            </div>
+                            <div class="pasta-descricao">${pasta.descricao || 'Sem descrição'}</div>
+                            <div class="pasta-footer">
+                                <div class="pasta-documentos">
+                                    <i class="ph ph-files"></i> ${docsPasta} documento${docsPasta !== 1 ? 's' : ''}
+                                </div>
+                                <i class="ph ph-caret-right"></i>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Erro ao carregar pastas:', error);
+            }
+        }
+
+        function voltarParaPastas() {
+            document.getElementById('pastasView').style.display = 'block';
+            document.getElementById('documentosView').style.display = 'none';
+            pastaSelecionada = null;
+        }
+
+        async function selecionarPasta(pastaId) {
+            const id = typeof pastaId === 'string' ? parseInt(pastaId) : pastaId;
+            
+            pastaSelecionada = pastas.find(p => p.id === id);
+            
+            if (!pastaSelecionada) {
+                console.error('Pasta não encontrada:', id, 'Pastas disponíveis:', pastas);
+                alert('Erro ao carregar pasta');
+                return;
+            }
+            
+            const docsPasta = documentos.filter(d => d.pasta_id === id);
+            
+            document.getElementById('pastaSelecionadaNome').textContent = pastaSelecionada.nome;
+            document.getElementById('pastasView').style.display = 'none';
+            document.getElementById('documentosView').style.display = 'block';
+            
+            const lista = document.getElementById('documentosLista');
+
+            if (docsPasta.length === 0) {
+                lista.innerHTML = '<div class="empty-message">Nenhum documento nesta pasta</div>';
+                return;
+            }
+
+            lista.innerHTML = docsPasta.map(doc => {
+                const data = new Date(doc.data_criacao);
+                const dataFormatada = data.toLocaleDateString('pt-BR');
+                const autor = doc.autor_nick || 'Sistema';
+
+                return `
+                    <div class="documento-item" onclick="verDocumento(${doc.id})">
+                        <div class="documento-icon">
+                            <i class="ph ph-file-text"></i>
+                        </div>
+                        <div class="documento-info">
+                            <div class="documento-titulo">${doc.titulo}</div>
+                            <div class="documento-meta">
+                                <span><i class="ph ph-user"></i> ${autor}</span>
+                                <span><i class="ph ph-calendar"></i> ${dataFormatada}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function verDocumento(docId) {
+            const id = typeof docId === 'string' ? parseInt(docId) : docId;
+            
+            const doc = documentos.find(d => d.id === id);
+            
+            if (!doc) {
+                console.error('Documento não encontrado:', id, 'Documentos disponíveis:', documentos);
+                alert('Erro ao carregar documento');
+                return;
+            }
+            
+            document.getElementById('modalDocumentoTitulo').innerHTML = `<i class="ph ph-file-text"></i> ${doc.titulo}`;
+            document.getElementById('modalDocumentoConteudo').textContent = doc.conteudo;
+            
+            document.getElementById('modalVerDocumento').classList.add('show');
+        }
+
+        function fecharModalVerDocumento() {
+            document.getElementById('modalVerDocumento').classList.remove('show');
+        }
+    </script>
+</body>
+</html>

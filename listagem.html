@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRI System</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/iUwP1jk.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #161616;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2b2b2b;
+        }
+
+        :root {
+            --navy-dark: #161616;
+            --navy-medium: #0f2740;
+            --navy-light: #2b2b2b;
+            --text-primary: #e5e9f0;
+            --text-secondary: #afafaf;
+            --danger: #dc3545;
+            --success: #28a745;
+            --warning: #ffc107;
+            --info: #17a2b8;
+        }
+
+        body {
+            background: url('https://i.imgur.com/zV5nn6J.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(4, 4, 4, 0.811);
+            z-index: -1;
+        }
+
+        .header {
+            background: rgb(26, 26, 26);
+            border-bottom: 2px solid rgb(17, 17, 17);
+            width: 100%;
+            padding: 0 30px;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-area img {
+            height: 40px;
+            width: auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .nav {
+            display: flex;
+            gap: 5px;
+            position: relative;
+        }
+
+        .nav-item {
+            padding: 8px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-item:hover {
+            color: white;
+        }
+
+        .submenu {
+            position: absolute;
+            top: 100%;
+            background: rgb(30, 30, 30);
+            border-radius: 8px;
+            padding: 8px 0;
+            min-width: 200px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .submenu.show {
+            display: block;
+        }
+
+        .submenu-item {
+            padding: 10px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .submenu-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        #geralSubmenu {
+            left: 0;
+        }
+
+        #requerimentosSubmenu {
+            left: 85px;
+        }
+
+        #escalasSubmenu {
+            left: 260px;
+        }
+
+        .profile {
+            position: relative;
+        }
+
+        .profile-button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 10px 5px 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgb(40, 40, 40);
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .profile-avatar {
+            width: 36px;
+            height: 36px;
+            overflow: hidden;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-nick {
+            font-weight: 500;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .main-content {
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .container {
+            background: rgb(26, 26, 26);
+            border: 2px solid rgb(17, 17, 17);
+            border-radius: 10px;
+            padding: 30px;
+        }
+
+        .cargo-section {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .cargo-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .cargo-title {
+            color: white;
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .cargo-title i {
+            color: var(--text-secondary);
+        }
+
+        .avatar-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .avatar-item {
+            text-align: center;
+            width: 100px;
+        }
+
+        .avatar-image {
+            width: auto;
+            height: auto;
+            margin: 0 auto 5px;
+        }
+
+        .avatar-image img {
+            width: 70%;
+            height: 70%;
+            object-fit: cover;
+        }
+
+        .avatar-nick {
+            color: white;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .nick-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .nick-item {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            width: 35px;
+            height: 35px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.6rem;
+            margin-left: 8px;
+            text-align: center;
+            line-height: 35px;
+        }
+
+        .status-badge.licenca {
+            background: #dc3545;
+            color: white;
+        }
+
+        .status-badge.reserva {
+            background: #ffc107;
+            color: black;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        .empty-message {
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: rgb(30, 30, 30);
+            border-radius: 8px;
+            padding: 8px 0;
+            min-width: 160px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .profile-dropdown.show {
+            display: block;
+        }
+
+        .profile-dropdown-item {
+            padding: 10px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .profile-dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .profile-dropdown-item.logout {
+            color: var(--danger);
+        }
+
+        .profile-dropdown-item.logout:hover {
+            background: rgba(220, 53, 69, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo-area">
+                    <img src="https://i.imgur.com/iUwP1jk.png">
+                    <span class="logo">DRI System</span>
+                </div>
+                <nav class="nav">
+                    <div class="nav-item" id="geralBtn" onclick="toggleSubmenu('geral')">
+                        Geral <i class="ph ph-caret-down"></i>
+                    </div>
+                    <div class="nav-item active" onclick="window.location.href='listagem.html'">
+                        Listagem
+                    </div>
+                    <div class="nav-item" id="requerimentosBtn" onclick="toggleSubmenu('requerimentos')">
+                        Requerimentos <i class="ph ph-caret-down"></i>
+                    </div>
+                    <div class="nav-item" id="escalasBtn" onclick="toggleSubmenu('escalas')">
+                        Escalas <i class="ph ph-caret-down"></i>
+                    </div>
+                    <div class="nav-item" onclick="window.location.href='registros.html'">
+                        Registros
+                    </div>
+
+                    <div class="submenu" id="geralSubmenu">
+                        <div class="submenu-item" onclick="window.location.href='home.html'">
+                            <i class="ph ph-house"></i> Início
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='documentacoes.html'">
+                            <i class="ph ph-folder"></i> Documentações
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='reportar.html'">
+                            <i class="ph ph-flag"></i> Reportar falha
+                        </div>
+                    </div>
+
+                    <div class="submenu" id="requerimentosSubmenu">
+                        <div class="submenu-item" onclick="window.location.href='req_membros.html'">
+                            Req de membros
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='registro_funcao.html'">
+                            Registro de função
+                        </div>
+                    </div>
+
+                    <div class="submenu" id="escalasSubmenu">
+                        <div class="submenu-item" onclick="window.location.href='escala_fiscalizador.html'">
+                            Fiscalizador
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='escala_superintendente.html'">
+                            Superintendente
+                        </div>
+                    </div>
+                </nav>
+            </div>
+            <div class="profile">
+                <div class="profile-button" onclick="toggleDropdown()" id="profileButton">
+                    <div class="profile-avatar">
+                        <img id="userAvatar" src="" alt="avatar">
+                    </div>
+                    <span class="profile-nick" id="userNick">carregando...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            <div id="listagemContent">
+                <div class="empty-message">Carregando listagem...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/supabase.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let currentUser = null;
+        let activeSubmenu = null;
+
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function toggleSubmenu(menu) {
+            const submenu = document.getElementById(menu + 'Submenu');
+            
+            if (activeSubmenu && activeSubmenu !== submenu) {
+                activeSubmenu.classList.remove('show');
+            }
+            
+            submenu.classList.toggle('show');
+            activeSubmenu = submenu.classList.contains('show') ? submenu : null;
+        }
+
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.nav-item') && !event.target.closest('.submenu')) {
+                if (activeSubmenu) {
+                    activeSubmenu.classList.remove('show');
+                    activeSubmenu = null;
+                }
+            }
+            
+            if (!event.target.closest('.profile-button') && !event.target.closest('.profile-dropdown')) {
+                document.getElementById('profileDropdown').classList.remove('show');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const autenticado = await Auth.isAuthenticated();
+            if (!autenticado) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = await Auth.getCurrentUser();
+            const userCargo = currentUser.cargo;
+
+            const podeAcessar = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+            if (!podeAcessar) {
+                window.location.href = 'home.html';
+                return;
+            }
+
+            const podeAcessarAdmin = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+
+            const existingAdmin = document.querySelector('.nav-item[onclick*="admin.html"]');
+            if (existingAdmin) existingAdmin.remove();
+
+            if (podeAcessarAdmin) {
+                const nav = document.querySelector('.nav');
+                const adminItem = document.createElement('div');
+                adminItem.className = 'nav-item';
+                adminItem.onclick = () => window.location.href = 'admin.html';
+                adminItem.innerHTML = 'Admin';
+                nav.appendChild(adminItem);
+            }
+
+            document.getElementById('userNick').textContent = currentUser.nick;
+            const avatarUrl = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
+            document.getElementById('userAvatar').src = avatarUrl;
+
+            await carregarListagem();
+        });
+
+        async function carregarListagem() {
+            try {
+                const { data: usuarios } = await window.supabase
+                    .from('usuarios')
+                    .select('nick, cargo, status')
+                    .eq('verificado', true);
+
+                if (!usuarios || usuarios.length === 0) {
+                    document.getElementById('listagemContent').innerHTML = '<div class="empty-message">Nenhum usuário encontrado</div>';
+                    return;
+                }
+
+                const cargos = {
+                    DEV: [],
+                    Líder: [],
+                    'Vice-Líder': [],
+                    Superintendente: [],
+                    Fiscalizador: []
+                };
+
+                usuarios.forEach(usuario => {
+                    const statusIcon = usuario.status === 'LICENCA' ? 'L' : (usuario.status === 'RESERVA' ? 'R' : null);
+                    const statusClass = usuario.status === 'LICENCA' ? 'licenca' : (usuario.status === 'RESERVA' ? 'reserva' : '');
+                    
+                    if (cargos[usuario.cargo]) {
+                        cargos[usuario.cargo].push({
+                            nick: usuario.nick,
+                            statusIcon: statusIcon,
+                            statusClass: statusClass
+                        });
+                    }
+                });
+
+                const container = document.getElementById('listagemContent');
+                let html = '';
+
+                if (cargos.DEV.length > 0) {
+                    html += `
+                        <div class="cargo-section">
+                            <div class="cargo-title">DEV</div>
+                            <div class="avatar-grid">
+                                ${cargos.DEV.map(item => `
+                                    <div class="avatar-item">
+                                        <div class="avatar-image">
+                                            <img src="https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${item.nick}&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=0&size=b" 
+                                                alt="${item.nick}"
+                                                onerror="this.src='https://www.habbo.com.br/habbo-imaging/avatarimage?&user=Padrao&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=0&size=b'">
+                                        </div>
+                                        <div class="avatar-nick">
+                                            ${item.nick}
+                                            ${item.statusIcon ? `<span class="status-badge ${item.statusClass}">${item.statusIcon}</span>` : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (cargos.Líder.length > 0) {
+                    html += `
+                        <div class="cargo-section">
+                            <div class="cargo-title">Líder</div>
+                            <div class="avatar-grid">
+                                ${cargos.Líder.map(item => `
+                                    <div class="avatar-item">
+                                        <div class="avatar-image">
+                                            <img src="https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${item.nick}&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=0&size=b" 
+                                                alt="${item.nick}"
+                                                onerror="this.src='https://www.habbo.com.br/habbo-imaging/avatarimage?&user=Padrao&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=0&size=b'">
+                                        </div>
+                                        <div class="avatar-nick">
+                                            ${item.nick}
+                                            ${item.statusIcon ? `<span class="status-badge ${item.statusClass}">${item.statusIcon}</span>` : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (cargos['Vice-Líder'].length > 0) {
+                    html += `
+                        <div class="cargo-section">
+                            <div class="cargo-title">Vice-Líder</div>
+                            <div class="avatar-grid">
+                                ${cargos['Vice-Líder'].map(item => `
+                                    <div class="avatar-item">
+                                        <div class="avatar-image">
+                                            <img src="https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${item.nick}&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=0&size=b" 
+                                                alt="${item.nick}"
+                                                onerror="this.src='https://www.habbo.com.br/habbo-imaging/avatarimage?&user=Padrao&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=0&size=b'">
+                                        </div>
+                                        <div class="avatar-nick">
+                                            ${item.nick}
+                                            ${item.statusIcon ? `<span class="status-badge ${item.statusClass}">${item.statusIcon}</span>` : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (cargos.Superintendente.length > 0) {
+                    html += `
+                        <div class="cargo-section">
+                            <div class="cargo-title">Superintendente</div>
+                            <div class="nick-grid">
+                                ${cargos.Superintendente.map(item => `
+                                    <span class="nick-item">
+                                        ${item.nick}
+                                        ${item.statusIcon ? `<span class="status-badge ${item.statusClass}" style="margin-left: 5px;">${item.statusIcon}</span>` : ''}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (cargos.Fiscalizador.length > 0) {
+                    html += `
+                        <div class="cargo-section">
+                            <div class="cargo-title">Fiscalizador</div>
+                            <div class="nick-grid">
+                                ${cargos.Fiscalizador.map(item => `
+                                    <span class="nick-item">
+                                        ${item.nick}
+                                        ${item.statusIcon ? `<span class="status-badge ${item.statusClass}" style="margin-left: 5px;">${item.statusIcon}</span>` : ''}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error('Erro ao carregar listagem:', error);
+                document.getElementById('listagemContent').innerHTML = '<div class="empty-message">Erro ao carregar listagem</div>';
+            }
+        }
+    </script>
+</body>
+</html>

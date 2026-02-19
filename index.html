@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRI System</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/iUwP1jk.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #161616;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2b2b2b;
+        }
+
+        :root {
+            --navy-dark: #161616;
+            --navy-medium: #0f2740;
+            --navy-light: #2b2b2b;
+            --text-primary: #e5e9f0;
+            --text-secondary: #afafaf;
+            --danger: #dc3545;
+            --success: #28a745;
+        }
+
+        body {
+            background: url('https://i.imgur.com/zV5nn6J.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(4, 4, 4, 0.811);
+            z-index: -1;
+        }
+        
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-card {
+            background: rgb(26, 26, 26);
+            border: 2px solid rgb(17, 17, 17);
+            border-radius: 10px;
+            padding: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar-container {
+            text-align: center;
+            margin-bottom: 10px;
+            min-height: 130px;
+            display: block;
+        }
+
+        .avatar-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid rgb(17, 17, 17);
+            background: var(--navy-dark);
+            object-fit: cover;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .welcome-text {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .welcome-text h2 {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .welcome-text p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 8px 0;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid rgb(80, 80, 80);
+            color: white;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-bottom-color: white;
+        }
+
+        .input-wrapper input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 25px 0 15px;
+        }
+
+        .btn-primary {
+            flex: 1;
+            padding: 14px;
+            background: white;
+            border: none;
+            border-radius: 11px;
+            color: var(--navy-dark);
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            padding: 14px;
+            background: transparent;
+            border: 2px solid white;
+            border-radius: 11px;
+            color: white;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .forgot-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .forgot-link a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .forgot-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: rgba(220, 53, 69, 0.1);
+            border: 2px solid var(--danger);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 20px;
+            color: var(--danger);
+            text-align: center;
+            display: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--navy-dark);
+            border-radius: 50%;
+            border-top-color: var(--gold);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card"> 
+            <div class="avatar-container">
+                <img src="https://www.habbo.com.br/habbo-imaging/avatarimage?&user=Padrao&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=0&size=l" 
+                     alt="Avatar" 
+                     class="avatar-image" 
+                     id="avatarPreview">
+            </div>
+            
+            <div class="welcome-text">
+                <h2>Bem-vindo(a) ao DRI System!</h2>
+                <p>Entre com seu usuário e senha</p>
+            </div>
+            
+            <div id="errorMessage" class="error-message"></div>
+            
+            <div class="form-group">
+                <div class="input-wrapper">
+                    <input type="text" id="nick" placeholder="Usuário" autocomplete="off" autofocus>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <div class="input-wrapper">
+                    <input type="password" id="senha" placeholder="Senha">
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn-secondary" onclick="window.location.href='criar_conta.html'">
+                    CRIAR
+                </button>
+                <button class="btn-primary" id="btnLogin" onclick="fazerLogin()">
+                    <span id="btnLoginText">ENTRAR</span>
+                    <span id="btnLoginLoading" class="loading" style="display: none;"></span>
+                </button>
+            </div>
+            
+            <div class="forgot-link">
+                <a href="redefinir_senha.html">
+                    <i class="ph ph-lock-simple-open"></i> Esqueceu a senha? Clique aqui
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/supabase.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const autenticado = await Auth.isAuthenticated();
+            if (autenticado) {
+                window.location.href = 'home.html';
+            }
+
+            document.getElementById('nick').addEventListener('input', function(e) {
+                const nick = e.target.value.trim();
+                const avatar = document.getElementById('avatarPreview');
+                if (nick) {
+                    avatar.src = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=0&size=l`;
+                } else {
+                    avatar.src = 'https://www.habbo.com.br/habbo-imaging/avatarimage?&user=Padrao&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=0&size=l';
+                }
+            });
+        });
+
+        async function fazerLogin() {
+            const nick = document.getElementById('nick').value.trim();
+            const senha = document.getElementById('senha').value;
+            const errorDiv = document.getElementById('errorMessage');
+            const btn = document.getElementById('btnLogin');
+            const btnText = document.getElementById('btnLoginText');
+            const btnLoading = document.getElementById('btnLoginLoading');
+            
+            if (!nick || !senha) {
+                mostrarErro('Preencha todos os campos');
+                return;
+            }
+
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline-block';
+            btn.disabled = true;
+            errorDiv.style.display = 'none';
+            
+            const resultado = await Auth.login(nick, senha);
+            
+            if (resultado.success) {
+                window.location.href = 'home.html';
+            } else {
+                mostrarErro(resultado.message);
+                btnText.style.display = 'inline-block';
+                btnLoading.style.display = 'none';
+                btn.disabled = false;
+            }
+        }
+        
+        function mostrarErro(msg) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = msg;
+            errorDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 4000);
+        }
+        
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                fazerLogin();
+            }
+        });
+    </script>
+</body>
+</html>

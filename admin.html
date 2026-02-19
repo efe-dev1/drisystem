@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRI System</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/iUwP1jk.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #161616;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2b2b2b;
+        }
+
+        :root {
+            --navy-dark: #161616;
+            --navy-medium: #0f2740;
+            --navy-light: #2b2b2b;
+            --text-primary: #e5e9f0;
+            --text-secondary: #afafaf;
+            --danger: #dc3545;
+            --success: #28a745;
+            --warning: #ffc107;
+            --info: #17a2b8;
+        }
+
+        body {
+            background: url('https://i.imgur.com/zV5nn6J.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(4, 4, 4, 0.811);
+            z-index: -1;
+        }
+
+        .header {
+            background: rgb(26, 26, 26);
+            border-bottom: 2px solid rgb(17, 17, 17);
+            width: 100%;
+            padding: 0 30px;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-area img {
+            height: 40px;
+            width: auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .nav {
+            display: flex;
+            gap: 5px;
+            position: relative;
+        }
+
+        .nav-item {
+            padding: 8px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-item:hover {
+            color: white;
+        }
+
+        .submenu {
+            position: absolute;
+            top: 100%;
+            background: rgb(30, 30, 30);
+            border-radius: 8px;
+            padding: 8px 0;
+            min-width: 200px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .submenu.show {
+            display: block;
+        }
+
+        .submenu-item {
+            padding: 10px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .submenu-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        #geralSubmenu {
+            left: 0;
+        }
+
+        #requerimentosSubmenu {
+            left: 85px;
+        }
+
+        #escalasSubmenu {
+            left: 260px;
+        }
+
+        .profile {
+            position: relative;
+        }
+
+        .profile-button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 10px 5px 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgb(40, 40, 40);
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .profile-avatar {
+            width: 36px;
+            height: 36px;
+            overflow: hidden;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-nick {
+            font-weight: 500;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: rgb(30, 30, 30);
+            border-radius: 8px;
+            padding: 8px 0;
+            min-width: 160px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .profile-dropdown.show {
+            display: block;
+        }
+
+        .profile-dropdown-item {
+            padding: 10px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .profile-dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .profile-dropdown-item.logout {
+            color: var(--danger);
+        }
+
+        .profile-dropdown-item.logout:hover {
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        .main-content {
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid rgb(40, 40, 40);
+            padding-bottom: 10px;
+        }
+
+        .admin-tab {
+            padding: 10px 20px;
+            background: transparent;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-tab:hover {
+            color: white;
+            border-color: rgb(60, 60, 60);
+        }
+
+        .admin-tab.active {
+            background: rgb(40, 40, 40);
+            color: white;
+            border-color: rgb(60, 60, 60);
+        }
+
+        .admin-panel {
+            display: none;
+        }
+
+        .admin-panel.active {
+            display: block;
+        }
+
+        .card {
+            background: rgb(26, 26, 26);
+            border: 2px solid rgb(17, 17, 17);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            color: white;
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgb(40, 40, 40);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            background: rgb(40, 40, 40);
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgb(40, 40, 40);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-ativo {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+            border: 2px solid var(--success);
+        }
+
+        .status-bloqueado {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+            border: 2px solid var(--danger);
+        }
+
+        .status-licenca {
+            background: rgba(255, 193, 7, 0.1);
+            color: var(--warning);
+            border: 2px solid var(--warning);
+        }
+
+        .btn-action {
+            padding: 6px 12px;
+            background: transparent;
+            border: 2px solid rgb(60, 60, 60);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 2px;
+        }
+
+        .btn-action:hover {
+            border-color: white;
+            color: white;
+        }
+
+        .btn-action.edit:hover {
+            border-color: var(--info);
+            color: var(--info);
+        }
+
+        .btn-action.ban:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .btn-action.unban:hover {
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgb(26, 26, 26);
+            border: 2px solid rgb(17, 17, 17);
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-title {
+            color: white;
+            font-weight: 600;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper input,
+        .input-wrapper select,
+        .input-wrapper textarea {
+            width: 100%;
+            padding: 10px 0;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid rgb(80, 80, 80);
+            color: white;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper input:focus,
+        .input-wrapper select:focus,
+        .input-wrapper textarea:focus {
+            outline: none;
+            border-bottom-color: white;
+        }
+
+        .input-wrapper select option {
+            background: rgb(26, 26, 26);
+            color: white;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .btn-modal {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-modal.primary {
+            background: white;
+            color: var(--navy-dark);
+        }
+
+        .btn-modal.primary:hover {
+            background: #f0f0f0;
+        }
+
+        .btn-modal.secondary {
+            background: transparent;
+            border: 2px solid rgb(80, 80, 80);
+            color: var(--text-secondary);
+        }
+
+        .btn-modal.secondary:hover {
+            border-color: white;
+            color: white;
+        }
+
+        .btn-modal.danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-modal.danger:hover {
+            background: #c82333;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo-area">
+                    <img src="https://i.imgur.com/iUwP1jk.png">
+                    <span class="logo">DRI System</span>
+                </div>
+                <nav class="nav">
+                    <div class="nav-item" id="geralBtn" onclick="toggleSubmenu('geral')">
+                        Geral <i class="ph ph-caret-down"></i>
+                    </div>
+                    <div class="nav-item" onclick="window.location.href='listagem.html'">
+                        Listagem
+                    </div>
+                    <div class="nav-item" id="requerimentosBtn" onclick="toggleSubmenu('requerimentos')">
+                        Requerimentos <i class="ph ph-caret-down"></i>
+                    </div>
+                    <div class="nav-item" id="escalasBtn" onclick="toggleSubmenu('escalas')">
+                        Escalas <i class="ph ph-caret-down"></i>
+                    </div>
+                    <div class="nav-item" onclick="window.location.href='registros.html'">
+                        Registros
+                    </div>
+                    <div class="nav-item active" onclick="window.location.href='admin.html'">
+                        Admin
+                    </div>
+
+                    <div class="submenu" id="geralSubmenu">
+                        <div class="submenu-item" onclick="window.location.href='home.html'">
+                            <i class="ph ph-house"></i> Início
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='documentacoes.html'">
+                            <i class="ph ph-folder"></i> Documentações
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='reportar.html'">
+                            <i class="ph ph-flag"></i> Reportar falha
+                        </div>
+                    </div>
+
+                    <div class="submenu" id="requerimentosSubmenu">
+                        <div class="submenu-item" onclick="window.location.href='req_membros.html'">
+                            Req de membros
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='registro_funcao.html'">
+                            Registro de função
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='atualizacao_listagem.html'">
+                            Atualização de listagem
+                        </div>
+                    </div>
+
+                    <div class="submenu" id="escalasSubmenu">
+                        <div class="submenu-item" onclick="window.location.href='escala_fiscalizador.html'">
+                            Fiscalizador
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='escala_superintendente.html'">
+                            Superintendente
+                        </div>
+                    </div>
+                </nav>
+            </div>
+            <div class="profile">
+                <div class="profile-button" onclick="toggleProfileDropdown()" id="profileButton">
+                    <div class="profile-avatar">
+                        <img id="userAvatar" src="" alt="avatar">
+                    </div>
+                    <span class="profile-nick" id="userNick">carregando...</span>
+                </div>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="meu_perfil.html" class="profile-dropdown-item">
+                        <i class="ph ph-user-circle"></i> Meu perfil
+                    </a>
+                    <div class="profile-dropdown-item logout" onclick="Auth.logout()">
+                        <i class="ph ph-sign-out"></i> Sair
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="admin-tabs">
+            <div class="admin-tab active" onclick="mudarAba('usuarios')">
+                Usuários
+            </div>
+            <div class="admin-tab" onclick="mudarAba('documentos')">
+                Documentos
+            </div>
+            <div class="admin-tab" onclick="mudarAba('medalhas')">
+                Medalhas
+            </div>
+        </div>
+
+        <div id="abaUsuarios" class="admin-panel active">
+            <div class="card">
+                <div class="card-title">
+                    Gerenciar usuários
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>NICK</th>
+                                <th>CARGO</th>
+                                <th>STATUS</th>
+                                <th>DATA</th>
+                                <th>AÇÕES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usuariosTableBody">
+                            <tr>
+                                <td colspan="5" class="empty-message">Carregando usuários...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="abaDocumentos" class="admin-panel">
+            <div class="card">
+                <div class="card-title">
+                    Gerenciar pastas
+                </div>
+                <button class="btn-action" onclick="abrirModalNovaPasta()" style="margin-bottom: 20px;">
+                    NOVA PASTA
+                </button>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>PASTA</th>
+                                <th>DESCRIÇÃO</th>
+                                <th>DOCUMENTOS</th>
+                                <th>CRIADO POR</th>
+                                <th>DATA</th>
+                                <th>AÇÕES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pastasTableBody">
+                            <tr>
+                                <td colspan="6" class="empty-message">Carregando pastas...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    Gerenciar documentos
+                </div>
+                <div class="form-group" style="max-width: 300px;">
+                    <div class="input-wrapper">
+                        <select id="filtroPasta" onchange="carregarDocumentosAdmin()">
+                            <option value="">TODAS AS PASTAS</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-action" onclick="abrirModalNovoDocumento()" style="margin-bottom: 20px;">
+                    NOVO DOCUMENTO
+                </button>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>TÍTULO</th>
+                                <th>PASTA</th>
+                                <th>CRIADO POR</th>
+                                <th>DATA</th>
+                                <th>AÇÕES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="documentosTableBody">
+                            <tr>
+                                <td colspan="5" class="empty-message">Carregando documentos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="abaMedalhas" class="admin-panel">
+            <div class="card">
+                <div class="card-title">
+                    Medalhas (Em breve)
+                </div>
+                <div class="empty-message">
+                    Sistema de medalhas será implementado em breve.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalVerDocumento">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-title" id="modalDocumentoTitulo">
+                -
+            </div>
+            <div class="modal-body" id="modalDocumentoConteudo" style="color: var(--text-secondary); line-height: 1.6; white-space: pre-wrap;"></div>
+            <div class="modal-footer">
+                <button class="btn-modal primary" onclick="fecharModalVerDocumento()">FECHAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalEditarUsuario">
+        <div class="modal-content">
+            <div class="modal-title">
+                Editar usuário
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <input type="text" id="editNick" placeholder="NICK" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <select id="editCargo">
+                            <option value="Fiscalizador">Fiscalizador</option>
+                            <option value="Superintendente">Superintendente</option>
+                            <option value="Vice-Líder">Vice-Líder</option>
+                            <option value="Líder">Líder</option>
+                            <option value="DEV">DEV</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <select id="editStatus">
+                            <option value="ATIVO">ATIVO</option>
+                            <option value="BLOQUEADO">BLOQUEADO</option>
+                            <option value="LICENCA">LICENÇA</option>
+                            <option value="RESERVA">RESERVA</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal secondary" onclick="fecharModalEditarUsuario()">CANCELAR</button>
+                <button class="btn-modal primary" onclick="salvarEdicaoUsuario()">SALVAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalNovaPasta">
+        <div class="modal-content">
+            <div class="modal-title">
+                Nova pasta
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <input type="text" id="novaPastaNome" placeholder="Nome da pasta">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <textarea id="novaPastaDescricao" placeholder="Descrição" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal secondary" onclick="fecharModalNovaPasta()">CANCELAR</button>
+                <button class="btn-modal primary" onclick="criarPasta()">CRIAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalNovoDocumento">
+        <div class="modal-content">
+            <div class="modal-title">
+                Novo documento
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <select id="novoDocumentoPasta">
+                            <option value="" disabled selected>Selecione a pasta</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <input type="text" id="novoDocumentoTitulo" placeholder="Título">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <textarea id="novoDocumentoConteudo" placeholder="Conteúdo" rows="5"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal secondary" onclick="fecharModalNovoDocumento()">CANCELAR</button>
+                <button class="btn-modal primary" onclick="criarDocumento()">CRIAR</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/supabase.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let currentUser = null;
+        let activeSubmenu = null;
+        let userCargo = null;
+        let usuarios = [];
+        let pastas = [];
+        let documentos = [];
+        let usuarioEditando = null;
+
+        function getBrasiliaTime() {
+            const data = new Date();
+            const offsetBrasilia = -3;
+            const utc = data.getTime() + (data.getTimezoneOffset() * 60000);
+            return new Date(utc + (3600000 * offsetBrasilia));
+        }
+
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function toggleSubmenu(menu) {
+            const submenu = document.getElementById(menu + 'Submenu');
+            
+            if (activeSubmenu && activeSubmenu !== submenu) {
+                activeSubmenu.classList.remove('show');
+            }
+            
+            submenu.classList.toggle('show');
+            activeSubmenu = submenu.classList.contains('show') ? submenu : null;
+        }
+
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.nav-item') && !event.target.closest('.submenu')) {
+                if (activeSubmenu) {
+                    activeSubmenu.classList.remove('show');
+                    activeSubmenu = null;
+                }
+            }
+            
+            if (!event.target.closest('.profile-button') && !event.target.closest('.profile-dropdown')) {
+                document.getElementById('profileDropdown').classList.remove('show');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const autenticado = await Auth.isAuthenticated();
+            if (!autenticado) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = await Auth.getCurrentUser();
+            const userCargo = currentUser.cargo;
+
+            const podeAcessar = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+            if (!podeAcessar) {
+                window.location.href = 'home.html';
+                return;
+            }
+
+            document.getElementById('userNick').textContent = currentUser.nick;
+            const avatarUrl = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
+            document.getElementById('userAvatar').src = avatarUrl;
+
+            const podeAcessarAdmin = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+
+            const existingAdmin = document.querySelector('.nav-item[onclick*="admin.html"]');
+            if (existingAdmin) existingAdmin.remove();
+
+            if (podeAcessarAdmin) {
+                const nav = document.querySelector('.nav');
+                const adminItem = document.createElement('div');
+                adminItem.className = 'nav-item';
+                adminItem.onclick = () => window.location.href = 'admin.html';
+                adminItem.innerHTML = 'Admin';
+                nav.appendChild(adminItem);
+            }
+
+            await carregarUsuarios();
+            await carregarPastasAdmin();
+            await carregarDocumentosAdmin();
+        });
+
+        function mudarAba(aba) {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+            
+            document.querySelector(`.admin-tab[onclick="mudarAba('${aba}')"]`).classList.add('active');
+            document.getElementById(`aba${aba.charAt(0).toUpperCase() + aba.slice(1)}`).classList.add('active');
+        }
+
+        async function carregarUsuarios() {
+            try {
+                const { data: usuariosData } = await window.supabase
+                    .from('usuarios')
+                    .select('*')
+                    .order('nick');
+
+                usuarios = usuariosData || [];
+
+                const tbody = document.getElementById('usuariosTableBody');
+
+                if (usuarios.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-message">Nenhum usuário encontrado</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = usuarios.map(user => {
+                    const data = user.data_criacao ? new Date(user.data_criacao).toLocaleDateString('pt-BR') : '-';
+                    
+                    let statusClass = 'status-ativo';
+                    if (user.status === 'BLOQUEADO') statusClass = 'status-bloqueado';
+                    if (user.status === 'LICENCA' || user.status === 'RESERVA') statusClass = 'status-licenca';
+
+                    return `
+                        <tr>
+                            <td><strong>${user.nick}</strong></td>
+                            <td>${user.cargo || 'Fiscalizador'}</td>
+                            <td><span class="status-badge ${statusClass}">${user.status || 'ATIVO'}</span></td>
+                            <td>${data}</td>
+                            <td>
+                                <button class="btn-action edit" onclick="abrirModalEditarUsuario('${user.nick}')">
+                                    <i class="ph ph-pencil"></i> Editar
+                                </button>
+                                ${user.status === 'BLOQUEADO' ? 
+                                    `<button class="btn-action unban" onclick="desbanirUsuario('${user.nick}')">
+                                        <i class="ph ph-check"></i> Desbanir
+                                    </button>` : 
+                                    `<button class="btn-action ban" onclick="banirUsuario('${user.nick}')">
+                                        <i class="ph ph-x"></i> Banir
+                                    </button>`
+                                }
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Erro ao carregar usuários:', error);
+            }
+        }
+
+        function abrirModalEditarUsuario(nick) {
+            usuarioEditando = usuarios.find(u => u.nick === nick);
+            
+            document.getElementById('editNick').value = usuarioEditando.nick;
+            document.getElementById('editCargo').value = usuarioEditando.cargo || 'Fiscalizador';
+            document.getElementById('editStatus').value = usuarioEditando.status || 'ATIVO';
+            
+            document.getElementById('modalEditarUsuario').classList.add('show');
+        }
+
+        function fecharModalEditarUsuario() {
+            document.getElementById('modalEditarUsuario').classList.remove('show');
+            usuarioEditando = null;
+        }
+
+        async function salvarEdicaoUsuario() {
+            const cargo = document.getElementById('editCargo').value;
+            const status = document.getElementById('editStatus').value;
+
+            try {
+                const { error } = await window.supabase
+                    .from('usuarios')
+                    .update({ 
+                        cargo: cargo,
+                        status: status 
+                    })
+                    .eq('nick', usuarioEditando.nick);
+
+                if (error) throw error;
+
+                fecharModalEditarUsuario();
+                await carregarUsuarios();
+
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+                alert('Erro ao salvar alterações');
+            }
+        }
+
+        async function banirUsuario(nick) {
+            if (!confirm(`Tem certeza que deseja banir ${nick}?`)) return;
+
+            try {
+                const { error } = await window.supabase
+                    .from('usuarios')
+                    .update({ status: 'BLOQUEADO' })
+                    .eq('nick', nick);
+
+                if (error) throw error;
+
+                await carregarUsuarios();
+
+            } catch (error) {
+                console.error('Erro ao banir:', error);
+                alert('Erro ao banir usuário');
+            }
+        }
+
+        async function desbanirUsuario(nick) {
+            if (!confirm(`Tem certeza que deseja desbanir ${nick}?`)) return;
+
+            try {
+                const { error } = await window.supabase
+                    .from('usuarios')
+                    .update({ status: 'ATIVO' })
+                    .eq('nick', nick);
+
+                if (error) throw error;
+
+                await carregarUsuarios();
+
+            } catch (error) {
+                console.error('Erro ao desbanir:', error);
+                alert('Erro ao desbanir usuário');
+            }
+        }
+
+        async function carregarPastasAdmin() {
+            try {
+                const { data: pastasData } = await window.supabase
+                    .from('pastas')
+                    .select('*')
+                    .order('nome');
+
+                pastas = pastasData || [];
+
+                const tbody = document.getElementById('pastasTableBody');
+                const selectPasta = document.getElementById('novoDocumentoPasta');
+                const filtroPasta = document.getElementById('filtroPasta');
+
+                if (pastas.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="empty-message">Nenhuma pasta encontrada</td></tr>';
+                    if (selectPasta) {
+                        selectPasta.innerHTML = '<option value="" disabled selected>Nenhuma pasta disponível</option>';
+                    }
+                    if (filtroPasta) {
+                        filtroPasta.innerHTML = '<option value="">TODAS AS PASTAS</option>';
+                    }
+                    return;
+                }
+
+                tbody.innerHTML = pastas.map(pasta => {
+                    const docsCount = documentos.filter(d => d.pasta_id === pasta.id).length;
+                    const data = new Date(pasta.data_criacao).toLocaleDateString('pt-BR');
+                    const autor = pasta.autor_nick || 'Sistema';
+
+                    return `
+                        <tr>
+                            <td><strong>${pasta.nome}</strong></td>
+                            <td>${pasta.descricao || '-'}</td>
+                            <td>${docsCount}</td>
+                            <td>${autor}</td>
+                            <td>${data}</td>
+                            <td>
+                                <button class="btn-action edit" onclick="editarPasta('${pasta.id}')">
+                                    <i class="ph ph-pencil"></i>
+                                </button>
+                                <button class="btn-action ban" onclick="excluirPasta('${pasta.id}')">
+                                    <i class="ph ph-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+                if (selectPasta) {
+                    selectPasta.innerHTML = '<option value="" disabled selected>Selecione a pasta</option>' +
+                        pastas.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+                }
+
+                if (filtroPasta) {
+                    filtroPasta.innerHTML = '<option value="">TODAS AS PASTAS</option>' +
+                        pastas.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+                }
+
+            } catch (error) {
+                console.error('Erro ao carregar pastas:', error);
+            }
+        }
+
+        async function carregarDocumentosAdmin() {
+            try {
+                const pastaId = document.getElementById('filtroPasta')?.value || '';
+
+                let query = window.supabase
+                    .from('documentos')
+                    .select('*')
+                    .order('data_criacao', { ascending: false });
+
+                if (pastaId) {
+                    query = query.eq('pasta_id', pastaId);
+                }
+
+                const { data: docsData } = await query;
+
+                documentos = docsData || [];
+
+                const tbody = document.getElementById('documentosTableBody');
+
+                if (documentos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-message">Nenhum documento encontrado</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = documentos.map(doc => {
+                    const pasta = pastas.find(p => p.id === doc.pasta_id);
+                    const data = new Date(doc.data_criacao).toLocaleDateString('pt-BR');
+                    const autor = doc.autor_nick || 'Sistema';
+
+                    return `
+                        <tr>
+                            <td><strong>${doc.titulo}</strong></td>
+                            <td>${pasta ? pasta.nome : '-'}</td>
+                            <td>${autor}</td>
+                            <td>${data}</td>
+                            <td>
+                                <button class="btn-action edit" onclick="verDocumento(${doc.id})">
+                                    <i class="ph ph-eye"></i> Ver
+                                </button>
+                                <button class="btn-action ban" onclick="excluirDocumento(${doc.id})">
+                                    <i class="ph ph-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Erro ao carregar documentos:', error);
+            }
+        }
+
+        async function editarPasta(pastaId) {
+            const id = typeof pastaId === 'string' ? parseInt(pastaId) : pastaId;
+            
+            const pasta = pastas.find(p => p.id === id);
+            if (!pasta) {
+                console.error('Pasta não encontrada:', id);
+                return;
+            }
+            
+            const novoNome = prompt('Digite o novo nome da pasta:', pasta.nome);
+            if (novoNome === null) return;
+            if (!novoNome.trim()) {
+                alert('O nome não pode estar vazio');
+                return;
+            }
+            
+            const novaDescricao = prompt('Digite a nova descrição:', pasta.descricao || '');
+            if (novaDescricao === null) return;
+            
+            try {
+                const { error } = await window.supabase
+                    .from('pastas')
+                    .update({ 
+                        nome: novoNome.trim(),
+                        descricao: novaDescricao.trim() || null
+                    })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                await carregarPastasAdmin();
+                alert('Pasta atualizada com sucesso!');
+
+            } catch (error) {
+                console.error('Erro ao editar pasta:', error);
+                alert('Erro ao editar pasta: ' + error.message);
+            }
+        }
+
+        async function excluirPasta(pastaId) {
+            if (!confirm('Tem certeza que deseja excluir esta pasta? Todos os documentos serão excluídos.')) return;
+
+            try {
+                const { error } = await window.supabase
+                    .from('pastas')
+                    .delete()
+                    .eq('id', pastaId);
+
+                if (error) throw error;
+
+                await carregarPastasAdmin();
+                await carregarDocumentosAdmin();
+
+            } catch (error) {
+                console.error('Erro ao excluir pasta:', error);
+                alert('Erro ao excluir pasta');
+            }
+        }
+
+        async function excluirDocumento(docId) {
+            if (!confirm('Tem certeza que deseja excluir este documento?')) return;
+
+            try {
+                const { error } = await window.supabase
+                    .from('documentos')
+                    .delete()
+                    .eq('id', docId);
+
+                if (error) throw error;
+
+                await carregarDocumentosAdmin();
+
+            } catch (error) {
+                console.error('Erro ao excluir documento:', error);
+                alert('Erro ao excluir documento');
+            }
+        }
+
+        function verDocumento(docId) {
+            const id = typeof docId === 'string' ? parseInt(docId) : docId;
+            
+            const doc = documentos.find(d => d.id === id);
+            
+            if (!doc) {
+                console.error('Documento não encontrado:', id, 'Documentos disponíveis:', documentos);
+                alert('Erro ao carregar documento');
+                return;
+            }
+            
+            document.getElementById('modalDocumentoTitulo').innerHTML = `<i class="ph ph-file-text"></i> ${doc.titulo}`;
+            document.getElementById('modalDocumentoConteudo').textContent = doc.conteudo;
+            
+            document.getElementById('modalVerDocumento').classList.add('show');
+        }
+
+        function fecharModalVerDocumento() {
+            document.getElementById('modalVerDocumento').classList.remove('show');
+        }
+
+        function abrirModalNovaPasta() {
+            document.getElementById('modalNovaPasta').classList.add('show');
+        }
+
+        function fecharModalNovaPasta() {
+            document.getElementById('modalNovaPasta').classList.remove('show');
+            document.getElementById('novaPastaNome').value = '';
+            document.getElementById('novaPastaDescricao').value = '';
+        }
+
+        async function criarPasta() {
+            const nome = document.getElementById('novaPastaNome').value.trim();
+            const descricao = document.getElementById('novaPastaDescricao').value.trim();
+
+            if (!nome) {
+                alert('Digite um nome para a pasta');
+                return;
+            }
+
+            try {
+                const { error } = await window.supabase
+                    .from('pastas')
+                    .insert([{
+                        nome: nome,
+                        descricao: descricao,
+                        autor_nick: currentUser.nick,
+                        data_criacao: getBrasiliaTime()
+                    }]);
+
+                if (error) throw error;
+
+                fecharModalNovaPasta();
+                await carregarPastasAdmin();
+
+            } catch (error) {
+                console.error('Erro ao criar pasta:', error);
+                alert('Erro ao criar pasta');
+            }
+        }
+
+        function abrirModalNovoDocumento() {
+            if (pastas.length === 0) {
+                alert('Crie uma pasta primeiro');
+                return;
+            }
+            document.getElementById('modalNovoDocumento').classList.add('show');
+        }
+
+        function fecharModalNovoDocumento() {
+            document.getElementById('modalNovoDocumento').classList.remove('show');
+            document.getElementById('novoDocumentoPasta').value = '';
+            document.getElementById('novoDocumentoTitulo').value = '';
+            document.getElementById('novoDocumentoConteudo').value = '';
+        }
+
+        async function criarDocumento() {
+            const pastaId = document.getElementById('novoDocumentoPasta').value;
+            const titulo = document.getElementById('novoDocumentoTitulo').value.trim();
+            const conteudo = document.getElementById('novoDocumentoConteudo').value.trim();
+
+            if (!pastaId || !titulo || !conteudo) {
+                alert('Preencha todos os campos');
+                return;
+            }
+
+            try {
+                const { error } = await window.supabase
+                    .from('documentos')
+                    .insert([{
+                        pasta_id: pastaId,
+                        titulo: titulo,
+                        conteudo: conteudo,
+                        autor_nick: currentUser.nick,
+                        data_criacao: getBrasiliaTime()
+                    }]);
+
+                if (error) throw error;
+
+                fecharModalNovoDocumento();
+                await carregarDocumentosAdmin();
+
+            } catch (error) {
+                console.error('Erro ao criar documento:', error);
+                alert('Erro ao criar documento');
+            }
+        }
+
+        function verDocumento(docId) {
+            const doc = documentos.find(d => d.id === docId);
+            
+            document.getElementById('modalDocumentoTitulo').innerHTML = `<i class="ph ph-file-text"></i> ${doc.titulo}`;
+            document.getElementById('modalDocumentoConteudo').textContent = doc.conteudo;
+            
+            document.getElementById('modalVerDocumento').classList.add('show');
+        }
+
+        function fecharModalVerDocumento() {
+            document.getElementById('modalVerDocumento').classList.remove('show');
+        }
+
+        async function excluirPasta(pastaId) {
+            if (!confirm('Tem certeza que deseja excluir esta pasta? Todos os documentos serão excluídos.')) return;
+
+            try {
+                const { error } = await window.supabase
+                    .from('pastas')
+                    .delete()
+                    .eq('id', pastaId);
+
+                if (error) throw error;
+
+                await carregarPastasAdmin();
+                await carregarDocumentosAdmin();
+
+            } catch (error) {
+                console.error('Erro ao excluir pasta:', error);
+                alert('Erro ao excluir pasta');
+            }
+        }
+
+        async function excluirDocumento(docId) {
+            if (!confirm('Tem certeza que deseja excluir este documento?')) return;
+
+            try {
+                const { error } = await window.supabase
+                    .from('documentos')
+                    .delete()
+                    .eq('id', docId);
+
+                if (error) throw error;
+
+                await carregarDocumentosAdmin();
+
+            } catch (error) {
+                console.error('Erro ao excluir documento:', error);
+                alert('Erro ao excluir documento');
+            }
+        }
+    </script>
+</body>
+</html>
