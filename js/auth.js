@@ -17,7 +17,7 @@ const Auth = {
 
             const cargo = nick.toLowerCase() === 'youiz' ? 'DEV' : 'Fiscalizador';
 
-            const agoraBrasilia = SessionManager.getBrasiliaTime();
+            const agoraBrasilia = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
 
             const { error } = await window.supabase
                 .from('usuarios')
@@ -122,9 +122,11 @@ const Auth = {
 
     async login(nick, senha, manterConectado = true) {
         try {
-            const existingSession = await SessionManager.validateDeviceForLogin(nick);
-            if (existingSession) {
-                return { success: true, fromSavedSession: true };
+            if (window.SessionManager) {
+                const existingSession = await SessionManager.validateDeviceForLogin(nick);
+                if (existingSession) {
+                    return { success: true, fromSavedSession: true };
+                }
             }
 
             const { data: usuario } = await window.supabase
@@ -147,11 +149,29 @@ const Auth = {
                 return { success: false, message: mensagem };
             }
 
-            await SessionManager.invalidateOtherSessions(nick);
+            if (window.SessionManager) {
+                await SessionManager.createSession(nick, usuario.cargo, manterConectado);
+            } else {
+                const token = this.gerarToken();
+                const agoraBrasilia = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+                const expiracao = new Date(agoraBrasilia.getTime() + (manterConectado ? 5 : 1) * 24 * 60 * 60 * 1000);
 
-            const result = await SessionManager.createSession(nick, usuario.cargo, manterConectado);
-            
-            if (!result.success) throw new Error('Erro ao criar sessão');
+                const sessao = {
+                    nick,
+                    token,
+                    cargo: usuario.cargo,
+                    expiracao: expiracao.toISOString(),
+                    manterConectado
+                };
+
+                sessionStorage.setItem('dri_session', JSON.stringify(sessao));
+                sessionStorage.setItem('dri_user', nick);
+
+                if (manterConectado) {
+                    localStorage.setItem('dri_session', JSON.stringify(sessao));
+                    localStorage.setItem('dri_user', nick);
+                }
+            }
 
             return { success: true };
 
@@ -162,34 +182,62 @@ const Auth = {
     },
 
     async logout() {
-        await SessionManager.logout();
+        if (window.SessionManager) {
+            await SessionManager.logout();
+        } else {
+            sessionStorage.clear();
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
     },
 
     async redirectIfNotAuthenticated() {
-        const sessao = await this.isAuthenticated();
-        if (!sessao) {
+        const autenticado = await this.isAuthenticated();
+        if (!autenticado) {
             window.location.href = 'index.html';
             return false;
         }
-
-        if (sessao.requiresValidation) {
-            window.location.href = 'index.html?reason=device_changed';
-            return false;
-        }
-        
         return true;
     },
 
     async isAuthenticated() {
-        return await SessionManager.validateSession();
+        if (window.SessionManager) {
+            const sessao = await SessionManager.validateSession();
+            return !!sessao;
+        }
+
+        let sessao = sessionStorage.getItem('dri_session');
+
+        if (!sessao) {
+            sessao = localStorage.getItem('dri_session');
+            if (sessao) {
+                sessionStorage.setItem('dri_session', sessao);
+                sessionStorage.setItem('dri_user', localStorage.getItem('dri_user'));
+            }
+        }
+
+        if (!sessao) return false;
+
+        const dados = JSON.parse(sessao);
+        
+        if (new Date(dados.expiracao) < new Date()) {
+            await this.logout();
+            return false;
+        }
+
+        return true;
     },
 
     async getCurrentUser() {
-        return SessionManager.getStoredSession();
+        const sessao = sessionStorage.getItem('dri_session') || localStorage.getItem('dri_session');
+        if (!sessao) return null;
+        return JSON.parse(sessao);
     },
 
     gerarToken() {
-        return SessionManager.generateToken();
+        return Math.random().toString(36).substring(2) + 
+               Math.random().toString(36).substring(2) +
+               Date.now().toString(36);
     },
 
     gerarCodigo() {
@@ -198,21 +246,6 @@ const Auth = {
         const numeros = Math.floor(100 + Math.random() * 900);
         return `${letra}-${numeros}`;
     }
-};
-
-Auth.redirectIfNotAuthenticated = async function() {
-    const sessao = await this.isAuthenticated();
-    if (!sessao) {
-        window.location.href = 'index.html';
-        return false;
-    }
-    
-    if (sessao.requiresValidation) {
-        window.location.href = 'index.html?reason=device_changed';
-        return false;
-    }
-    
-    return true;
 };
 
 window.Auth = Auth;
