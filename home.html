@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DRI System - Home</title>
+    <title>DRI System</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/iUwP1jk.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -36,6 +36,9 @@
             --text-secondary: #afafaf;
             --danger: #dc3545;
             --success: #28a745;
+            --info: #17a2b8;
+            --warning: #ffc107;
+            --purple: #6f42c1;
         }
 
         body {
@@ -421,6 +424,46 @@
             font-weight: 600;
             color: white;
         }
+
+        .carrossel-container {
+            position: relative;
+            height: 250px;
+            overflow: hidden;
+        }
+
+        .carrossel-track {
+            position: absolute;
+            width: 100%;
+            animation: scroll 20s linear infinite;
+        }
+
+        .carrossel-track:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes scroll {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-50%);
+            }
+        }
+
+        .topic-item i {
+            font-size: 1.2rem;
+        }
+
+        .topic-item i.entrada { color: var(--success); }
+        .topic-item i.promocao { color: var(--info); }
+        .topic-item i.saida { color: var(--danger); }
+        .topic-item i.expulsao { color: var(--danger); }
+        .topic-item i.licenca { color: var(--warning); }
+        .topic-item i.retorno { color: var(--success); }
+        .topic-item i.infracao { color: var(--purple); }
+        .topic-item i.alteracao { color: var(--info); }
+        .topic-item i.registro { color: var(--info); }
+        .topic-item i.reintegracao { color: var(--success); }
     </style>
 </head>
 <body>
@@ -502,10 +545,12 @@
         <div class="dashboard-grid">
             <div class="card">
                 <div class="card-title">
-                    Últimos assuntos
+                    <i class="ph ph-newspaper"></i> Últimos assuntos
                 </div>
-                <div id="ultimosAssuntos">
-                    <div class="empty-message">Carregando...</div>
+                <div class="carrossel-container">
+                    <div class="carrossel-track" id="ultimosAssuntosTrack">
+                        <div class="empty-message">Carregando...</div>
+                    </div>
                 </div>
             </div>
 
@@ -522,7 +567,7 @@
 
             <div class="card">
                 <div class="card-title">
-                    Top 5 postadores
+                    <i class="ph ph-trophy"></i> Top 5 postadores
                 </div>
                 <div id="topPostadores">
                     <div class="empty-message">Carregando...</div>
@@ -548,11 +593,11 @@
 
     <script src="js/supabase.js"></script>
     <script src="js/auth.js"></script>
-    <script src="js/session.js"></script>
     <script>
         let currentUser = null;
         let activeSubmenu = null;
-        let verificacaoRealizada = false;
+        let ultimosAssuntos = [];
+        let carrosselInterval;
 
         function toggleProfileDropdown() {
             const dropdown = document.getElementById('profileDropdown');
@@ -628,11 +673,17 @@
                     const adminItem = document.createElement('div');
                     adminItem.className = 'nav-item';
                     adminItem.onclick = () => window.location.href = 'admin.html';
-                    adminItem.innerHTML = 'Admin';
+                    adminItem.innerHTML = 'Painel';
                     nav.appendChild(adminItem);
                 }
 
                 await carregarStats();
+                await carregarUltimosAssuntos();
+                await carregarTopPostadores();
+
+                carrosselInterval = setInterval(() => {
+                    carregarUltimosAssuntos();
+                }, 30000);
 
             } catch (error) {
                 console.error('Erro na inicialização:', error);
@@ -659,13 +710,231 @@
 
                 document.getElementById('totalUsuarios').textContent = totalUsuarios || 0;
                 document.getElementById('ultimoRegistrado').textContent = ultimo?.nick || '-';
-                document.getElementById('totalPostagens').textContent = '0';
+
+                const { count: totalInfracoes } = await window.supabase
+                    .from('infracoes')
+                    .select('*', { count: 'exact', head: true });
+
+                const { count: totalRequerimentos } = await window.supabase
+                    .from('requerimentos')
+                    .select('*', { count: 'exact', head: true });
+
+                const totalPostagens = (totalInfracoes || 0) + (totalRequerimentos || 0);
+                document.getElementById('totalPostagens').textContent = totalPostagens;
 
             } catch (error) {
                 console.error('Erro ao carregar stats:', error);
                 document.getElementById('totalUsuarios').textContent = '0';
                 document.getElementById('ultimoRegistrado').textContent = '-';
                 document.getElementById('totalPostagens').textContent = '0';
+            }
+        }
+
+        async function carregarUltimosAssuntos() {
+            try {
+                const infracoes = await window.supabase
+                    .from('infracoes')
+                    .select('*')
+                    .order('data_criacao', { ascending: false })
+                    .limit(20);
+
+                const requerimentos = await window.supabase
+                    .from('requerimentos')
+                    .select('*')
+                    .order('data_criacao', { ascending: false })
+                    .limit(20);
+
+                const saidas = await window.supabase
+                    .from('saidas')
+                    .select('*')
+                    .order('data_saida', { ascending: false })
+                    .limit(20);
+
+                const licencas = await window.supabase
+                    .from('licencas')
+                    .select('*')
+                    .order('data_inicio', { ascending: false })
+                    .limit(20);
+
+                const historicoNicks = await window.supabase
+                    .from('historico_nicks')
+                    .select('*')
+                    .order('data_alteracao', { ascending: false })
+                    .limit(20);
+
+                const todosEventos = [];
+
+                (infracoes.data || []).forEach(inf => {
+                    todosEventos.push({
+                        tipo: 'INFRACAO',
+                        autor: inf.fiscalizador_nick,
+                        alvo: inf.infrator_nick,
+                        detalhe: inf.infracao,
+                        data: new Date(inf.data_criacao),
+                        icone: 'ph ph-gavel',
+                        cor: 'infracao'
+                    });
+                });
+
+                (requerimentos.data || []).forEach(req => {
+                    let icone = 'ph ph-file-text';
+                    let cor = 'registro';
+                    
+                    if (req.tipo.includes('ENTRADA')) icone = 'ph ph-user-plus', cor = 'entrada';
+                    if (req.tipo.includes('PROMOÇÃO')) icone = 'ph ph-arrow-up', cor = 'promocao';
+                    if (req.tipo.includes('SAÍDA')) icone = 'ph ph-user-minus', cor = 'saida';
+                    if (req.tipo.includes('EXPULSÃO')) icone = 'ph ph-user-x', cor = 'expulsao';
+                    if (req.tipo.includes('LICENÇA')) icone = 'ph ph-clock', cor = 'licenca';
+                    if (req.tipo.includes('RETORNO')) icone = 'ph ph-user-check', cor = 'retorno';
+                    if (req.tipo.includes('REINTEGRAÇÃO')) icone = 'ph ph-arrow-clockwise', cor = 'reintegracao';
+                    if (req.tipo.includes('ALTERAÇÃO')) icone = 'ph ph-pencil', cor = 'alteracao';
+
+                    todosEventos.push({
+                        tipo: 'REQUERIMENTO',
+                        autor: req.autor_nick,
+                        alvo: req.dados?.nick || req.dados?.nickAtual || '-',
+                        detalhe: req.tipo,
+                        data: new Date(req.data_criacao),
+                        icone: icone,
+                        cor: cor
+                    });
+                });
+
+                (saidas.data || []).forEach(saida => {
+                    todosEventos.push({
+                        tipo: saida.tipo,
+                        autor: saida.registrado_por,
+                        alvo: saida.usuario_nick,
+                        detalhe: saida.motivo,
+                        data: new Date(saida.data_saida),
+                        icone: saida.tipo === 'SAIDA' ? 'ph ph-door-open' : 'ph ph-prohibit',
+                        cor: 'saida'
+                    });
+                });
+
+                (licencas.data || []).forEach(lic => {
+                    todosEventos.push({
+                        tipo: lic.tipo,
+                        autor: lic.usuario_nick,
+                        alvo: lic.usuario_nick,
+                        detalhe: `${lic.dias} dias`,
+                        data: new Date(lic.data_inicio),
+                        icone: 'ph ph-clock-countdown',
+                        cor: 'licenca'
+                    });
+                });
+
+                (historicoNicks.data || []).forEach(hist => {
+                    todosEventos.push({
+                        tipo: 'ALTERAÇÃO DE NICK',
+                        autor: hist.alterado_por,
+                        alvo: `${hist.nick_antigo} → ${hist.nick_novo}`,
+                        detalhe: 'Nick alterado',
+                        data: new Date(hist.data_alteracao),
+                        icone: 'ph ph-pencil-line',
+                        cor: 'alteracao'
+                    });
+                });
+
+                todosEventos.sort((a, b) => b.data - a.data);
+                ultimosAssuntos = todosEventos.slice(0, 30);
+
+                const track = document.getElementById('ultimosAssuntosTrack');
+                
+                if (ultimosAssuntos.length === 0) {
+                    track.innerHTML = '<div class="empty-message">Nenhum evento recente</div>';
+                    return;
+                }
+
+                const eventosHtml = ultimosAssuntos.map(evento => {
+                    const dataFormatada = evento.data.toLocaleString('pt-BR', {
+                        day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+                    });
+
+                    return `
+                        <div class="topic-item">
+                            <div class="topic-icon">
+                                <i class="${evento.icone} ${evento.cor}"></i>
+                            </div>
+                            <div class="topic-info">
+                                <div class="topic-title">
+                                    <strong>${evento.autor}</strong> • ${evento.tipo}
+                                </div>
+                                <div class="topic-meta">
+                                    ${evento.alvo !== '-' ? `${evento.alvo} • ` : ''}${dataFormatada}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                track.innerHTML = eventosHtml + eventosHtml;
+
+            } catch (error) {
+                console.error('Erro ao carregar últimos assuntos:', error);
+            }
+        }
+
+        async function carregarTopPostadores() {
+            try {
+                const { data: infracoes } = await window.supabase
+                    .from('infracoes')
+                    .select('fiscalizador_nick');
+
+                const { data: requerimentos } = await window.supabase
+                    .from('requerimentos')
+                    .select('autor_nick');
+
+                const contagem = {};
+
+                (infracoes || []).forEach(inf => {
+                    if (inf.fiscalizador_nick) {
+                        contagem[inf.fiscalizador_nick] = (contagem[inf.fiscalizador_nick] || 0) + 1;
+                    }
+                });
+
+                (requerimentos || []).forEach(req => {
+                    if (req.autor_nick) {
+                        contagem[req.autor_nick] = (contagem[req.autor_nick] || 0) + 1;
+                    }
+                });
+
+                const topPostadores = Object.entries(contagem)
+                    .map(([nick, total]) => ({ nick, total }))
+                    .sort((a, b) => b.total - a.total)
+                    .slice(0, 5);
+
+                const container = document.getElementById('topPostadores');
+
+                if (topPostadores.length === 0) {
+                    container.innerHTML = '<div class="empty-message">Nenhum postador encontrado</div>';
+                    return;
+                }
+
+                container.innerHTML = topPostadores.map((postador, index) => {
+                    const medalha = index === 0 ? '<i class="ph ph-trophy"></i>' : index === 1 ? '<i class="ph ph-medal"></i>' : index === 2 ? '<i class="ph ph-medal"></i>' : '📋';
+                    const avatarUrl = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${postador.nick}&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=1&size=s`;
+
+                    return `
+                        <div class="poster-item">
+                            <div class="poster-avatar">
+                                <img src="${avatarUrl}" alt="${postador.nick}" onerror="this.src='https://www.habbo.com.br/habbo-imaging/avatarimage?&user=Padrao&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=0&size=s'">
+                            </div>
+                            <div class="poster-info">
+                                <div class="poster-name">
+                                    ${medalha} ${postador.nick}
+                                </div>
+                            </div>
+                            <div class="poster-count">
+                                ${postador.total}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Erro ao carregar top postadores:', error);
+                document.getElementById('topPostadores').innerHTML = '<div class="empty-message">Erro ao carregar</div>';
             }
         }
     </script>

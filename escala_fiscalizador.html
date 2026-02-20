@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
     <style>
-        /* Seus estilos existentes permanecem IGUAIS */
         * {
             margin: 0;
             padding: 0;
@@ -269,6 +268,38 @@
         .title-left i {
             color: var(--info);
             font-size: 2rem;
+        }
+
+        .quick-access {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn-sheet {
+            padding: 12px 25px;
+            background: transparent;
+            border: 2px solid rgb(60, 60, 60);
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-sheet.alpha:hover {
+            border-color: var(--alpha);
+            color: var(--alpha);
+        }
+
+        .btn-sheet.bravo:hover {
+            border-color: var(--bravo);
+            color: var(--bravo);
         }
 
         .week-info {
@@ -685,31 +716,6 @@
             margin-top: 20px;
         }
 
-        .legenda {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-
-        .legenda-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-        }
-
-        .legenda-color {
-            width: 12px;
-            height: 12px;
-            border-radius: 3px;
-        }
-
-        .legenda-color.alpha { background: var(--alpha); }
-        .legenda-color.bravo { background: var(--bravo); }
-
         .empty-message {
             text-align: center;
             padding: 30px;
@@ -824,6 +830,9 @@
                         <div class="submenu-item" onclick="window.location.href='documentacoes.html'">
                             <i class="ph ph-folder"></i> Documentações
                         </div>
+                        <div class="submenu-item active" onclick="window.location.href='memorial.html'">
+                            <i class="ph ph-image"></i> Memorial
+                        </div>
                         <div class="submenu-item" onclick="window.location.href='reportar.html'">
                             <i class="ph ph-flag"></i> Reportar falha
                         </div>
@@ -870,7 +879,7 @@
     <div class="modal" id="modalRegistro">
         <div class="modal-content">
             <div class="modal-title">
-                <i class="ph ph-check-circle"></i> REGISTRAR
+                REGISTRAR
             </div>
             <div id="modalError" class="error-message"></div>
             <div id="modalSuccess" class="success-message"></div>
@@ -920,6 +929,20 @@
         <div class="page-title">
             <div class="title-left">
                 <h1>ESCALA FISCALIZADOR</h1>
+            </div>
+            <div class="quick-access">
+                <button class="btn-sheet alpha" onclick="window.open('https://docs.google.com/spreadsheets/d/1f9fPMnAosjKEvyZ5LJtuAz-kmdn1-VXRA9Nawr2tR3k/edit?gid=482045927#gid=482045927', '_blank')">
+                    PROF
+                </button>
+                <button class="btn-sheet alpha" onclick="window.open('https://docs.google.com/spreadsheets/d/1q744dbqoXuX-bzbH_mqcnly1AeFd3vzKHGaNGrA45kg/edit?gid=1666370622#gid=1666370622', '_blank')">
+                    CAP
+                </button>
+                <button class="btn-sheet bravo" onclick="window.open('https://docs.google.com/spreadsheets/d/1eZ3hFf0XEVaVbkgviJLZWJvpIkzufH8PQlfqbkDaT5s/edit?gid=1666370622#gid=1666370622', '_blank')">
+                    MEN
+                </button>
+                <button class="btn-sheet bravo" onclick="window.open('https://docs.google.com/spreadsheets/d/1TWbKL2P0kk8wIrR0uDxDk47ZYOKOlkCDakFkKD-ruHA/edit?gid=593055626#gid=593055626', '_blank')">
+                    GRAD
+                </button>
             </div>
         </div>
 
@@ -1008,29 +1031,6 @@
                         </tr>
                     </tbody>
                 </table>
-            </div>
-        </div>
-
-        <div class="legenda">
-            <div class="legenda-item">
-                <div class="legenda-color alpha"></div>
-                <span>Alpha</span>
-            </div>
-            <div class="legenda-item">
-                <div class="legenda-color bravo"></div>
-                <span>Bravo</span>
-            </div>
-            <div class="legenda-item">
-                <span class="status-badge status-pendente">PENDENTE</span>
-            </div>
-            <div class="legenda-item">
-                <span class="status-badge status-concluido">CONCLUÍDO</span>
-            </div>
-            <div class="legenda-item">
-                <span class="status-badge status-nao-realizado">NÃO REALIZADO</span>
-            </div>
-            <div class="legenda-item">
-                <span class="status-badge status-justificado">JUSTIFICADO</span>
             </div>
         </div>
 
@@ -1146,7 +1146,7 @@
                 const adminItem = document.createElement('div');
                 adminItem.className = 'nav-item';
                 adminItem.onclick = () => window.location.href = 'admin.html';
-                adminItem.innerHTML = 'Admin';
+                adminItem.innerHTML = 'Painel';
                 nav.appendChild(adminItem);
             }
 

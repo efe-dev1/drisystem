@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorial - DRI System</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/iUwP1jk.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #161616;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2b2b2b;
+        }
+
+        :root {
+            --navy-dark: #161616;
+            --navy-medium: #0f2740;
+            --navy-light: #2b2b2b;
+            --text-primary: #e5e9f0;
+            --text-secondary: #afafaf;
+            --danger: #dc3545;
+            --success: #28a745;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --purple: #6f42c1;
+            --like: #ff4d4d;
+        }
+
+        body {
+            background: url('https://i.imgur.com/8b3rI5q.png') repeat center center fixed;
+            background-size: 300px 300px;
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(4, 4, 4, 0.478);
+            z-index: -1;
+        }
+
+        .header {
+            background: rgb(26, 26, 26);
+            border-bottom: 2px solid rgb(17, 17, 17);
+            width: 100%;
+            padding: 0 30px;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-area img {
+            height: 40px;
+            width: auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .nav {
+            display: flex;
+            gap: 5px;
+            position: relative;
+        }
+
+        .nav-item {
+            padding: 8px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-item:hover {
+            color: white;
+        }
+
+        .submenu {
+            position: absolute;
+            top: 100%;
+            background: rgb(30, 30, 30);
+            border-radius: 8px;
+            padding: 8px 0;
+            min-width: 200px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .submenu.show {
+            display: block;
+        }
+
+        .submenu-item {
+            padding: 10px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .submenu-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        #geralSubmenu {
+            left: 0;
+        }
+
+        #requerimentosSubmenu {
+            left: 85px;
+        }
+
+        #escalasSubmenu {
+            left: 260px;
+        }
+
+        .profile {
+            position: relative;
+        }
+
+        .profile-button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 10px 5px 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgb(40, 40, 40);
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .profile-avatar {
+            width: 36px;
+            height: 36px;
+            overflow: hidden;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-nick {
+            font-weight: 500;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: rgb(30, 30, 30);
+            border-radius: 8px;
+            padding: 8px 0;
+            min-width: 160px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .profile-dropdown.show {
+            display: block;
+        }
+
+        .profile-dropdown-item {
+            padding: 10px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .profile-dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .profile-dropdown-item.logout {
+            color: var(--danger);
+        }
+
+        .profile-dropdown-item.logout:hover {
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        .main-content {
+            padding: 40px 20px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .page-title h1 {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            padding: 12px 25px;
+            background: white;
+            border: none;
+            border-radius: 8px;
+            color: var(--navy-dark);
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            background: #f0f0f0;
+        }
+
+        .memorial-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .memorial-card {
+            background: rgb(26, 26, 26);
+            border: 2px solid rgb(17, 17, 17);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .memorial-image {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            border-bottom: 2px solid rgb(40, 40, 40);
+        }
+
+        .memorial-info {
+            padding: 15px;
+        }
+
+        .memorial-titulo {
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .memorial-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .memorial-publicado {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .memorial-publicado img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .memorial-data {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .memorial-likes {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid rgb(40, 40, 40);
+        }
+
+        .like-button {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .like-button i {
+            font-size: 1.3rem;
+        }
+
+        .like-button.liked i {
+            color: var(--like);
+            font-weight: 700;
+        }
+
+        .like-button.liked {
+            color: white;
+        }
+
+        .like-count {
+            font-weight: 600;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgb(26, 26, 26);
+            border: 2px solid rgb(17, 17, 17);
+            border-radius: 10px;
+            padding: 25px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-title {
+            color: white;
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgb(40, 40, 40);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper input,
+        .input-wrapper textarea {
+            width: 100%;
+            padding: 10px 0;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid rgb(80, 80, 80);
+            color: white;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper input:focus,
+        .input-wrapper textarea:focus {
+            outline: none;
+            border-bottom-color: white;
+        }
+
+        .input-wrapper input::placeholder,
+        .input-wrapper textarea::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .file-input {
+            width: 100%;
+            padding: 10px 0;
+            color: var(--text-secondary);
+        }
+
+        .file-input::-webkit-file-upload-button {
+            background: rgb(40, 40, 40);
+            border: 2px solid rgb(60, 60, 60);
+            border-radius: 6px;
+            color: white;
+            padding: 8px 16px;
+            margin-right: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .file-input::-webkit-file-upload-button:hover {
+            border-color: white;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .btn-modal {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 7px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-modal.primary {
+            background: white;
+            color: var(--navy-dark);
+        }
+
+        .btn-modal.primary:hover {
+            background: #f0f0f0;
+        }
+
+        .btn-modal.secondary {
+            background: transparent;
+            border: 2px solid rgb(80, 80, 80);
+            color: var(--text-secondary);
+        }
+
+        .btn-modal.secondary:hover {
+            border-color: white;
+            color: white;
+        }
+
+        .btn-modal.danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-modal.danger:hover {
+            background: #c82333;
+        }
+
+        .success-message {
+            background: rgba(40, 167, 69, 0.1);
+            border: 2px solid var(--success);
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 15px;
+            color: var(--success);
+            text-align: center;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        .error-message {
+            background: rgba(220, 53, 69, 0.1);
+            border: 2px solid var(--danger);
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 15px;
+            color: var(--danger);
+            text-align: center;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 60px;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            grid-column: span 4;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1024px) {
+            .memorial-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .memorial-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .empty-message {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .memorial-grid {
+                grid-template-columns: 1fr;
+            }
+            .empty-message {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo-area">
+                    <img src="https://i.imgur.com/iUwP1jk.png">
+                    <span class="logo">DRI System</span>
+                </div>
+                <nav class="nav">
+                    <div class="nav-item" id="geralBtn" onclick="toggleSubmenu('geral')">
+                        Geral <i class="ph ph-caret-down"></i>
+                    </div>
+                    <div class="nav-item" onclick="window.location.href='listagem.html'">
+                        Listagem
+                    </div>
+                    <div class="nav-item" id="requerimentosBtn" onclick="toggleSubmenu('requerimentos')">
+                        Requerimentos <i class="ph ph-caret-down"></i>
+                    </div>
+                    <div class="nav-item" id="escalasBtn" onclick="toggleSubmenu('escalas')">
+                        Escalas <i class="ph ph-caret-down"></i>
+                    </div>
+                    <div class="nav-item" onclick="window.location.href='registros.html'">
+                        Registros
+                    </div>
+
+                    <div class="submenu" id="geralSubmenu">
+                        <div class="submenu-item" onclick="window.location.href='home.html'">
+                            <i class="ph ph-house"></i> Início
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='documentacoes.html'">
+                            <i class="ph ph-folder"></i> Documentações
+                        </div>
+                        <div class="submenu-item active" onclick="window.location.href='memorial.html'">
+                            <i class="ph ph-image"></i> Memorial
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='reportar.html'">
+                            <i class="ph ph-flag"></i> Reportar falha
+                        </div>
+                    </div>
+
+                    <div class="submenu" id="requerimentosSubmenu">
+                        <div class="submenu-item" onclick="window.location.href='req_membros.html'">
+                            Req de membros
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='registro_funcao.html'">
+                            Registro de função
+                        </div>
+                    </div>
+
+                    <div class="submenu" id="escalasSubmenu">
+                        <div class="submenu-item" onclick="window.location.href='escala_fiscalizador.html'">
+                            Fiscalizador
+                        </div>
+                        <div class="submenu-item" onclick="window.location.href='escala_superintendente.html'">
+                            Superintendente
+                        </div>
+                    </div>
+                </nav>
+            </div>
+            <div class="profile">
+                <div class="profile-button" onclick="toggleProfileDropdown()" id="profileButton">
+                    <div class="profile-avatar">
+                        <img id="userAvatar" src="" alt="avatar">
+                    </div>
+                    <span class="profile-nick" id="userNick">carregando...</span>
+                </div>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="meu_perfil.html" class="profile-dropdown-item">
+                        <i class="ph ph-user-circle"></i> Meu perfil
+                    </a>
+                    <div class="profile-dropdown-item logout" onclick="Auth.logout()">
+                        <i class="ph ph-sign-out"></i> Sair
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="page-title">
+            <h1>
+                MEMORIAL
+            </h1>
+            <button class="btn-primary" onclick="abrirModalAdicionar()">
+                ADICIONAR IMAGEM
+            </button>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+
+        <div class="memorial-grid" id="memorialGrid">
+            <div class="empty-message">Carregando imagens...</div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalAdicionar">
+        <div class="modal-content">
+            <div class="modal-title">
+                ADICIONAR AO MEMORIAL
+            </div>
+            
+            <div id="modalError" class="error-message"></div>
+            <div id="modalSuccess" class="success-message"></div>
+
+            <div class="form-group">
+                <div class="input-wrapper">
+                    <input type="text" id="imagemTitulo" placeholder="TÍTULO DA IMAGEM">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="input-wrapper">
+                    <input type="url" id="imagemUrl" placeholder="URL DA IMAGEM">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-modal secondary" onclick="fecharModalAdicionar()">CANCELAR</button>
+                <button class="btn-modal primary" onclick="adicionarImagem()">ADICIONAR</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/supabase.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let currentUser = null;
+        let activeSubmenu = null;
+        let userCargo = null;
+        let todasImagens = [];
+        let meusLikes = new Set();
+
+        function getBrasiliaTime() {
+            const data = new Date();
+            const offsetBrasilia = -3;
+            const utc = data.getTime() + (data.getTimezoneOffset() * 60000);
+            return new Date(utc + (3600000 * offsetBrasilia));
+        }
+
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function toggleSubmenu(menu) {
+            const submenu = document.getElementById(menu + 'Submenu');
+            
+            if (activeSubmenu && activeSubmenu !== submenu) {
+                activeSubmenu.classList.remove('show');
+            }
+            
+            submenu.classList.toggle('show');
+            activeSubmenu = submenu.classList.contains('show') ? submenu : null;
+        }
+
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.nav-item') && !event.target.closest('.submenu')) {
+                if (activeSubmenu) {
+                    activeSubmenu.classList.remove('show');
+                    activeSubmenu = null;
+                }
+            }
+            
+            if (!event.target.closest('.profile-button') && !event.target.closest('.profile-dropdown')) {
+                document.getElementById('profileDropdown').classList.remove('show');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const autenticado = await Auth.isAuthenticated();
+            if (!autenticado) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = await Auth.getCurrentUser();
+            userCargo = currentUser.cargo;
+
+            const podeAcessar = ['Fiscalizador', 'Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+            if (!podeAcessar) {
+                window.location.href = 'home.html';
+                return;
+            }
+
+            const podeAcessarAdmin = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+
+            const existingAdmin = document.querySelector('.nav-item[onclick*="admin.html"]');
+            if (existingAdmin) existingAdmin.remove();
+
+            if (podeAcessarAdmin) {
+                const nav = document.querySelector('.nav');
+                const adminItem = document.createElement('div');
+                adminItem.className = 'nav-item';
+                adminItem.onclick = () => window.location.href = 'admin.html';
+                adminItem.innerHTML = 'Painel';
+                nav.appendChild(adminItem);
+            }
+
+            document.getElementById('userNick').textContent = currentUser.nick;
+            const avatarUrl = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
+            document.getElementById('userAvatar').src = avatarUrl;
+
+            await carregarImagens();
+            await carregarMeusLikes();
+        });
+
+        function abrirModalAdicionar() {
+            document.getElementById('modalAdicionar').classList.add('show');
+            document.getElementById('imagemTitulo').value = '';
+            document.getElementById('imagemUrl').value = '';
+            document.getElementById('modalError').style.display = 'none';
+            document.getElementById('modalSuccess').style.display = 'none';
+        }
+
+        function fecharModalAdicionar() {
+            document.getElementById('modalAdicionar').classList.remove('show');
+        }
+
+        async function adicionarImagem() {
+            const titulo = document.getElementById('imagemTitulo').value.trim();
+            const url = document.getElementById('imagemUrl').value.trim();
+
+            if (!titulo || !url) {
+                mostrarErroModal('Preencha todos os campos');
+                return;
+            }
+
+            try {
+                const { error } = await window.supabase
+                    .from('memorial_imagens')
+                    .insert([{
+                        titulo: titulo,
+                        imagem_url: url,
+                        publicada_por: currentUser.nick,
+                        data_publicacao: getBrasiliaTime(),
+                        total_likes: 0
+                    }]);
+
+                if (error) throw error;
+
+                document.getElementById('modalSuccess').style.display = 'block';
+                document.getElementById('modalSuccess').innerHTML = 'Imagem adicionada!';
+                
+                setTimeout(() => {
+                    document.getElementById('modalSuccess').style.display = 'none';
+                    fecharModalAdicionar();
+                }, 1500);
+
+                await carregarImagens();
+
+            } catch (error) {
+                console.error('Erro ao adicionar imagem:', error);
+                mostrarErroModal('Erro ao adicionar: ' + error.message);
+            }
+        }
+
+        async function carregarImagens() {
+            try {
+                const { data: imagens, error } = await window.supabase
+                    .from('memorial_imagens')
+                    .select('*')
+                    .order('data_publicacao', { ascending: false });
+
+                if (error) throw error;
+
+                todasImagens = imagens || [];
+                atualizarGrid();
+
+            } catch (error) {
+                console.error('Erro ao carregar imagens:', error);
+                document.getElementById('memorialGrid').innerHTML = '<div class="empty-message">Erro ao carregar imagens</div>';
+            }
+        }
+
+        async function carregarMeusLikes() {
+            try {
+                const { data: likes, error } = await window.supabase
+                    .from('memorial_likes')
+                    .select('imagem_id')
+                    .eq('usuario_nick', currentUser.nick);
+
+                if (error) throw error;
+
+                meusLikes = new Set(likes.map(l => l.imagem_id));
+                atualizarGrid();
+
+            } catch (error) {
+                console.error('Erro ao carregar likes:', error);
+            }
+        }
+
+        function atualizarGrid() {
+            const grid = document.getElementById('memorialGrid');
+
+            if (todasImagens.length === 0) {
+                grid.innerHTML = '<div class="empty-message">Nenhuma imagem no memorial ainda</div>';
+                return;
+            }
+
+            grid.innerHTML = todasImagens.map(img => {
+                const data = new Date(img.data_publicacao);
+                const dataFormatada = data.toLocaleDateString('pt-BR');
+                
+                const liked = meusLikes.has(img.id);
+                const likeIcon = liked ? 'ph-fill' : 'ph';
+                const likeClass = liked ? 'liked' : '';
+
+                const avatarPublicador = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${img.publicada_por}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=s`;
+
+                return `
+                    <div class="memorial-card">
+                        <img src="${img.imagem_url}" 
+                             alt="${img.titulo}" 
+                             class="memorial-image"
+                             onerror="this.src='https://i.imgur.com/8b3rI5q.png'">
+                        <div class="memorial-info">
+                            <div class="memorial-titulo">${img.titulo}</div>
+                            <div class="memorial-meta">
+                                <div class="memorial-publicado">
+                                    <img src="${avatarPublicador}" alt="${img.publicada_por}">
+                                    <span>${img.publicada_por}</span>
+                                </div>
+                                <div class="memorial-data">${dataFormatada}</div>
+                            </div>
+                            <div class="memorial-likes">
+                                <button class="like-button ${likeClass}" onclick="toggleLike(${img.id})">
+                                    <i class="${likeIcon} ph-heart"></i>
+                                    <span class="like-count">${img.total_likes || 0}</span>
+                                </button>
+                                ${img.publicada_por === currentUser.nick || ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo) ? 
+                                    `<button class="btn-modal danger" style="padding: 4px 8px;" onclick="excluirImagem(${img.id})">
+                                        <i class="ph ph-trash"></i>
+                                    </button>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function toggleLike(imagemId) {
+            try {
+                const liked = meusLikes.has(imagemId);
+
+                if (liked) {
+                    const { error } = await window.supabase
+                        .from('memorial_likes')
+                        .delete()
+                        .eq('imagem_id', imagemId)
+                        .eq('usuario_nick', currentUser.nick);
+
+                    if (error) throw error;
+
+                    meusLikes.delete(imagemId);
+
+                    const { error: updateError } = await window.supabase.rpc('decrementar_like', {
+                        imagem_id: imagemId
+                    });
+
+                    if (updateError) {
+                        const imagem = todasImagens.find(i => i.id === imagemId);
+                        if (imagem) {
+                            await window.supabase
+                                .from('memorial_imagens')
+                                .update({ total_likes: Math.max(0, (imagem.total_likes || 0) - 1) })
+                                .eq('id', imagemId);
+                        }
+                    }
+
+                } else {
+                    const { error } = await window.supabase
+                        .from('memorial_likes')
+                        .insert([{
+                            imagem_id: imagemId,
+                            usuario_nick: currentUser.nick,
+                            data_like: getBrasiliaTime()
+                        }]);
+
+                    if (error) throw error;
+
+                    meusLikes.add(imagemId);
+
+                    const { error: updateError } = await window.supabase.rpc('incrementar_like', {
+                        imagem_id: imagemId
+                    });
+
+                    if (updateError) {
+                        const imagem = todasImagens.find(i => i.id === imagemId);
+                        if (imagem) {
+                            await window.supabase
+                                .from('memorial_imagens')
+                                .update({ total_likes: (imagem.total_likes || 0) + 1 })
+                                .eq('id', imagemId);
+                        }
+                    }
+                }
+
+                await carregarImagens();
+                atualizarGrid();
+
+            } catch (error) {
+                console.error('Erro ao curtir:', error);
+                mostrarErro('Erro ao processar like');
+            }
+        }
+
+        async function excluirImagem(imagemId) {
+            if (!confirm('Tem certeza que deseja excluir esta imagem?')) return;
+
+            try {
+                const { error } = await window.supabase
+                    .from('memorial_imagens')
+                    .delete()
+                    .eq('id', imagemId);
+
+                if (error) throw error;
+
+                await carregarImagens();
+                mostrarSucesso('Imagem excluída!');
+
+            } catch (error) {
+                console.error('Erro ao excluir:', error);
+                mostrarErro('Erro ao excluir imagem');
+            }
+        }
+
+        function mostrarErro(msg) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = msg;
+            errorDiv.style.display = 'block';
+            setTimeout(() => errorDiv.style.display = 'none', 4000);
+        }
+
+        function mostrarSucesso(msg) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = msg;
+            successDiv.style.display = 'block';
+            setTimeout(() => successDiv.style.display = 'none', 3000);
+        }
+
+        function mostrarErroModal(msg) {
+            const errorDiv = document.getElementById('modalError');
+            errorDiv.textContent = msg;
+            errorDiv.style.display = 'block';
+            setTimeout(() => errorDiv.style.display = 'none', 4000);
+        }
+    </script>
+</body>
+</html>
