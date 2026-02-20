@@ -1353,7 +1353,9 @@
         function toggleEditMode(tipo) {
             console.log('Toggle edit mode chamado para', tipo, 'Cargo:', userCargo);
             
-            if (!['Vice-Líder', 'Líder', 'DEV'].includes(userCargo)) {
+            const cargosPermitidos = ['Vice-Líder', 'Líder', 'DEV'];
+            
+            if (!cargosPermitidos.includes(userCargo)) {
                 mostrarErro('Apenas Vice-Líder+ podem editar');
                 return;
             }
