@@ -1041,388 +1041,404 @@
 
     <script src="js/supabase.js"></script>
     <script src="js/auth.js"></script>
-<script src="js/supabase.js"></script>
-<script src="js/auth.js"></script>
-<script>
-    let currentUser = null;
-    let activeSubmenu = null;
-    let userCargo = null;
-    let fiscalizadores = [];
-    let escalaAlpha = [];
-    let escalaBravo = [];
-    let editMode = { ALPHA: false, BRAVO: false };
-    let alteracoes = { ALPHA: {}, BRAVO: {} };
+    <script>
+        let currentUser = null;
+        let activeSubmenu = null;
+        let userCargo = null;
+        let fiscalizadores = [];
+        let escalaAlpha = [];
+        let escalaBravo = [];
+        let editMode = { ALPHA: false, BRAVO: false };
+        let alteracoes = { ALPHA: {}, BRAVO: {} };
 
-    const DIAS_SEMANA = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+        const DIAS_SEMANA = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 
-    function getBrasiliaTime() {
-        const data = new Date();
-        const offsetBrasilia = -3;
-        const utc = data.getTime() + (data.getTimezoneOffset() * 60000);
-        return new Date(utc + (3600000 * offsetBrasilia));
-    }
-
-    function getDataSegunda(data) {
-        const d = new Date(data);
-        const dia = d.getDay();
-        const diff = d.getDate() - dia + (dia === 0 ? -6 : 1);
-        return new Date(d.setDate(diff));
-    }
-
-    function getDiasSemana(data) {
-        const segunda = getDataSegunda(data);
-        const dias = [];
-        for (let i = 0; i < 7; i++) {
-            const dia = new Date(segunda);
-            dia.setDate(segunda.getDate() + i);
-            dias.push(dia);
+        function getBrasiliaTime() {
+            const data = new Date();
+            const offsetBrasilia = -3;
+            const utc = data.getTime() + (data.getTimezoneOffset() * 60000);
+            return new Date(utc + (3600000 * offsetBrasilia));
         }
-        return dias;
-    }
 
-    function getPrazo(dataFuncao) {
-        const prazo = new Date(dataFuncao);
-        prazo.setDate(prazo.getDate() + 1);
-        prazo.setHours(23, 59, 59, 999);
-        return prazo;
-    }
-
-    function gerarOrdem(tipo, index) {
-        const numeroOrdem = index + 1;
-        return `${tipo}${numeroOrdem}`;
-    }
-
-    function toggleProfileDropdown() {
-        const dropdown = document.getElementById('profileDropdown');
-        dropdown.classList.toggle('show');
-    }
-
-    function toggleSubmenu(menu) {
-        const submenu = document.getElementById(menu + 'Submenu');
-        if (activeSubmenu && activeSubmenu !== submenu) {
-            activeSubmenu.classList.remove('show');
+        function getDataSegunda(data) {
+            const d = new Date(data);
+            const dia = d.getDay();
+            const diff = d.getDate() - dia + (dia === 0 ? -6 : 1);
+            return new Date(d.setDate(diff));
         }
-        submenu.classList.toggle('show');
-        activeSubmenu = submenu.classList.contains('show') ? submenu : null;
-    }
 
-    document.addEventListener('click', function(event) {
-        if (!event.target.closest('.nav-item') && !event.target.closest('.submenu')) {
-            if (activeSubmenu) {
+        function getDiasSemana(data) {
+            const segunda = getDataSegunda(data);
+            const dias = [];
+            for (let i = 0; i < 7; i++) {
+                const dia = new Date(segunda);
+                dia.setDate(segunda.getDate() + i);
+                dias.push(dia);
+            }
+            return dias;
+        }
+
+        function getPrazo(dataFuncao) {
+            const prazo = new Date(dataFuncao);
+            prazo.setDate(prazo.getDate() + 1);
+            prazo.setHours(23, 59, 59, 999);
+            return prazo;
+        }
+
+        function gerarOrdem(tipo, index) {
+            const numeroOrdem = index + 1;
+            return `${tipo}${numeroOrdem}`;
+        }
+
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function toggleSubmenu(menu) {
+            const submenu = document.getElementById(menu + 'Submenu');
+            if (activeSubmenu && activeSubmenu !== submenu) {
                 activeSubmenu.classList.remove('show');
-                activeSubmenu = null;
             }
-        }
-        if (!event.target.closest('.profile-button') && !event.target.closest('.profile-dropdown')) {
-            document.getElementById('profileDropdown').classList.remove('show');
-        }
-    });
-
-    document.addEventListener('DOMContentLoaded', async () => {
-        console.log('DOM carregado, iniciando...');
-        
-        const autenticado = await Auth.isAuthenticated();
-        if (!autenticado) {
-            window.location.href = 'index.html';
-            return;
+            submenu.classList.toggle('show');
+            activeSubmenu = submenu.classList.contains('show') ? submenu : null;
         }
 
-        currentUser = await Auth.getCurrentUser();
-        userCargo = currentUser.cargo;
-        console.log('Usuário:', currentUser.nick, 'Cargo:', userCargo);
-
-        const podeAcessar = ['Fiscalizador', 'Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
-        if (!podeAcessar) {
-            window.location.href = 'home.html';
-            return;
-        }
-
-        const podeAcessarAdmin = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
-        const podeEditarEscalas = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
-
-        const existingAdmin = document.querySelector('.nav-item[onclick*="admin.html"]');
-        if (existingAdmin) existingAdmin.remove();
-        
-        if (podeAcessarAdmin) {
-            const nav = document.querySelector('.nav');
-            const adminItem = document.createElement('div');
-            adminItem.className = 'nav-item';
-            adminItem.onclick = () => window.location.href = 'admin.html';
-            adminItem.innerHTML = 'Admin';
-            nav.appendChild(adminItem);
-        }
-
-        // MOSTRAR OU ESCONDER BOTÕES DE EDITAR
-        console.log('Pode editar escalas?', podeEditarEscalas);
-        
-        const editAlphaBtn = document.getElementById('editAlphaBtn');
-        const editBravoBtn = document.getElementById('editBravoBtn');
-        
-        if (editAlphaBtn) {
-            editAlphaBtn.style.display = podeEditarEscalas ? 'inline-flex' : 'none';
-            console.log('Botão Alpha:', editAlphaBtn.style.display);
-        }
-        
-        if (editBravoBtn) {
-            editBravoBtn.style.display = podeEditarEscalas ? 'inline-flex' : 'none';
-            console.log('Botão Bravo:', editBravoBtn.style.display);
-        }
-
-        document.getElementById('userNick').textContent = currentUser.nick;
-        const avatarUrl = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
-        document.getElementById('userAvatar').src = avatarUrl;
-
-        await carregarFiscalizadores();
-        await carregarEscalas();
-
-        setInterval(() => {
-            atualizarStatusAutomatico();
-        }, 30000);
-
-        setTimeout(() => {
-            atualizarStatusAutomatico();
-        }, 1000);
-    });
-
-    async function carregarFiscalizadores() {
-        try {
-            const { data } = await window.supabase
-                .from('usuarios')
-                .select('nick')
-                .eq('cargo', 'Fiscalizador')
-                .eq('status', 'ATIVO')
-                .eq('verificado', true)
-                .order('nick');
-
-            fiscalizadores = data || [];
-            console.log('Fiscalizadores carregados:', fiscalizadores.length);
-        } catch (error) {
-            console.error('Erro ao carregar fiscalizadores:', error);
-        }
-    }
-
-    async function carregarEscalas() {
-        try {
-            const dataBase = new Date();
-            const segundaBase = getDataSegunda(dataBase);
-            
-            const dataInicio = new Date(segundaBase);
-            dataInicio.setDate(dataInicio.getDate() - 7);
-            const dataFim = new Date(segundaBase);
-            dataFim.setDate(dataFim.getDate() + 14);
-
-            const { data, error } = await window.supabase
-                .from('escalas_fiscalizador')
-                .select('*')
-                .gte('data_funcao', dataInicio.toISOString())
-                .lte('data_funcao', dataFim.toISOString())
-                .order('data_funcao');
-
-            if (error) throw error;
-
-            const escalas = data || [];
-            
-            escalaAlpha = escalas.filter(e => e.tipo === 'ALPHA').sort((a, b) => 
-                new Date(a.data_funcao) - new Date(b.data_funcao)
-            );
-            
-            escalaBravo = escalas.filter(e => e.tipo === 'BRAVO').sort((a, b) => 
-                new Date(a.data_funcao) - new Date(b.data_funcao)
-            );
-
-            console.log('Escalas carregadas - Alpha:', escalaAlpha.length, 'Bravo:', escalaBravo.length);
-
-            const segundaAtual = getDataSegunda(new Date());
-            const temSemanaAtual = escalas.some(e => {
-                const dataEscala = new Date(e.data_funcao);
-                const semanaEscala = getDataSegunda(dataEscala);
-                return semanaEscala.toDateString() === segundaAtual.toDateString();
-            });
-
-            if (!temSemanaAtual) {
-                await gerarEscalaSemana(segundaAtual);
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.nav-item') && !event.target.closest('.submenu')) {
+                if (activeSubmenu) {
+                    activeSubmenu.classList.remove('show');
+                    activeSubmenu = null;
+                }
             }
-
-            atualizarTabelas();
-            atualizarInfoSemana();
-
-        } catch (error) {
-            console.error('Erro ao carregar escalas:', error);
-        }
-    }
-
-    function atualizarInfoSemana() {
-        const segunda = getDataSegunda(new Date());
-        const domingo = new Date(segunda);
-        domingo.setDate(segunda.getDate() + 6);
-        const formatoSemana = `${segunda.toLocaleDateString('pt-BR')} - ${domingo.toLocaleDateString('pt-BR')}`;
-        document.getElementById('semanaAtual').textContent = `SEMANA: ${formatoSemana}`;
-    }
-
-    function atualizarTabelas() {
-        const dias = getDiasSemana(new Date());
-        document.getElementById('alphaTableBody').innerHTML = gerarLinhasTabela('ALPHA', dias);
-        document.getElementById('bravoTableBody').innerHTML = gerarLinhasTabela('BRAVO', dias);
-        document.getElementById('lastUpdate').textContent = `Última atualização: ${getBrasiliaTime().toLocaleString('pt-BR')}`;
-    }
-
-    function gerarLinhasTabela(tipo, dias) {
-        const escalas = tipo === 'ALPHA' ? escalaAlpha : escalaBravo;
-        const podeEditar = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
-        const podeRegistrar = ['Fiscalizador', 'Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
-        const emEdicao = editMode[tipo];
-
-        return dias.map((dia, index) => {
-            const diaSemana = DIAS_SEMANA[dia.getDay()];
-
-            const escala = escalas.find(e => {
-                const dataEscala = new Date(e.data_funcao);
-                return dataEscala.toDateString() === dia.toDateString() && e.tipo === tipo;
-            });
-            
-            const prazo = escala ? new Date(escala.prazo) : getPrazo(dia);
-            const prazoStr = prazo.toLocaleDateString('pt-BR');
-            const dataFiscalizadaStr = dia.toLocaleDateString('pt-BR');
-            
-            let status = escala ? escala.status : 'PENDENTE';
-            let statusClass = 'status-pendente';
-            let statusText = 'PENDENTE';
-            
-            if (status === 'CONCLUIDO') {
-                statusClass = 'status-concluido';
-                statusText = 'CONCLUÍDO';
+            if (!event.target.closest('.profile-button') && !event.target.closest('.profile-dropdown')) {
+                document.getElementById('profileDropdown').classList.remove('show');
             }
-            if (status === 'NAO_REALIZADO') {
-                statusClass = 'status-nao-realizado';
-                statusText = 'NÃO REALIZADO';
-            }
-            if (status === 'JUSTIFICADO') {
-                statusClass = 'status-justificado';
-                statusText = 'JUSTIFICADO';
-            }
-
-            let fiscalizadorDisplay = '';
-            const escalaId = escala ? escala.id : null;
-            const fiscalizadorAtual = escala ? escala.fiscalizador_nick : null;
-
-            if (emEdicao && escalaId && podeEditar) {
-                const valorAlterado = alteracoes[tipo][escalaId] !== undefined ? alteracoes[tipo][escalaId] : fiscalizadorAtual;
-                fiscalizadorDisplay = `
-                    <select class="fiscalizador-select" data-escala-id="${escalaId}" data-tipo="${tipo}" onchange="registrarAlteracao('${tipo}', ${escalaId}, this.value)">
-                        <option value="">SELECIONAR</option>
-                        ${fiscalizadores.map(f => 
-                            `<option value="${f.nick}" ${valorAlterado === f.nick ? 'selected' : ''}>${f.nick}</option>`
-                        ).join('')}
-                    </select>
-                `;
-            } else {
-                fiscalizadorDisplay = escala && escala.fiscalizador_nick ? 
-                    `<span class="fiscalizador-text">${escala.fiscalizador_nick}</span>` : 
-                    '<span class="fiscalizador-text">-</span>';
-            }
-
-            const ordem = escala ? escala.ordem : gerarOrdem(tipo.charAt(0), index);
-            const podeClicar = podeRegistrar && status === 'PENDENTE';
-
-            return `
-                <tr>
-                    <td class="dia-semana">${diaSemana}</td>
-                    <td class="ordem">${ordem}</td>
-                    <td>${dataFiscalizadaStr}</td>
-                    <td>${fiscalizadorDisplay}</td>
-                    <td class="prazo-cell">${prazoStr}</td>
-                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                    <td>
-                        ${escalaId ? 
-                            `<button class="btn-action" onclick="abrirModal('${tipo}', '${ordem}')" ${!podeClicar ? 'disabled' : ''}>
-                                REGISTRAR
-                            </button>` 
-                            : '<span class="btn-action" style="opacity:0.3;">-</span>'
-                        }
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    }
-
-    function registrarAlteracao(tipo, escalaId, novoNick) {
-        alteracoes[tipo][escalaId] = novoNick || null;
-        console.log('Alteração registrada:', tipo, escalaId, novoNick);
-    }
-
-    function toggleEditMode(tipo) {
-        console.log('Toggle edit mode chamado para', tipo, 'Cargo:', userCargo);
-        
-        if (!['Vice-Líder', 'Líder', 'DEV'].includes(userCargo)) {
-            mostrarErro('Apenas Vice-Líder+ podem editar');
-            return;
-        }
-
-        editMode[tipo] = !editMode[tipo];
-        console.log('Edit mode', tipo, 'agora é', editMode[tipo]);
-
-        const editBtn = document.getElementById(`edit${tipo}Btn`);
-        const saveBtn = document.getElementById(`save${tipo}Btn`);
-        const cancelBtn = document.getElementById(`cancel${tipo}Btn`);
-        
-        console.log('Botões procurados:', {
-            edit: `edit${tipo}Btn`,
-            save: `save${tipo}Btn`,
-            cancel: `cancel${tipo}Btn`
         });
-        
-        console.log('Botões encontrados:', {
-            edit: editBtn,
-            save: saveBtn,
-            cancel: cancelBtn
-        });
-        
-        if (!editBtn || !saveBtn || !cancelBtn) {
-            console.error('Botões não encontrados! Verifique os IDs no HTML');
-            return;
-        }
-        
-        if (editBtn) editBtn.style.display = editMode[tipo] ? 'none' : 'inline-flex';
-        if (saveBtn) saveBtn.style.display = editMode[tipo] ? 'inline-flex' : 'none';
-        if (cancelBtn) cancelBtn.style.display = editMode[tipo] ? 'inline-flex' : 'none';
-        
-        if (!editMode[tipo]) {
-            alteracoes[tipo] = {};
-        }
-        
-        atualizarTabelas();
-    }
 
-    async function salvarEdicoes(tipo) {
-        console.log('Salvando edições para', tipo);
-        
-        const editBtn = document.getElementById(`edit${tipo}Btn`);
-        const saveBtn = document.getElementById(`save${tipo}Btn`);
-        const cancelBtn = document.getElementById(`cancel${tipo}Btn`);
-        
-        if (!editBtn || !saveBtn || !cancelBtn) {
-            console.error('Botões não encontrados!');
-            return;
-        }
-        
-        try {
-            const alteracoesTipo = alteracoes[tipo];
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('DOM carregado, iniciando...');
             
-            if (Object.keys(alteracoesTipo).length === 0) {
-                mostrarSucesso('Nenhuma alteração para salvar');
-                cancelarEdicoes(tipo);
+            const autenticado = await Auth.isAuthenticated();
+            if (!autenticado) {
+                window.location.href = 'index.html';
                 return;
             }
 
-            for (const [escalaId, novoNick] of Object.entries(alteracoesTipo)) {
-                console.log('Atualizando escala', escalaId, 'para', novoNick);
+            currentUser = await Auth.getCurrentUser();
+            userCargo = currentUser.cargo;
+            console.log('Usuário:', currentUser.nick, 'Cargo:', userCargo);
+
+            const podeAcessar = ['Fiscalizador', 'Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+            if (!podeAcessar) {
+                window.location.href = 'home.html';
+                return;
+            }
+
+            const podeAcessarAdmin = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+            const podeEditarEscalas = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+
+            const existingAdmin = document.querySelector('.nav-item[onclick*="admin.html"]');
+            if (existingAdmin) existingAdmin.remove();
+            
+            if (podeAcessarAdmin) {
+                const nav = document.querySelector('.nav');
+                const adminItem = document.createElement('div');
+                adminItem.className = 'nav-item';
+                adminItem.onclick = () => window.location.href = 'admin.html';
+                adminItem.innerHTML = 'Admin';
+                nav.appendChild(adminItem);
+            }
+
+            console.log('Pode editar escalas?', podeEditarEscalas);
+            
+            const editAlphaBtn = document.getElementById('editAlphaBtn');
+            const editBravoBtn = document.getElementById('editBravoBtn');
+            
+            if (editAlphaBtn) {
+                editAlphaBtn.style.display = podeEditarEscalas ? 'inline-flex' : 'none';
+                console.log('Botão Alpha:', editAlphaBtn.style.display);
+            }
+            
+            if (editBravoBtn) {
+                editBravoBtn.style.display = podeEditarEscalas ? 'inline-flex' : 'none';
+                console.log('Botão Bravo:', editBravoBtn.style.display);
+            }
+
+            document.getElementById('userNick').textContent = currentUser.nick;
+            const avatarUrl = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
+            document.getElementById('userAvatar').src = avatarUrl;
+
+            await carregarFiscalizadores();
+            await carregarEscalas();
+
+            setInterval(() => {
+                atualizarStatusAutomatico();
+            }, 30000);
+
+            setTimeout(() => {
+                atualizarStatusAutomatico();
+            }, 1000);
+        });
+
+        async function carregarFiscalizadores() {
+            try {
+                const { data } = await window.supabase
+                    .from('usuarios')
+                    .select('nick')
+                    .eq('cargo', 'Fiscalizador')
+                    .eq('status', 'ATIVO')
+                    .eq('verificado', true)
+                    .order('nick');
+
+                fiscalizadores = data || [];
+                console.log('Fiscalizadores carregados:', fiscalizadores.length);
+            } catch (error) {
+                console.error('Erro ao carregar fiscalizadores:', error);
+            }
+        }
+
+        async function carregarEscalas() {
+            try {
+                const dataBase = new Date();
+                const segundaBase = getDataSegunda(dataBase);
                 
-                const { error } = await window.supabase
+                const dataInicio = new Date(segundaBase);
+                dataInicio.setDate(dataInicio.getDate() - 7);
+                const dataFim = new Date(segundaBase);
+                dataFim.setDate(dataFim.getDate() + 14);
+
+                const { data, error } = await window.supabase
                     .from('escalas_fiscalizador')
-                    .update({ fiscalizador_nick: novoNick || null })
-                    .eq('id', escalaId);
+                    .select('*')
+                    .gte('data_funcao', dataInicio.toISOString())
+                    .lte('data_funcao', dataFim.toISOString())
+                    .order('data_funcao');
 
                 if (error) throw error;
+
+                const escalas = data || [];
+                
+                escalaAlpha = escalas.filter(e => e.tipo === 'ALPHA').sort((a, b) => 
+                    new Date(a.data_funcao) - new Date(b.data_funcao)
+                );
+                
+                escalaBravo = escalas.filter(e => e.tipo === 'BRAVO').sort((a, b) => 
+                    new Date(a.data_funcao) - new Date(b.data_funcao)
+                );
+
+                console.log('Escalas carregadas - Alpha:', escalaAlpha.length, 'Bravo:', escalaBravo.length);
+
+                const segundaAtual = getDataSegunda(new Date());
+                const temSemanaAtual = escalas.some(e => {
+                    const dataEscala = new Date(e.data_funcao);
+                    const semanaEscala = getDataSegunda(dataEscala);
+                    return semanaEscala.toDateString() === segundaAtual.toDateString();
+                });
+
+                if (!temSemanaAtual) {
+                    console.log('Semana atual não encontrada, gerando...');
+                    await gerarEscalaSemana(segundaAtual);
+                } else {
+                    console.log('Semana atual já existe, não gerando novamente');
+                }
+
+                atualizarTabelas();
+                atualizarInfoSemana();
+
+            } catch (error) {
+                console.error('Erro ao carregar escalas:', error);
+            }
+        }
+
+        function atualizarInfoSemana() {
+            const segunda = getDataSegunda(new Date());
+            const domingo = new Date(segunda);
+            domingo.setDate(segunda.getDate() + 6);
+            const formatoSemana = `${segunda.toLocaleDateString('pt-BR')} - ${domingo.toLocaleDateString('pt-BR')}`;
+            document.getElementById('semanaAtual').textContent = `SEMANA: ${formatoSemana}`;
+        }
+
+        function atualizarTabelas() {
+            const dias = getDiasSemana(new Date());
+            document.getElementById('alphaTableBody').innerHTML = gerarLinhasTabela('ALPHA', dias);
+            document.getElementById('bravoTableBody').innerHTML = gerarLinhasTabela('BRAVO', dias);
+            document.getElementById('lastUpdate').textContent = `Última atualização: ${getBrasiliaTime().toLocaleString('pt-BR')}`;
+        }
+
+        function gerarLinhasTabela(tipo, dias) {
+            const escalas = tipo === 'ALPHA' ? escalaAlpha : escalaBravo;
+            const podeEditar = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+            const podeRegistrar = ['Fiscalizador', 'Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+            const emEdicao = editMode[tipo];
+
+            return dias.map((dia, index) => {
+                const diaSemana = DIAS_SEMANA[dia.getDay()];
+
+                const escala = escalas.find(e => {
+                    const dataEscala = new Date(e.data_funcao);
+                    return dataEscala.toDateString() === dia.toDateString() && e.tipo === tipo;
+                });
+                
+                const prazo = escala ? new Date(escala.prazo) : getPrazo(dia);
+                const prazoStr = prazo.toLocaleDateString('pt-BR');
+                const dataFiscalizadaStr = dia.toLocaleDateString('pt-BR');
+                
+                let status = escala ? escala.status : 'PENDENTE';
+                let statusClass = 'status-pendente';
+                let statusText = 'PENDENTE';
+                
+                if (status === 'CONCLUIDO') {
+                    statusClass = 'status-concluido';
+                    statusText = 'CONCLUÍDO';
+                }
+                if (status === 'NAO_REALIZADO') {
+                    statusClass = 'status-nao-realizado';
+                    statusText = 'NÃO REALIZADO';
+                }
+                if (status === 'JUSTIFICADO') {
+                    statusClass = 'status-justificado';
+                    statusText = 'JUSTIFICADO';
+                }
+
+                let fiscalizadorDisplay = '';
+                const escalaId = escala ? escala.id : null;
+                const fiscalizadorAtual = escala ? escala.fiscalizador_nick : null;
+
+                if (emEdicao && escalaId && podeEditar) {
+                    const valorAlterado = alteracoes[tipo][escalaId] !== undefined ? alteracoes[tipo][escalaId] : fiscalizadorAtual;
+                    fiscalizadorDisplay = `
+                        <select class="fiscalizador-select" data-escala-id="${escalaId}" data-tipo="${tipo}" onchange="registrarAlteracao('${tipo}', ${escalaId}, this.value)">
+                            <option value="">SELECIONAR</option>
+                            ${fiscalizadores.map(f => 
+                                `<option value="${f.nick}" ${valorAlterado === f.nick ? 'selected' : ''}>${f.nick}</option>`
+                            ).join('')}
+                        </select>
+                    `;
+                } else {
+                    fiscalizadorDisplay = escala && escala.fiscalizador_nick ? 
+                        `<span class="fiscalizador-text">${escala.fiscalizador_nick}</span>` : 
+                        '<span class="fiscalizador-text">-</span>';
+                }
+
+                const ordem = escala ? escala.ordem : gerarOrdem(tipo.charAt(0), index);
+                const podeClicar = podeRegistrar && status === 'PENDENTE';
+
+                return `
+                    <tr>
+                        <td class="dia-semana">${diaSemana}</td>
+                        <td class="ordem">${ordem}</td>
+                        <td>${dataFiscalizadaStr}</td>
+                        <td>${fiscalizadorDisplay}</td>
+                        <td class="prazo-cell">${prazoStr}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td>
+                            ${escalaId ? 
+                                `<button class="btn-action" onclick="abrirModal('${tipo}', '${ordem}')" ${!podeClicar ? 'disabled' : ''}>
+                                    REGISTRAR
+                                </button>` 
+                                : '<span class="btn-action" style="opacity:0.3;">-</span>'
+                            }
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function registrarAlteracao(tipo, escalaId, novoNick) {
+            alteracoes[tipo][escalaId] = novoNick || null;
+            console.log('Alteração registrada:', tipo, escalaId, novoNick);
+        }
+
+        function toggleEditMode(tipo) {
+            console.log('Toggle edit mode chamado para', tipo, 'Cargo:', userCargo);
+            
+            if (!['Vice-Líder', 'Líder', 'DEV'].includes(userCargo)) {
+                mostrarErro('Apenas Vice-Líder+ podem editar');
+                return;
+            }
+
+            editMode[tipo] = !editMode[tipo];
+            console.log('Edit mode', tipo, 'agora é', editMode[tipo]);
+
+            const editBtn = document.getElementById(`edit${tipo}Btn`);
+            const saveBtn = document.getElementById(`save${tipo}Btn`);
+            const cancelBtn = document.getElementById(`cancel${tipo}Btn`);
+            
+            if (!editBtn || !saveBtn || !cancelBtn) {
+                console.error('Botões não encontrados! Verifique os IDs no HTML');
+                return;
+            }
+            
+            if (editBtn) editBtn.style.display = editMode[tipo] ? 'none' : 'inline-flex';
+            if (saveBtn) saveBtn.style.display = editMode[tipo] ? 'inline-flex' : 'none';
+            if (cancelBtn) cancelBtn.style.display = editMode[tipo] ? 'inline-flex' : 'none';
+            
+            if (!editMode[tipo]) {
+                alteracoes[tipo] = {};
+            }
+            
+            atualizarTabelas();
+        }
+
+        async function salvarEdicoes(tipo) {
+            console.log('Salvando edições para', tipo);
+            
+            const editBtn = document.getElementById(`edit${tipo}Btn`);
+            const saveBtn = document.getElementById(`save${tipo}Btn`);
+            const cancelBtn = document.getElementById(`cancel${tipo}Btn`);
+            
+            if (!editBtn || !saveBtn || !cancelBtn) {
+                console.error('Botões não encontrados!');
+                return;
+            }
+            
+            try {
+                const alteracoesTipo = alteracoes[tipo];
+                
+                if (Object.keys(alteracoesTipo).length === 0) {
+                    mostrarSucesso('Nenhuma alteração para salvar');
+                    cancelarEdicoes(tipo);
+                    return;
+                }
+
+                for (const [escalaId, novoNick] of Object.entries(alteracoesTipo)) {
+                    console.log('Atualizando escala', escalaId, 'para', novoNick);
+                    
+                    const { error } = await window.supabase
+                        .from('escalas_fiscalizador')
+                        .update({ fiscalizador_nick: novoNick || null })
+                        .eq('id', escalaId);
+
+                    if (error) throw error;
+                }
+                
+                alteracoes[tipo] = {};
+                editMode[tipo] = false;
+                
+                editBtn.style.display = 'inline-flex';
+                saveBtn.style.display = 'none';
+                cancelBtn.style.display = 'none';
+                
+                await carregarEscalas();
+                mostrarSucesso('Alterações salvas!');
+
+            } catch (error) {
+                console.error('Erro ao salvar edições:', error);
+                mostrarErro('Erro ao salvar alterações');
+            }
+        }
+
+        function cancelarEdicoes(tipo) {
+            console.log('Cancelando edições para', tipo);
+            
+            const editBtn = document.getElementById(`edit${tipo}Btn`);
+            const saveBtn = document.getElementById(`save${tipo}Btn`);
+            const cancelBtn = document.getElementById(`cancel${tipo}Btn`);
+            
+            if (!editBtn || !saveBtn || !cancelBtn) {
+                console.error('Botões não encontrados!');
+                return;
             }
             
             alteracoes[tipo] = {};
@@ -1432,312 +1448,305 @@
             saveBtn.style.display = 'none';
             cancelBtn.style.display = 'none';
             
-            await carregarEscalas();
-            mostrarSucesso('Alterações salvas!');
-
-        } catch (error) {
-            console.error('Erro ao salvar edições:', error);
-            mostrarErro('Erro ao salvar alterações');
+            atualizarTabelas();
         }
-    }
 
-    function cancelarEdicoes(tipo) {
-        console.log('Cancelando edições para', tipo);
-        
-        const editBtn = document.getElementById(`edit${tipo}Btn`);
-        const saveBtn = document.getElementById(`save${tipo}Btn`);
-        const cancelBtn = document.getElementById(`cancel${tipo}Btn`);
-        
-        if (!editBtn || !saveBtn || !cancelBtn) {
-            console.error('Botões não encontrados!');
-            return;
+        async function gerarProximaSemana() {
+            if (!confirm('Deseja gerar a escala para a próxima semana?')) return;
+
+            try {
+                const dataBase = new Date();
+                const proximaSegunda = getDataSegunda(dataBase);
+                proximaSegunda.setDate(proximaSegunda.getDate() + 7);
+                
+                await gerarEscalaSemana(proximaSegunda);
+                mostrarSucesso('Escala da próxima semana gerada com sucesso!');
+                await carregarEscalas();
+
+            } catch (error) {
+                console.error('Erro ao gerar escala:', error);
+                mostrarErro('Erro ao gerar escala');
+            }
         }
-        
-        alteracoes[tipo] = {};
-        editMode[tipo] = false;
-        
-        editBtn.style.display = 'inline-flex';
-        saveBtn.style.display = 'none';
-        cancelBtn.style.display = 'none';
-        
-        atualizarTabelas();
-    }
 
-    async function gerarProximaSemana() {
-        if (!confirm('Deseja gerar a escala para a próxima semana?')) return;
+        async function gerarEscalaSemana(dataSemana) {
+            try {
+                const dias = getDiasSemana(dataSemana);
+                const resultados = [];
 
-        try {
-            const dataBase = new Date();
-            const proximaSegunda = getDataSegunda(dataBase);
-            proximaSegunda.setDate(proximaSegunda.getDate() + 7);
-            
-            await gerarEscalaSemana(proximaSegunda);
-            mostrarSucesso('Escala da próxima semana gerada com sucesso!');
-            await carregarEscalas();
+                for (const tipo of ['ALPHA', 'BRAVO']) {
+                    for (let i = 0; i < dias.length; i++) {
+                        const dia = dias[i];
+                        const ordem = gerarOrdem(tipo.charAt(0), i);
+                        const prazo = getPrazo(dia);
 
-        } catch (error) {
-            console.error('Erro ao gerar escala:', error);
-            mostrarErro('Erro ao gerar escala');
-        }
-    }
+                        const { data: existente, error: checkError } = await window.supabase
+                            .from('escalas_fiscalizador')
+                            .select('id')
+                            .eq('tipo', tipo)
+                            .eq('data_funcao', dia.toISOString())
+                            .maybeSingle();
 
-    async function gerarEscalaSemana(dataSemana) {
-        try {
-            const dias = getDiasSemana(dataSemana);
+                        if (checkError) throw checkError;
 
-            for (const tipo of ['ALPHA', 'BRAVO']) {
-                for (let i = 0; i < dias.length; i++) {
-                    const dia = dias[i];
-                    const ordem = gerarOrdem(tipo.charAt(0), i);
-                    const prazo = getPrazo(dia);
+                        if (!existente) {
+                            console.log(`Criando escala ${tipo} para ${dia.toLocaleDateString()}`);
+                            const { error } = await window.supabase
+                                .from('escalas_fiscalizador')
+                                .insert([{
+                                    tipo: tipo,
+                                    ordem: ordem,
+                                    data_funcao: dia.toISOString(),
+                                    prazo: prazo.toISOString(),
+                                    status: 'PENDENTE'
+                                }]);
 
-                    const { error } = await window.supabase
-                        .from('escalas_fiscalizador')
-                        .insert([{
-                            tipo: tipo,
-                            ordem: ordem,
-                            data_funcao: dia.toISOString(),
-                            prazo: prazo.toISOString(),
-                            status: 'PENDENTE'
-                        }]);
-
-                    if (error && error.code !== '23505') {
-                        throw error;
+                            if (error) {
+                                console.error('Erro ao inserir:', error);
+                                throw error;
+                            }
+                            resultados.push({ tipo, dia });
+                        } else {
+                            console.log(`Escala ${tipo} para ${dia.toLocaleDateString()} já existe, pulando...`);
+                        }
                     }
                 }
-            }
 
-            await atribuirFiscalizadoresAutomaticamente(dataSemana);
+                console.log(`${resultados.length} novas escalas criadas`);
 
-        } catch (error) {
-            console.error('Erro ao gerar escala da semana:', error);
-            throw error;
-        }
-    }
-
-    async function atribuirFiscalizadoresAutomaticamente(dataSemana) {
-        try {
-            if (fiscalizadores.length === 0) return;
-
-            const dataInicio = new Date(dataSemana);
-            const dataFim = new Date(dataSemana);
-            dataFim.setDate(dataFim.getDate() + 7);
-
-            const { data: escalasSemana } = await window.supabase
-                .from('escalas_fiscalizador')
-                .select('*')
-                .gte('data_funcao', dataInicio.toISOString())
-                .lt('data_funcao', dataFim.toISOString());
-
-            if (!escalasSemana || escalasSemana.length === 0) return;
-
-            const escalasAlpha = escalasSemana.filter(e => e.tipo === 'ALPHA').sort((a, b) => 
-                new Date(a.data_funcao) - new Date(b.data_funcao)
-            );
-            const escalasBravo = escalasSemana.filter(e => e.tipo === 'BRAVO').sort((a, b) => 
-                new Date(a.data_funcao) - new Date(b.data_funcao)
-            );
-
-            for (let i = 0; i < escalasAlpha.length; i++) {
-                const escala = escalasAlpha[i];
-                if (!escala.fiscalizador_nick) {
-                    const fiscalizadorIndex = i % fiscalizadores.length;
-                    await window.supabase
-                        .from('escalas_fiscalizador')
-                        .update({ fiscalizador_nick: fiscalizadores[fiscalizadorIndex].nick })
-                        .eq('id', escala.id);
+                if (resultados.length > 0) {
+                    await atribuirFiscalizadoresAutomaticamente(dataSemana);
                 }
-            }
 
-            for (let i = 0; i < escalasBravo.length; i++) {
-                const escala = escalasBravo[i];
-                if (!escala.fiscalizador_nick) {
-                    const fiscalizadorIndex = i % fiscalizadores.length;
-                    await window.supabase
-                        .from('escalas_fiscalizador')
-                        .update({ fiscalizador_nick: fiscalizadores[fiscalizadorIndex].nick })
-                        .eq('id', escala.id);
-                }
+            } catch (error) {
+                console.error('Erro ao gerar escala da semana:', error);
+                throw error;
             }
-
-        } catch (error) {
-            console.error('Erro ao atribuir fiscalizadores:', error);
         }
-    }
 
-    async function atualizarStatusAutomatico() {
-        try {
-            const agora = getBrasiliaTime();
-            
-            console.log('Verificando status automático...', agora);
+        async function atribuirFiscalizadoresAutomaticamente(dataSemana) {
+            try {
+                if (fiscalizadores.length === 0) return;
 
-            const { data: escalas, error } = await window.supabase
-                .from('escalas_fiscalizador')
-                .select('*')
-                .eq('status', 'PENDENTE')
-                .lt('prazo', agora.toISOString());
+                const dataInicio = new Date(dataSemana);
+                const dataFim = new Date(dataSemana);
+                dataFim.setDate(dataFim.getDate() + 7);
 
-            if (error) throw error;
+                const { data: escalasSemana } = await window.supabase
+                    .from('escalas_fiscalizador')
+                    .select('*')
+                    .gte('data_funcao', dataInicio.toISOString())
+                    .lt('data_funcao', dataFim.toISOString());
 
-            if (escalas && escalas.length > 0) {
-                console.log(`Encontradas ${escalas.length} escalas com prazo expirado`);
+                if (!escalasSemana || escalasSemana.length === 0) return;
+
+                const escalasAlpha = escalasSemana.filter(e => e.tipo === 'ALPHA').sort((a, b) => 
+                    new Date(a.data_funcao) - new Date(b.data_funcao)
+                );
+                const escalasBravo = escalasSemana.filter(e => e.tipo === 'BRAVO').sort((a, b) => 
+                    new Date(a.data_funcao) - new Date(b.data_funcao)
+                );
+
+                for (let i = 0; i < escalasAlpha.length; i++) {
+                    const escala = escalasAlpha[i];
+                    if (!escala.fiscalizador_nick) {
+                        const fiscalizadorIndex = i % fiscalizadores.length;
+                        await window.supabase
+                            .from('escalas_fiscalizador')
+                            .update({ fiscalizador_nick: fiscalizadores[fiscalizadorIndex].nick })
+                            .eq('id', escala.id);
+                    }
+                }
+
+                for (let i = 0; i < escalasBravo.length; i++) {
+                    const escala = escalasBravo[i];
+                    if (!escala.fiscalizador_nick) {
+                        const fiscalizadorIndex = i % fiscalizadores.length;
+                        await window.supabase
+                            .from('escalas_fiscalizador')
+                            .update({ fiscalizador_nick: fiscalizadores[fiscalizadorIndex].nick })
+                            .eq('id', escala.id);
+                    }
+                }
+
+            } catch (error) {
+                console.error('Erro ao atribuir fiscalizadores:', error);
+            }
+        }
+
+        async function atualizarStatusAutomatico() {
+            try {
+                const agora = getBrasiliaTime();
                 
-                for (const escala of escalas) {
+                console.log('Verificando status automático...', agora);
+
+                const { data: escalas, error } = await window.supabase
+                    .from('escalas_fiscalizador')
+                    .select('*')
+                    .eq('status', 'PENDENTE')
+                    .lt('prazo', agora.toISOString());
+
+                if (error) throw error;
+
+                if (escalas && escalas.length > 0) {
+                    console.log(`Encontradas ${escalas.length} escalas com prazo expirado`);
+                    
+                    for (const escala of escalas) {
+                        const { error: updateError } = await window.supabase
+                            .from('escalas_fiscalizador')
+                            .update({ status: 'NAO_REALIZADO' })
+                            .eq('id', escala.id);
+                            
+                        if (updateError) throw updateError;
+                    }
+
+                    mostrarAviso(`${escalas.length} escala(s) marcada(s) como NÃO REALIZADA`);
+
+                    await carregarEscalas();
+                } else {
+                    console.log('Nenhuma escala com prazo expirado encontrada');
+                }
+
+            } catch (error) {
+                console.error('Erro ao atualizar status:', error);
+            }
+        }
+
+        function abrirModal(tipo, ordem) {
+            document.getElementById('modalTipo').value = tipo;
+            document.getElementById('modalOrdem').value = ordem;
+            document.getElementById('modalNick').value = currentUser.nick;
+            document.getElementById('modalError').style.display = 'none';
+            document.getElementById('modalSuccess').style.display = 'none';
+            document.getElementById('modalRegistro').classList.add('show');
+        }
+
+        function fecharModal() {
+            document.getElementById('modalRegistro').classList.remove('show');
+            document.getElementById('modalComprovacao').value = '';
+            document.getElementById('modalMotivo').value = '';
+            document.querySelector('input[name="modalAcao"][value="CONCLUSÃO"]').checked = true;
+            mudarModalAcao();
+        }
+
+        function mudarModalAcao() {
+            const acao = document.querySelector('input[name="modalAcao"]:checked').value;
+            if (acao === 'CONCLUSÃO') {
+                document.getElementById('modalConclusaoFields').style.display = 'block';
+                document.getElementById('modalJustificativaFields').style.display = 'none';
+            } else {
+                document.getElementById('modalConclusaoFields').style.display = 'none';
+                document.getElementById('modalJustificativaFields').style.display = 'block';
+            }
+        }
+
+        async function enviarRegistro() {
+            const nick = document.getElementById('modalNick').value.trim();
+            const tipo = document.getElementById('modalTipo').value;
+            const ordem = document.getElementById('modalOrdem').value;
+            const acao = document.querySelector('input[name="modalAcao"]:checked').value;
+            
+            let comprovacao, motivo;
+
+            if (acao === 'CONCLUSÃO') {
+                comprovacao = document.getElementById('modalComprovacao').value.trim();
+                if (!comprovacao) {
+                    mostrarErroModal('Preencha a comprovação');
+                    return;
+                }
+            } else {
+                motivo = document.getElementById('modalMotivo').value.trim();
+                if (!motivo) {
+                    mostrarErroModal('Preencha o motivo');
+                    return;
+                }
+            }
+
+            try {
+                const novoStatus = acao === 'CONCLUSÃO' ? 'CONCLUIDO' : 'JUSTIFICADO';
+                
+                const { data: escalaData, error: buscaError } = await window.supabase
+                    .from('escalas_fiscalizador')
+                    .select('*')
+                    .eq('tipo', tipo)
+                    .eq('ordem', ordem)
+                    .maybeSingle();
+
+                if (buscaError) throw buscaError;
+
+                if (escalaData) {
                     const { error: updateError } = await window.supabase
                         .from('escalas_fiscalizador')
-                        .update({ status: 'NAO_REALIZADO' })
-                        .eq('id', escala.id);
-                        
+                        .update({ status: novoStatus })
+                        .eq('id', escalaData.id);
+
                     if (updateError) throw updateError;
                 }
 
-                mostrarAviso(`${escalas.length} escala(s) marcada(s) como NÃO REALIZADA`);
+                const dados = {
+                    fiscalizador_nick: nick,
+                    escala: tipo,
+                    ordem: ordem,
+                    tipo: acao,
+                    autor_nick: currentUser.nick,
+                    data_criacao: getBrasiliaTime().toISOString()
+                };
+
+                if (acao === 'CONCLUSÃO') {
+                    dados.comprovacao = comprovacao;
+                } else {
+                    dados.motivo = motivo;
+                }
+
+                const { error: insertError } = await window.supabase
+                    .from('registros_funcao')
+                    .insert([dados]);
+
+                if (insertError) throw insertError;
+
+                document.getElementById('modalSuccess').style.display = 'block';
+                document.getElementById('modalSuccess').innerHTML = 'Registro concluído!';
+                
+                setTimeout(() => {
+                    fecharModal();
+                }, 1500);
 
                 await carregarEscalas();
-            } else {
-                console.log('Nenhuma escala com prazo expirado encontrada');
-            }
+                mostrarSucesso('Registro realizado!');
 
-        } catch (error) {
-            console.error('Erro ao atualizar status:', error);
-        }
-    }
-
-    function abrirModal(tipo, ordem) {
-        document.getElementById('modalTipo').value = tipo;
-        document.getElementById('modalOrdem').value = ordem;
-        document.getElementById('modalNick').value = currentUser.nick;
-        document.getElementById('modalError').style.display = 'none';
-        document.getElementById('modalSuccess').style.display = 'none';
-        document.getElementById('modalRegistro').classList.add('show');
-    }
-
-    function fecharModal() {
-        document.getElementById('modalRegistro').classList.remove('show');
-        document.getElementById('modalComprovacao').value = '';
-        document.getElementById('modalMotivo').value = '';
-        document.querySelector('input[name="modalAcao"][value="CONCLUSÃO"]').checked = true;
-        mudarModalAcao();
-    }
-
-    function mudarModalAcao() {
-        const acao = document.querySelector('input[name="modalAcao"]:checked').value;
-        if (acao === 'CONCLUSÃO') {
-            document.getElementById('modalConclusaoFields').style.display = 'block';
-            document.getElementById('modalJustificativaFields').style.display = 'none';
-        } else {
-            document.getElementById('modalConclusaoFields').style.display = 'none';
-            document.getElementById('modalJustificativaFields').style.display = 'block';
-        }
-    }
-
-    async function enviarRegistro() {
-        const nick = document.getElementById('modalNick').value.trim();
-        const tipo = document.getElementById('modalTipo').value;
-        const ordem = document.getElementById('modalOrdem').value;
-        const acao = document.querySelector('input[name="modalAcao"]:checked').value;
-        
-        let comprovacao, motivo;
-
-        if (acao === 'CONCLUSÃO') {
-            comprovacao = document.getElementById('modalComprovacao').value.trim();
-            if (!comprovacao) {
-                mostrarErroModal('Preencha a comprovação');
-                return;
-            }
-        } else {
-            motivo = document.getElementById('modalMotivo').value.trim();
-            if (!motivo) {
-                mostrarErroModal('Preencha o motivo');
-                return;
+            } catch (error) {
+                console.error('Erro:', error);
+                mostrarErroModal('Erro ao registrar: ' + error.message);
             }
         }
 
-        try {
-            const novoStatus = acao === 'CONCLUSÃO' ? 'CONCLUIDO' : 'JUSTIFICADO';
-            
-            const { data: escalaData, error: buscaError } = await window.supabase
-                .from('escalas_fiscalizador')
-                .select('*')
-                .eq('tipo', tipo)
-                .eq('ordem', ordem)
-                .maybeSingle();
-
-            if (buscaError) throw buscaError;
-
-            if (escalaData) {
-                const { error: updateError } = await window.supabase
-                    .from('escalas_fiscalizador')
-                    .update({ status: novoStatus })
-                    .eq('id', escalaData.id);
-
-                if (updateError) throw updateError;
-            }
-
-            const dados = {
-                fiscalizador_nick: nick,
-                escala: tipo,
-                ordem: ordem,
-                tipo: acao,
-                autor_nick: currentUser.nick,
-                data_criacao: getBrasiliaTime().toISOString()
-            };
-
-            if (acao === 'CONCLUSÃO') {
-                dados.comprovacao = comprovacao;
-            } else {
-                dados.motivo = motivo;
-            }
-
-            const { error: insertError } = await window.supabase
-                .from('registros_funcao')
-                .insert([dados]);
-
-            if (insertError) throw insertError;
-
-            document.getElementById('modalSuccess').style.display = 'block';
-            document.getElementById('modalSuccess').innerHTML = 'Registro concluído!';
-            
-            setTimeout(() => {
-                fecharModal();
-            }, 1500);
-
-            await carregarEscalas();
-            mostrarSucesso('Registro realizado!');
-
-        } catch (error) {
-            console.error('Erro:', error);
-            mostrarErroModal('Erro ao registrar: ' + error.message);
+        function mostrarErro(msg) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = msg;
+            errorDiv.style.display = 'block';
+            setTimeout(() => errorDiv.style.display = 'none', 4000);
         }
-    }
 
-    function mostrarErro(msg) {
-        const errorDiv = document.getElementById('errorMessage');
-        errorDiv.textContent = msg;
-        errorDiv.style.display = 'block';
-        setTimeout(() => errorDiv.style.display = 'none', 4000);
-    }
+        function mostrarSucesso(msg) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = msg;
+            successDiv.style.display = 'block';
+            setTimeout(() => successDiv.style.display = 'none', 4000);
+        }
 
-    function mostrarSucesso(msg) {
-        const successDiv = document.getElementById('successMessage');
-        successDiv.textContent = msg;
-        successDiv.style.display = 'block';
-        setTimeout(() => successDiv.style.display = 'none', 4000);
-    }
+        function mostrarAviso(msg) {
+            const warningDiv = document.getElementById('warningMessage');
+            warningDiv.textContent = msg;
+            warningDiv.style.display = 'block';
+            setTimeout(() => warningDiv.style.display = 'none', 4000);
+        }
 
-    function mostrarAviso(msg) {
-        const warningDiv = document.getElementById('warningMessage');
-        warningDiv.textContent = msg;
-        warningDiv.style.display = 'block';
-        setTimeout(() => warningDiv.style.display = 'none', 4000);
-    }
-
-    function mostrarErroModal(msg) {
-        const errorDiv = document.getElementById('modalError');
-        errorDiv.textContent = msg;
-        errorDiv.style.display = 'block';
-        setTimeout(() => errorDiv.style.display = 'none', 4000);
-    }
-</script>
+        function mostrarErroModal(msg) {
+            const errorDiv = document.getElementById('modalError');
+            errorDiv.textContent = msg;
+            errorDiv.style.display = 'block';
+            setTimeout(() => errorDiv.style.display = 'none', 4000);
+        }
+    </script>
 </body>
 </html>
