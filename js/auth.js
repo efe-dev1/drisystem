@@ -26,7 +26,7 @@ const Auth = {
                     senha: senha,
                     cargo: cargo,
                     verificado: false,
-                    data_criacao: agoraBrasilia,
+                    data_criacao: agoraBrasilia.toISOString(),
                     status: 'ATIVO'
                 }]);
 
@@ -38,7 +38,7 @@ const Auth = {
                     usuario_nick: nick,
                     codigo: codigo,
                     tipo: 'CRIACAO',
-                    expira_em: new Date(agoraBrasilia.getTime() + 5 * 60 * 1000)
+                    expira_em: new Date(agoraBrasilia.getTime() + 5 * 60 * 1000).toISOString()
                 }]);
 
             return { 
@@ -129,13 +129,18 @@ const Auth = {
                 }
             }
 
-            const { data: usuario } = await window.supabase
+            const { data: usuario, error } = await window.supabase
                 .from('usuarios')
                 .select('*')
                 .eq('nick', nick)
                 .eq('senha', senha)
                 .eq('verificado', true)
                 .maybeSingle();
+
+            if (error) {
+                console.error('Erro na consulta:', error);
+                return { success: false, message: 'Erro ao verificar credenciais' };
+            }
 
             if (!usuario) {
                 return { success: false, message: 'Nick ou senha inválidos' };
@@ -153,8 +158,8 @@ const Auth = {
                 await SessionManager.createSession(nick, usuario.cargo, manterConectado);
             } else {
                 const token = this.gerarToken();
-                const agoraBrasilia = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
-                const expiracao = new Date(agoraBrasilia.getTime() + (manterConectado ? 5 : 1) * 24 * 60 * 60 * 1000);
+                const agora = new Date();
+                const expiracao = new Date(agora.getTime() + (manterConectado ? 5 : 1) * 24 * 60 * 60 * 1000);
 
                 const sessao = {
                     nick,
@@ -177,61 +182,68 @@ const Auth = {
 
         } catch (error) {
             console.error('Erro no login:', error);
-            return { success: false, message: 'Erro no login' };
+            return { success: false, message: 'Erro no login: ' + error.message };
         }
     },
 
     async logout() {
-        if (window.SessionManager) {
-            await SessionManager.logout();
-        } else {
+        try {
+            if (window.SessionManager) {
+                await SessionManager.logout();
+            } else {
+                sessionStorage.clear();
+                localStorage.clear();
+                window.location.href = 'index.html';
+            }
+        } catch (error) {
+            console.error('Erro no logout:', error);
             sessionStorage.clear();
             localStorage.clear();
             window.location.href = 'index.html';
         }
     },
 
-    async redirectIfNotAuthenticated() {
-        const autenticado = await this.isAuthenticated();
-        if (!autenticado) {
-            window.location.href = 'index.html';
-            return false;
-        }
-        return true;
-    },
-
     async isAuthenticated() {
-        if (window.SessionManager) {
-            const sessao = await SessionManager.validateSession();
-            return !!sessao;
-        }
-
-        let sessao = sessionStorage.getItem('dri_session');
-
-        if (!sessao) {
-            sessao = localStorage.getItem('dri_session');
-            if (sessao) {
-                sessionStorage.setItem('dri_session', sessao);
-                sessionStorage.setItem('dri_user', localStorage.getItem('dri_user'));
+        try {
+            if (window.SessionManager) {
+                const sessao = await SessionManager.validateSession();
+                return !!sessao;
             }
-        }
 
-        if (!sessao) return false;
+            let sessao = sessionStorage.getItem('dri_session');
+            if (!sessao) {
+                sessao = localStorage.getItem('dri_session');
+            }
 
-        const dados = JSON.parse(sessao);
-        
-        if (new Date(dados.expiracao) < new Date()) {
-            await this.logout();
+            if (!sessao) return false;
+
+            const dados = JSON.parse(sessao);
+            
+            if (new Date(dados.expiracao) < new Date()) {
+                await this.logout();
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Erro ao verificar autenticação:', error);
             return false;
         }
-
-        return true;
     },
 
     async getCurrentUser() {
-        const sessao = sessionStorage.getItem('dri_session') || localStorage.getItem('dri_session');
-        if (!sessao) return null;
-        return JSON.parse(sessao);
+        try {
+            if (window.SessionManager) {
+                return await SessionManager.getCurrentUser();
+            }
+
+            const sessao = sessionStorage.getItem('dri_session') || localStorage.getItem('dri_session');
+            if (!sessao) return null;
+            return JSON.parse(sessao);
+        } catch (error) {
+            console.error('Erro ao obter usuário atual:', error);
+            return null;
+        }
     },
 
     gerarToken() {

@@ -7,9 +7,8 @@ const SessionManager = {
             const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             const language = navigator.language;
             const platform = navigator.platform;
-            const userAgent = navigator.userAgent;
-
-            const deviceString = `${screenInfo}|${timezone}|${language}|${platform}|${userAgent}|${Date.now()}`;
+            
+            const deviceString = `${screenInfo}|${timezone}|${language}|${platform}|${Date.now()}`;
             deviceId = this.hashString(deviceString);
             
             localStorage.setItem('device_id', deviceId);
@@ -29,138 +28,156 @@ const SessionManager = {
     },
 
     async createSession(nick, cargo, manterConectado = true) {
-        const deviceId = this.getDeviceId();
-        const deviceInfo = {
-            userAgent: navigator.userAgent,
-            platform: navigator.platform,
-            language: navigator.language,
-            screen: `${screen.width}x${screen.height}`,
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            timestamp: new Date().toISOString()
-        };
+        try {
+            const deviceId = this.getDeviceId();
+            const deviceInfo = {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                screen: `${screen.width}x${screen.height}`,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            };
 
-        const token = this.generateToken();
+            const token = this.generateToken();
 
-        const agoraBrasilia = this.getBrasiliaTime();
-        const expiracao = new Date(agoraBrasilia);
-        if (manterConectado) {
-            expiracao.setDate(expiracao.getDate() + 5);
-        } else {
-            expiracao.setHours(expiracao.getHours() + 1);
+            const agora = new Date();
+            const expiracao = new Date(agora);
+            if (manterConectado) {
+                expiracao.setDate(expiracao.getDate() + 5);
+            } else {
+                expiracao.setHours(expiracao.getHours() + 1);
+            }
+
+            await window.supabase
+                .from('sessoes')
+                .update({ ativa: false })
+                .eq('device_id', deviceId)
+                .eq('ativa', true);
+
+            const { error } = await window.supabase
+                .from('sessoes')
+                .insert([{
+                    usuario_nick: nick,
+                    token: token,
+                    device_id: deviceId,
+                    device_info: deviceInfo,
+                    data_criacao: agora.toISOString(),
+                    data_expiracao: expiracao.toISOString(),
+                    ativa: true,
+                    manter_conectado: manterConectado
+                }]);
+
+            if (error) throw error;
+
+            await window.supabase
+                .from('usuarios')
+                .update({
+                    ultimo_acesso: agora.toISOString(),
+                    ultimo_device_id: deviceId
+                })
+                .eq('nick', nick);
+
+            const sessao = {
+                nick,
+                token,
+                cargo,
+                expiracao: expiracao.toISOString(),
+                deviceId,
+                manterConectado
+            };
+
+            sessionStorage.setItem('dri_session', JSON.stringify(sessao));
+            sessionStorage.setItem('dri_user', nick);
+
+            if (manterConectado) {
+                localStorage.setItem('dri_session', JSON.stringify(sessao));
+                localStorage.setItem('dri_user', nick);
+            } else {
+                localStorage.removeItem('dri_session');
+                localStorage.removeItem('dri_user');
+            }
+
+            return { success: true, token };
+
+        } catch (error) {
+            console.error('Erro ao criar sessão:', error);
+            throw error;
         }
-
-        const { error } = await window.supabase
-            .from('sessoes')
-            .insert([{
-                usuario_nick: nick,
-                token: token,
-                device_id: deviceId,
-                device_info: deviceInfo,
-                data_criacao: agoraBrasilia,
-                data_expiracao: expiracao,
-                ativa: true,
-                manter_conectado: manterConectado
-            }]);
-
-        if (error) throw error;
-
-        await window.supabase
-            .from('usuarios')
-            .update({
-                ultimo_acesso: agoraBrasilia,
-                ultimo_device_id: deviceId
-            })
-            .eq('nick', nick);
-
-        const sessao = {
-            nick,
-            token,
-            cargo,
-            expiracao: expiracao.toISOString(),
-            deviceId,
-            manterConectado
-        };
-
-        sessionStorage.setItem('dri_session', JSON.stringify(sessao));
-        sessionStorage.setItem('dri_user', nick);
-
-        if (manterConectado) {
-            localStorage.setItem('dri_session', JSON.stringify(sessao));
-            localStorage.setItem('dri_user', nick);
-        } else {
-            localStorage.removeItem('dri_session');
-            localStorage.removeItem('dri_user');
-        }
-
-        return { success: true, token };
     },
 
     async validateSession() {
-        let sessao = this.getStoredSession();
-        
-        if (!sessao) return null;
+        try {
+            const sessao = this.getStoredSession();
+            
+            if (!sessao) return null;
 
-        if (new Date(sessao.expiracao) < new Date()) {
-            await this.logout();
-            return null;
-        }
-
-        const currentDeviceId = this.getDeviceId();
-        
-        const { data: dbSession } = await window.supabase
-            .from('sessoes')
-            .select('*')
-            .eq('token', sessao.token)
-            .eq('ativa', true)
-            .maybeSingle();
-
-        if (!dbSession) {
-            await this.logout();
-            return null;
-        }
-
-        if (dbSession.device_id !== currentDeviceId) {
-            if (!dbSession.manter_conectado) {
+            if (new Date(sessao.expiracao) < new Date()) {
                 await this.logout();
                 return null;
             }
 
-            if (dbSession.manter_conectado && dbSession.device_id !== currentDeviceId) {
-                return { ...sessao, requiresValidation: true };
-            }
-        }
+            const { data: dbSession, error } = await window.supabase
+                .from('sessoes')
+                .select('*')
+                .eq('token', sessao.token)
+                .eq('ativa', true)
+                .maybeSingle();
 
-        return sessao;
+            if (error || !dbSession) {
+                await this.logout();
+                return null;
+            }
+
+            if (new Date(dbSession.data_expiracao) < new Date()) {
+                await this.logout();
+                return null;
+            }
+
+            return sessao;
+
+        } catch (error) {
+            console.error('Erro ao validar sessão:', error);
+            return null;
+        }
     },
 
     getStoredSession() {
-        let sessao = sessionStorage.getItem('dri_session');
-        
-        if (!sessao) {
-            sessao = localStorage.getItem('dri_session');
-            if (sessao) {
-                sessionStorage.setItem('dri_session', sessao);
-                sessionStorage.setItem('dri_user', localStorage.getItem('dri_user'));
+        try {
+            let sessao = sessionStorage.getItem('dri_session');
+            
+            if (!sessao) {
+                sessao = localStorage.getItem('dri_session');
+                if (sessao) {
+                    sessionStorage.setItem('dri_session', sessao);
+                    sessionStorage.setItem('dri_user', localStorage.getItem('dri_user'));
+                }
             }
-        }
 
-        return sessao ? JSON.parse(sessao) : null;
+            return sessao ? JSON.parse(sessao) : null;
+        } catch (error) {
+            console.error('Erro ao obter sessão armazenada:', error);
+            return null;
+        }
     },
 
     async validateDeviceForLogin(nick) {
-        const deviceId = this.getDeviceId();
+        try {
+            const deviceId = this.getDeviceId();
 
-        const { data: sessions } = await window.supabase
-            .from('sessoes')
-            .select('*')
-            .eq('usuario_nick', nick)
-            .eq('device_id', deviceId)
-            .eq('ativa', true)
-            .gt('data_expiracao', new Date().toISOString())
-            .order('data_criacao', { ascending: false })
-            .limit(1);
+            const { data: sessions, error } = await window.supabase
+                .from('sessoes')
+                .select('*')
+                .eq('usuario_nick', nick)
+                .eq('device_id', deviceId)
+                .eq('ativa', true)
+                .gt('data_expiracao', new Date().toISOString())
+                .order('data_criacao', { ascending: false })
+                .limit(1);
 
-        if (sessions && sessions.length > 0) {
+            if (error || !sessions || sessions.length === 0) {
+                return null;
+            }
+
             const session = sessions[0];
 
             const sessao = {
@@ -181,69 +198,40 @@ const SessionManager = {
             }
 
             return sessao;
+
+        } catch (error) {
+            console.error('Erro ao validar dispositivo:', error);
+            return null;
         }
-
-        return null;
-    },
-
-    async invalidateOtherSessions(nick, currentToken = null) {
-        let query = window.supabase
-            .from('sessoes')
-            .update({ ativa: false })
-            .eq('usuario_nick', nick);
-
-        if (currentToken) {
-            query = query.neq('token', currentToken);
-        }
-
-        await query;
     },
 
     async logout() {
-        const sessao = this.getStoredSession();
-        
-        if (sessao?.token) {
-            await window.supabase
-                .from('sessoes')
-                .update({ ativa: false })
-                .eq('token', sessao.token);
+        try {
+            const sessao = this.getStoredSession();
+            
+            if (sessao?.token) {
+                await window.supabase
+                    .from('sessoes')
+                    .update({ ativa: false })
+                    .eq('token', sessao.token);
+            }
+        } catch (error) {
+            console.error('Erro ao fazer logout no banco:', error);
+        } finally {
+            sessionStorage.clear();
+            localStorage.clear();
+            window.location.href = 'index.html';
         }
+    },
 
-        sessionStorage.clear();
-        localStorage.clear();
-        
-        window.location.href = 'index.html';
+    async getCurrentUser() {
+        return this.getStoredSession();
     },
 
     generateToken() {
         return 'sess_' + Math.random().toString(36).substring(2) + 
                Math.random().toString(36).substring(2) +
-               Date.now().toString(36) + 
-               this.getDeviceId().substring(0, 8);
-    },
-
-    getBrasiliaTime() {
-        const data = new Date();
-        const offsetBrasilia = -3;
-        const utc = data.getTime() + (data.getTimezoneOffset() * 60000);
-        return new Date(utc + (3600000 * offsetBrasilia));
-    },
-
-    formatDeviceInfo(deviceInfo) {
-        if (typeof deviceInfo === 'string') {
-            try {
-                deviceInfo = JSON.parse(deviceInfo);
-            } catch {
-                return deviceInfo;
-            }
-        }
-        
-        const parts = [];
-        if (deviceInfo.platform) parts.push(deviceInfo.platform);
-        if (deviceInfo.browser) parts.push(deviceInfo.browser);
-        if (deviceInfo.screen) parts.push(deviceInfo.screen);
-        
-        return parts.join(' • ') || 'Dispositivo desconhecido';
+               Date.now().toString(36);
     }
 };
 
