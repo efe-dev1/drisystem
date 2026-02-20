@@ -956,50 +956,40 @@
 
                     meusLikes.delete(imagemId);
 
-                    const { error: updateError } = await window.supabase.rpc('decrementar_like', {
-                        imagem_id: imagemId
-                    });
+                    const { error: updateError } = await window.supabase
+                        .from('memorial_imagens')
+                        .update({ total_likes: Math.max(0, (todasImagens.find(i => i.id === imagemId)?.total_likes || 0) - 1) })
+                        .eq('id', imagemId);
 
-                    if (updateError) {
-                        const imagem = todasImagens.find(i => i.id === imagemId);
-                        if (imagem) {
-                            await window.supabase
-                                .from('memorial_imagens')
-                                .update({ total_likes: Math.max(0, (imagem.total_likes || 0) - 1) })
-                                .eq('id', imagemId);
-                        }
-                    }
+                    if (updateError) throw updateError;
 
                 } else {
                     const { error } = await window.supabase
                         .from('memorial_likes')
-                        .insert([{
+                        .insert({
                             imagem_id: imagemId,
                             usuario_nick: currentUser.nick,
                             data_like: getBrasiliaTime()
-                        }]);
+                        });
 
-                    if (error) throw error;
+                    if (error && error.code !== '23505') {
+                        throw error;
+                    }
 
-                    meusLikes.add(imagemId);
+                    if (!error) {
+                        meusLikes.add(imagemId);
 
-                    const { error: updateError } = await window.supabase.rpc('incrementar_like', {
-                        imagem_id: imagemId
-                    });
+                        const { error: updateError } = await window.supabase
+                            .from('memorial_imagens')
+                            .update({ total_likes: (todasImagens.find(i => i.id === imagemId)?.total_likes || 0) + 1 })
+                            .eq('id', imagemId);
 
-                    if (updateError) {
-                        const imagem = todasImagens.find(i => i.id === imagemId);
-                        if (imagem) {
-                            await window.supabase
-                                .from('memorial_imagens')
-                                .update({ total_likes: (imagem.total_likes || 0) + 1 })
-                                .eq('id', imagemId);
-                        }
+                        if (updateError) throw updateError;
                     }
                 }
 
                 await carregarImagens();
-                atualizarGrid();
+                await carregarMeusLikes();
 
             } catch (error) {
                 console.error('Erro ao curtir:', error);
