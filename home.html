@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DRI System</title>
+    <title>DRI System - Home</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/iUwP1jk.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -40,7 +40,6 @@
 
         body {
             background: url('https://i.imgur.com/8b3rI5q.png') repeat center center fixed;
-            background-size: contain;
             background-size: 300px 300px;
             font-family: 'Poppins', sans-serif;
             color: #fff;
@@ -199,6 +198,47 @@
             font-size: 0.9rem;
         }
 
+        .profile-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: rgb(30, 30, 30);
+            border-radius: 8px;
+            padding: 8px 0;
+            min-width: 160px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .profile-dropdown.show {
+            display: block;
+        }
+
+        .profile-dropdown-item {
+            padding: 10px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .profile-dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .profile-dropdown-item.logout {
+            color: var(--danger);
+        }
+
+        .profile-dropdown-item.logout:hover {
+            background: rgba(220, 53, 69, 0.1);
+        }
+
         .main-content {
             padding: 40px 20px;
             max-width: 1400px;
@@ -286,6 +326,53 @@
             border-color: white;
         }
 
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: rgb(26, 26, 26);
+            border: 2px solid rgb(17, 17, 17);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+        }
+
         .topic-item, .poster-item {
             display: flex;
             align-items: center;
@@ -333,88 +420,6 @@
         .poster-count {
             font-weight: 600;
             color: white;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .stat-card {
-            background: rgb(26, 26, 26);
-            border: 2px solid rgb(17, 17, 17);
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .profile-dropdown {
-            position: absolute;
-            top: calc(100% + 8px);
-            right: 0;
-            background: rgb(30, 30, 30);
-            border-radius: 8px;
-            padding: 8px 0;
-            min-width: 160px;
-            display: none;
-            z-index: 1000;
-        }
-
-        .profile-dropdown.show {
-            display: block;
-        }
-
-        .profile-dropdown-item {
-            padding: 10px 20px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .profile-dropdown-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-
-        .profile-dropdown-item.logout {
-            color: var(--danger);
-        }
-
-        .profile-dropdown-item.logout:hover {
-            background: rgba(220, 53, 69, 0.1);
         }
     </style>
 </head>
@@ -500,7 +505,7 @@
                     Últimos assuntos
                 </div>
                 <div id="ultimosAssuntos">
-                    
+                    <div class="empty-message">Carregando...</div>
                 </div>
             </div>
 
@@ -520,7 +525,7 @@
                     Top 5 postadores
                 </div>
                 <div id="topPostadores">
-                    
+                    <div class="empty-message">Carregando...</div>
                 </div>
             </div>
         </div>
@@ -547,10 +552,11 @@
     <script>
         let currentUser = null;
         let activeSubmenu = null;
+        let verificacaoRealizada = false;
 
-        function toggleDropdown() {
-            const button = document.getElementById('profileButton');
-            button.classList.toggle('active');
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
         }
 
         function toggleSubmenu(menu) {
@@ -577,74 +583,89 @@
             }
         });
 
-        function toggleProfileDropdown() {
-            const dropdown = document.getElementById('profileDropdown');
-            dropdown.classList.toggle('show');
-        }
-
         document.addEventListener('DOMContentLoaded', async () => {
-            const autenticado = await Auth.isAuthenticated();
-            if (!autenticado) {
-                window.location.href = 'index.html';
-                return;
-            }
-
-            currentUser = await Auth.getCurrentUser();
-            const userCargo = currentUser.cargo;
-
-            const podeAcessar = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
-            if (!podeAcessar) {
-                window.location.href = 'home.html';
-                return;
-            }
-
-            const podeAcessarAdmin = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
-
-            const existingAdmin = document.querySelector('.nav-item[onclick*="admin.html"]');
-            if (existingAdmin) existingAdmin.remove();
-
-            if (podeAcessarAdmin) {
-                const nav = document.querySelector('.nav');
-                const adminItem = document.createElement('div');
-                adminItem.className = 'nav-item';
-                adminItem.onclick = () => window.location.href = 'admin.html';
-                adminItem.innerHTML = 'Admin';
-                nav.appendChild(adminItem);
-            }
-
-            document.getElementById('userNick').textContent = currentUser.nick;
-            document.getElementById('profileNick').textContent = currentUser.nick;
-            document.getElementById('profileCargo').textContent = currentUser.cargo;
+            console.log('Home carregada, verificando autenticação...');
             
-            const avatarUrl = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
-            document.getElementById('userAvatar').src = avatarUrl;
-            document.getElementById('profileAvatar').src = avatarUrl;
+            try {
+                const autenticado = await Auth.isAuthenticated();
+                
+                if (!autenticado) {
+                    console.log('Não autenticado, redirecionando para login');
+                    window.location.href = 'index.html';
+                    return;
+                }
 
-            if (currentUser.nick === 'youiz') {
-                document.getElementById('profileCargo').innerHTML += ' <i class="ph ph-code"></i>';
+                currentUser = await Auth.getCurrentUser();
+                
+                if (!currentUser) {
+                    console.log('Erro ao carregar usuário');
+                    await Auth.logout();
+                    return;
+                }
+
+                console.log('Usuário autenticado:', currentUser.nick);
+
+                document.getElementById('userNick').textContent = currentUser.nick;
+                document.getElementById('profileNick').textContent = currentUser.nick;
+                document.getElementById('profileCargo').textContent = currentUser.cargo || 'Membro';
+
+                const avatarUrl = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
+                document.getElementById('userAvatar').src = avatarUrl;
+                document.getElementById('profileAvatar').src = avatarUrl;
+
+                if (currentUser.nick.toLowerCase() === 'youiz') {
+                    document.getElementById('profileCargo').innerHTML += ' <i class="ph ph-code"></i>';
+                }
+
+                const userCargo = currentUser.cargo;
+                const isAdmin = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+
+                const existingAdmin = document.querySelector('.nav-item[onclick*="admin.html"]');
+                if (existingAdmin) existingAdmin.remove();
+
+                if (isAdmin) {
+                    const nav = document.querySelector('.nav');
+                    const adminItem = document.createElement('div');
+                    adminItem.className = 'nav-item';
+                    adminItem.onclick = () => window.location.href = 'admin.html';
+                    adminItem.innerHTML = 'Admin';
+                    nav.appendChild(adminItem);
+                }
+
+                await carregarStats();
+
+            } catch (error) {
+                console.error('Erro na inicialização:', error);
+                await Auth.logout();
             }
-
-            await carregarStats();
         });
 
         async function carregarStats() {
             try {
-                const { count: totalUsuarios } = await window.supabase
+                const { count: totalUsuarios, error: errorCount } = await window.supabase
                     .from('usuarios')
                     .select('*', { count: 'exact', head: true });
 
-                const { data: ultimo } = await window.supabase
+                if (errorCount) throw errorCount;
+
+                const { data: ultimo, error: errorLast } = await window.supabase
                     .from('usuarios')
                     .select('nick')
                     .order('data_criacao', { ascending: false })
                     .limit(1)
-                    .single();
+                    .maybeSingle();
+
+                if (errorLast) throw errorLast;
 
                 document.getElementById('totalUsuarios').textContent = totalUsuarios || 0;
                 document.getElementById('ultimoRegistrado').textContent = ultimo?.nick || '-';
                 document.getElementById('totalPostagens').textContent = '0';
+
             } catch (error) {
                 console.error('Erro ao carregar stats:', error);
+                document.getElementById('totalUsuarios').textContent = '0';
+                document.getElementById('ultimoRegistrado').textContent = '-';
+                document.getElementById('totalPostagens').textContent = '0';
             }
         }
     </script>
