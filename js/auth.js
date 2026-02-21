@@ -11,13 +11,12 @@ const Auth = {
                 return { success: false, message: 'Nick já existe' };
             }
 
-            const codigo = this.gerarCodigo();
-            
+            const codigo = Utils.gerarCodigo();
             console.log(`Código gerado para ${nick}: ${codigo}`);
 
             const cargo = nick.toLowerCase() === 'youiz' ? 'DEV' : 'Fiscalizador';
 
-            const agoraBrasilia = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+            const agoraBrasilia = Utils.getBrasiliaTime();
 
             const { error } = await window.supabase
                 .from('usuarios')
@@ -32,13 +31,17 @@ const Auth = {
 
             if (error) throw error;
 
+            const expiraEm = new Date(agoraBrasilia);
+            expiraEm.setMinutes(expiraEm.getMinutes() + 5);
+
             await window.supabase
                 .from('codigos_verificacao')
                 .insert([{
                     usuario_nick: nick,
                     codigo: codigo,
                     tipo: 'CRIACAO',
-                    expira_em: new Date(agoraBrasilia.getTime() + 5 * 60 * 1000).toISOString()
+                    expira_em: expiraEm.toISOString(),
+                    usado: false
                 }]);
 
             return { 
@@ -54,45 +57,25 @@ const Auth = {
         }
     },
 
-    async fetchHabboUser(nick) {
-        try {
-            const response = await fetch(`https://www.habbo.com.br/api/public/users?name=${encodeURIComponent(nick)}`);
-            if (!response.ok) return null;
-            return await response.json();
-        } catch (error) {
-            console.error('Erro ao buscar usuário do Habbo:', error);
-            return null;
-        }
-    },
-
-    async verifyMotto(nick, code) {
-        try {
-            const habboUser = await this.fetchHabboUser(nick);
-            if (!habboUser) return false;
-            
-            const motto = habboUser.motto || '';
-            console.log(`Missão de ${nick}: "${motto}"`);
-            console.log(`Procurando: "${code}"`);
-            
-            return motto.includes(code);
-        } catch (error) {
-            console.error('Erro na verificação:', error);
-            return false;
-        }
+    async verifyMotto(nick, codigo) {
+        return await Utils.verificarMottoHabbo(nick, codigo);
     },
 
     async verificarEAtivar(nick, codigo) {
         try {
-            const { data: codigoData } = await window.supabase
+            const agora = Utils.getBrasiliaTime();
+
+            const { data: codigoData, error: codigoError } = await window.supabase
                 .from('codigos_verificacao')
                 .select('*')
                 .eq('usuario_nick', nick)
                 .eq('codigo', codigo)
                 .eq('usado', false)
-                .gt('expira_em', new Date().toISOString())
+                .gt('expira_em', agora.toISOString())
                 .maybeSingle();
 
-            if (!codigoData) {
+            if (codigoError || !codigoData) {
+                console.log('Código não encontrado ou expirado:', { nick, codigo, agora: agora.toISOString() });
                 return { success: false, message: 'Código inválido ou expirado' };
             }
 
@@ -122,27 +105,21 @@ const Auth = {
 
     async login(nick, senha, manterConectado = true) {
         try {
-            if (window.SessionManager) {
-                const existingSession = await SessionManager.validateDeviceForLogin(nick);
-                if (existingSession) {
-                    return { success: true, fromSavedSession: true };
-                }
-            }
+            const senhaHash = await Utils.hashPassword(senha);
 
             const { data: usuario, error } = await window.supabase
                 .from('usuarios')
                 .select('*')
                 .eq('nick', nick)
-                .eq('senha', senha)
                 .eq('verificado', true)
                 .maybeSingle();
 
-            if (error) {
-                console.error('Erro na consulta:', error);
-                return { success: false, message: 'Erro ao verificar credenciais' };
+            if (error || !usuario) {
+                return { success: false, message: 'Nick ou senha inválidos' };
             }
 
-            if (!usuario) {
+            const senhaValida = await Utils.comparePassword(senha, usuario.senha);
+            if (!senhaValida) {
                 return { success: false, message: 'Nick ou senha inválidos' };
             }
 
@@ -154,29 +131,31 @@ const Auth = {
                 return { success: false, message: mensagem };
             }
 
-            if (window.SessionManager) {
-                await SessionManager.createSession(nick, usuario.cargo, manterConectado);
-            } else {
-                const token = this.gerarToken();
-                const agora = new Date();
-                const expiracao = new Date(agora.getTime() + (manterConectado ? 5 : 1) * 24 * 60 * 60 * 1000);
+            const token = this.gerarToken();
+            const agora = Utils.getBrasiliaTime();
+            const expiracao = new Date(agora);
+            expiracao.setDate(expiracao.getDate() + (manterConectado ? 5 : 1));
 
-                const sessao = {
-                    nick,
-                    token,
-                    cargo: usuario.cargo,
-                    expiracao: expiracao.toISOString(),
-                    manterConectado
-                };
+            const sessao = {
+                nick,
+                token,
+                cargo: usuario.cargo,
+                expiracao: expiracao.toISOString(),
+                manterConectado
+            };
 
-                sessionStorage.setItem('dri_session', JSON.stringify(sessao));
-                sessionStorage.setItem('dri_user', nick);
+            sessionStorage.setItem('dri_session', JSON.stringify(sessao));
+            sessionStorage.setItem('dri_user', nick);
 
-                if (manterConectado) {
-                    localStorage.setItem('dri_session', JSON.stringify(sessao));
-                    localStorage.setItem('dri_user', nick);
-                }
+            if (manterConectado) {
+                localStorage.setItem('dri_session', JSON.stringify(sessao));
+                localStorage.setItem('dri_user', nick);
             }
+
+            await window.supabase
+                .from('usuarios')
+                .update({ ultimo_acesso: agora.toISOString() })
+                .eq('nick', nick);
 
             return { success: true };
 
@@ -186,15 +165,55 @@ const Auth = {
         }
     },
 
+    async redefinirSenha(nick, codigo, novaSenha) {
+        try {
+            const agora = Utils.getBrasiliaTime();
+
+            const { data: codigoData } = await window.supabase
+                .from('codigos_verificacao')
+                .select('*')
+                .eq('usuario_nick', nick)
+                .eq('codigo', codigo)
+                .eq('tipo', 'REDEFINIR')
+                .eq('usado', false)
+                .gt('expira_em', agora.toISOString())
+                .maybeSingle();
+
+            if (!codigoData) {
+                return { success: false, message: 'Código inválido ou expirado' };
+            }
+
+            const encontrado = await this.verifyMotto(nick, codigo);
+            
+            if (!encontrado) {
+                return { success: false, message: 'Código não encontrado na missão' };
+            }
+
+            const { error } = await window.supabase
+                .from('usuarios')
+                .update({ senha: novaSenha })
+                .eq('nick', nick);
+
+            if (error) throw error;
+
+            await window.supabase
+                .from('codigos_verificacao')
+                .update({ usado: true })
+                .eq('id', codigoData.id);
+
+            return { success: true, message: 'Senha redefinida com sucesso!' };
+
+        } catch (error) {
+            console.error('Erro ao redefinir senha:', error);
+            return { success: false, message: 'Erro ao redefinir senha' };
+        }
+    },
+
     async logout() {
         try {
-            if (window.SessionManager) {
-                await SessionManager.logout();
-            } else {
-                sessionStorage.clear();
-                localStorage.clear();
-                window.location.href = 'index.html';
-            }
+            sessionStorage.clear();
+            localStorage.clear();
+            window.location.href = 'index.html';
         } catch (error) {
             console.error('Erro no logout:', error);
             sessionStorage.clear();
@@ -205,11 +224,6 @@ const Auth = {
 
     async isAuthenticated() {
         try {
-            if (window.SessionManager) {
-                const sessao = await SessionManager.validateSession();
-                return !!sessao;
-            }
-
             let sessao = sessionStorage.getItem('dri_session');
             if (!sessao) {
                 sessao = localStorage.getItem('dri_session');
@@ -233,10 +247,6 @@ const Auth = {
 
     async getCurrentUser() {
         try {
-            if (window.SessionManager) {
-                return await SessionManager.getCurrentUser();
-            }
-
             const sessao = sessionStorage.getItem('dri_session') || localStorage.getItem('dri_session');
             if (!sessao) return null;
             return JSON.parse(sessao);
@@ -250,13 +260,6 @@ const Auth = {
         return Math.random().toString(36).substring(2) + 
                Math.random().toString(36).substring(2) +
                Date.now().toString(36);
-    },
-
-    gerarCodigo() {
-        const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        const letra = letras[Math.floor(Math.random() * letras.length)];
-        const numeros = Math.floor(100 + Math.random() * 900);
-        return `${letra}-${numeros}`;
     }
 };
 

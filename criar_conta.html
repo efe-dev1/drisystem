@@ -1,3 +1,4 @@
+<!-- [file name]: criar_conta.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -46,6 +47,9 @@
             color: #fff;
             position: relative;
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         body::before {
@@ -331,6 +335,10 @@
                 <div class="timer">
                     Código expira em <span id="timer">5:00</span>
                 </div>
+
+                <div class="instrucao" style="margin-top: 20px;">
+                    <i class="ph ph-info"></i> A verificação é automática quando você colocar o código na missão
+                </div>
             </div>
 
             <div id="step3" class="step">
@@ -348,6 +356,7 @@
     </div>
 
     <script src="js/supabase.js"></script>
+    <script src="js/utils.js"></script>
     <script src="js/auth.js"></script>
     
     <script>
@@ -357,6 +366,7 @@
         let timerInterval;
         let verificacaoInterval;
         let tempoRestante = 300;
+        let verificando = false;
 
         document.getElementById('nick').addEventListener('input', function(e) {
             const nick = e.target.value.trim();
@@ -390,12 +400,18 @@
                 return;
             }
 
+            if (senha.length < 4) {
+                mostrarErro('Senha deve ter pelo menos 4 caracteres');
+                return;
+            }
+
             document.getElementById('btnCriarText').style.display = 'none';
             document.getElementById('btnCriarLoading').style.display = 'inline-block';
             document.getElementById('btnCriar').disabled = true;
             errorDiv.style.display = 'none';
 
-            const resultado = await Auth.criarConta(nick, senha);
+            const senhaHash = await Utils.hashPassword(senha);
+            const resultado = await Auth.criarConta(nick, senhaHash);
             
             if (resultado.success) {
                 nickAtual = resultado.nick;
@@ -440,8 +456,10 @@
                 if (tempoRestante <= 0) {
                     clearInterval(timerInterval);
                     clearInterval(verificacaoInterval);
-                    alert('Código expirado. Tente novamente.');
-                    window.location.reload();
+                    mostrarErro('Código expirado. Tente novamente.');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
                 }
             }, 1000);
         }
@@ -455,25 +473,42 @@
         
         function iniciarVerificacaoAutomatica() {
             verificacaoInterval = setInterval(async () => {
-                const encontrado = await Auth.verifyMotto(nickAtual, codigoAtual);
-                
-                if (encontrado) {
-                    const resultado = await Auth.verificarEAtivar(nickAtual, codigoAtual);
+                if (verificando) return;
+                verificando = true;
+
+                try {
+                    console.log(`Verificando missão de ${nickAtual}...`);
                     
-                    if (resultado.success) {
-                        clearInterval(verificacaoInterval);
-                        clearInterval(timerInterval);
+                    const encontrado = await Auth.verifyMotto(nickAtual, codigoAtual);
+                    
+                    if (encontrado) {
+                        console.log('Código encontrado na missão!');
                         
-                        document.getElementById('step2').classList.remove('active');
-                        document.getElementById('step3').classList.add('active');
+                        const resultado = await Auth.verificarEAtivar(nickAtual, codigoAtual);
                         
-                        setTimeout(async () => {
-                            await Auth.login(nickAtual, senhaAtual);
-                            window.location.href = 'home.html';
-                        }, 2000);
+                        if (resultado.success) {
+                            clearInterval(verificacaoInterval);
+                            clearInterval(timerInterval);
+                            
+                            document.getElementById('step2').classList.remove('active');
+                            document.getElementById('step3').classList.add('active');
+                            
+                            setTimeout(async () => {
+                                const loginResult = await Auth.login(nickAtual, senhaAtual);
+                                if (loginResult.success) {
+                                    window.location.href = 'home.html';
+                                } else {
+                                    window.location.href = 'index.html';
+                                }
+                            }, 2000);
+                        }
                     }
+                } catch (error) {
+                    console.error('Erro na verificação:', error);
+                } finally {
+                    verificando = false;
                 }
-            }, 3000);
+            }, 5000);
         }
         
         function mostrarErro(msg) {

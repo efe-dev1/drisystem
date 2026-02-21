@@ -1,3 +1,4 @@
+<!-- [file name]: redefinir_senha.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -46,6 +47,9 @@
             color: #fff;
             position: relative;
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         body::before {
@@ -292,8 +296,7 @@
                 <img src="https://www.habbo.com.br/habbo-imaging/avatarimage?&user=Padrao&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=0&size=l" 
                      alt="Avatar" 
                      class="avatar-image" 
-                     id="avatarPreview"
-                     onerror="this.src='https://www.habbo.com.br/habbo-imaging/avatarimage?&user=Padrao&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=0&size=l'">
+                     id="avatarPreview">
             </div>
             
             <div class="welcome-text">
@@ -322,7 +325,7 @@
                 </div>
                 
                 <button class="btn-code" id="codigoBtn" onclick="copiarCodigo()">
-                    <span id="codigoVerificacao"></span>
+                    <span id="codigoVerificacao">A-123</span>
                     <i class="ph ph-copy" style="font-size: 1rem;"></i>
                 </button>
                 
@@ -365,6 +368,7 @@
     </div>
 
     <script src="js/supabase.js"></script>
+    <script src="js/utils.js"></script>
     <script src="js/auth.js"></script>
     
     <script>
@@ -373,6 +377,7 @@
         let timerInterval;
         let verificacaoInterval;
         let tempoRestante = 300;
+        let verificando = false;
 
         document.getElementById('nick').addEventListener('input', function(e) {
             const nick = e.target.value.trim();
@@ -424,13 +429,18 @@
                 nickAtual = nick;
                 codigoAtual = codigo;
 
+                const agora = Utils.getBrasiliaTime();
+                const expiraEm = new Date(agora);
+                expiraEm.setMinutes(expiraEm.getMinutes() + 5);
+
                 await window.supabase
                     .from('codigos_verificacao')
                     .insert([{
                         usuario_nick: nick,
                         codigo: codigo,
                         tipo: 'REDEFINIR',
-                        expira_em: new Date(Date.now() + 5 * 60 * 1000)
+                        expira_em: expiraEm.toISOString(),
+                        usado: false
                     }]);
 
                 document.getElementById('step1').classList.remove('active');
@@ -472,8 +482,10 @@
                 if (tempoRestante <= 0) {
                     clearInterval(timerInterval);
                     clearInterval(verificacaoInterval);
-                    alert('Código expirado. Tente novamente.');
-                    window.location.reload();
+                    mostrarErro('Código expirado. Tente novamente.');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
                 }
             }, 1000);
         }
@@ -487,15 +499,26 @@
 
         function iniciarVerificacaoAutomatica() {
             verificacaoInterval = setInterval(async () => {
-                const encontrado = await Auth.verifyMotto(nickAtual, codigoAtual);
+                if (verificando) return;
+                verificando = true;
 
-                if (encontrado) {
-                    clearInterval(verificacaoInterval);
-                    clearInterval(timerInterval);
-                    document.getElementById('step2').classList.remove('active');
-                    document.getElementById('step3').classList.add('active');
+                try {
+                    console.log(`Verificando missão de ${nickAtual}...`);
+                    
+                    const encontrado = await Auth.verifyMotto(nickAtual, codigoAtual);
+
+                    if (encontrado) {
+                        clearInterval(verificacaoInterval);
+                        clearInterval(timerInterval);
+                        document.getElementById('step2').classList.remove('active');
+                        document.getElementById('step3').classList.add('active');
+                    }
+                } catch (error) {
+                    console.error('Erro na verificação:', error);
+                } finally {
+                    verificando = false;
                 }
-            }, 3000);
+            }, 5000);
         }
 
         async function redefinirSenha() {
@@ -527,40 +550,24 @@
             errorDiv.style.display = 'none';
 
             try {
-                const { data: codigoData } = await window.supabase
-                    .from('codigos_verificacao')
-                    .select('*')
-                    .eq('usuario_nick', nickAtual)
-                    .eq('codigo', codigoAtual)
-                    .eq('tipo', 'REDEFINIR')
-                    .eq('usado', false)
-                    .gt('expira_em', new Date().toISOString())
-                    .maybeSingle();
+                const senhaHash = await Utils.hashPassword(novaSenha);
+                
+                const resultado = await Auth.redefinirSenha(nickAtual, codigoAtual, senhaHash);
 
-                if (!codigoData) {
-                    mostrarErro('Código inválido ou expirado');
+                if (resultado.success) {
+                    document.getElementById('step3').classList.remove('active');
+                    document.getElementById('step4').classList.add('active');
+
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                } else {
+                    mostrarErro(resultado.message);
+                    
                     btnText.style.display = 'inline-block';
                     btnLoading.style.display = 'none';
                     btn.disabled = false;
-                    return;
                 }
-
-                await window.supabase
-                    .from('usuarios')
-                    .update({ senha: novaSenha })
-                    .eq('nick', nickAtual);
-
-                await window.supabase
-                    .from('codigos_verificacao')
-                    .update({ usado: true })
-                    .eq('id', codigoData.id);
-
-                document.getElementById('step3').classList.remove('active');
-                document.getElementById('step4').classList.add('active');
-
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 2000);
 
             } catch (error) {
                 console.error('Erro:', error);
