@@ -45,7 +45,6 @@
 
         body {
             background: url('https://i.imgur.com/8b3rI5q.png') repeat center center fixed;
-            background-size: contain;
             background-size: 300px 300px;
             font-family: 'Poppins', sans-serif;
             color: #fff;
@@ -270,10 +269,73 @@
             font-size: 2rem;
         }
 
+        .week-navigation {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn-nav {
+            padding: 10px 20px;
+            background: transparent;
+            border: 2px solid rgb(60, 60, 60);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-nav:hover {
+            border-color: var(--info);
+            color: var(--info);
+        }
+
+        .week-display {
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            background: rgb(40, 40, 40);
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 2px solid rgb(60, 60, 60);
+            min-width: 300px;
+            text-align: center;
+        }
+
+        .btn-primary {
+            padding: 12px 25px;
+            background: white;
+            border: none;
+            border-radius: 8px;
+            color: var(--navy-dark);
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            background: #f0f0f0;
+        }
+
         .quick-access {
             display: flex;
             gap: 15px;
             flex-wrap: wrap;
+            margin-top: 20px;
+            justify-content: flex-end;
+            width: 100%;
         }
 
         .btn-sheet {
@@ -300,14 +362,6 @@
         .btn-sheet.bravo:hover {
             border-color: var(--bravo);
             color: var(--bravo);
-        }
-
-        .week-info {
-            text-align: center;
-            margin-bottom: 20px;
-            color: var(--text-secondary);
-            font-size: 1rem;
-            font-weight: 500;
         }
 
         .table-container {
@@ -441,112 +495,28 @@
             cursor: not-allowed;
         }
 
-        .btn-save {
-            padding: 6px 12px;
-            background: var(--success);
-            border: none;
-            border-radius: 6px;
-            color: white;
-            font-size: 0.8rem;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            margin-left: 5px;
-        }
-
-        .btn-save:hover {
-            opacity: 0.9;
-        }
-
-        .btn-cancel {
-            padding: 6px 12px;
-            background: transparent;
-            border: 2px solid rgb(60, 60, 60);
-            border-radius: 6px;
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            margin-left: 5px;
-        }
-
-        .btn-cancel:hover {
-            border-color: var(--danger);
-            color: var(--danger);
-        }
-
-        .week-navigation {
+        .edit-controls {
             display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
+            gap: 10px;
         }
 
-        .btn-nav {
-            padding: 10px 20px;
+        .edit-btn {
+            padding: 6px 12px;
             background: transparent;
             border: 2px solid rgb(60, 60, 60);
-            border-radius: 8px;
+            border-radius: 6px;
             color: var(--text-secondary);
-            font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 5px;
         }
 
-        .btn-nav:hover {
+        .edit-btn:hover {
             border-color: var(--info);
             color: var(--info);
-        }
-
-        .btn-nav:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-
-        .week-display {
-            color: white;
-            font-weight: 600;
-            font-size: 1rem;
-            background: rgb(40, 40, 40);
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: 2px solid rgb(60, 60, 60);
-            min-width: 300px;
-            text-align: center;
-        }
-
-        .btn-primary {
-            padding: 12px 25px;
-            background: white;
-            border: none;
-            border-radius: 8px;
-            color: var(--navy-dark);
-            font-weight: 600;
-            font-size: 0.95rem;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary:hover {
-            background: #f0f0f0;
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
         }
 
         .modal {
@@ -691,20 +661,6 @@
             color: white;
         }
 
-        .loading {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
         .error-message {
             background: rgba(220, 53, 69, 0.1);
             border: 2px solid var(--danger);
@@ -765,8 +721,7 @@
             border: 2px solid rgb(17, 17, 17);
             border-radius: 10px;
             padding: 20px;
-            width: 900px;
-            max-width: 100%;
+            width: 100%;
             margin: 0 auto 30px auto;
         }
 
@@ -805,38 +760,18 @@
             color: var(--bravo);
         }
 
-        .edit-controls {
-            display: flex;
-            gap: 10px;
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
         }
 
-        .edit-btn {
-            padding: 6px 12px;
-            background: transparent;
-            border: 2px solid rgb(60, 60, 60);
-            border-radius: 6px;
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .edit-btn:hover {
-            border-color: var(--info);
-            color: var(--info);
-        }
-
-        #editALPHABtn, #editBRAVOBtn {
-            display: inline-flex !important;
-        }
-
-        .edit-btn.active {
-            background: var(--info);
-            border-color: var(--info);
-            color: white;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -972,24 +907,15 @@
             <div class="title-left">
                 <h1>ESCALA FISCALIZADOR</h1>
             </div>
-            <div class="week-navigation">
-                <button class="btn-nav" onclick="navegarSemana('anterior')">
-                    <i class="ph ph-caret-left"></i> SEMANA ANTERIOR
-                </button>
-                <span id="semanaDisplay" class="week-display">Carregando...</span>
-                <button class="btn-nav" onclick="navegarSemana('proxima')">
-                    PRÓXIMA SEMANA <i class="ph ph-caret-right"></i>
-                </button>
-                <button class="btn-primary" onclick="gerarProximaSemana()" id="btnGerar">
-                    GERAR PRÓXIMA SEMANA
-                </button>
-            </div>
-            <div class="quick-access">
+            <div class="quick-access" style="display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap; width: 100%; margin-top: 20px;">
                 <button class="btn-sheet alpha" onclick="window.open('https://docs.google.com/spreadsheets/d/1f9fPMnAosjKEvyZ5LJtuAz-kmdn1-VXRA9Nawr2tR3k/edit?gid=482045927#gid=482045927', '_blank')">
                     PROF
                 </button>
                 <button class="btn-sheet alpha" onclick="window.open('https://docs.google.com/spreadsheets/d/1q744dbqoXuX-bzbH_mqcnly1AeFd3vzKHGaNGrA45kg/edit?gid=1666370622#gid=1666370622', '_blank')">
                     CAP
+                </button>
+                <button class="btn-primary" onclick="gerarProximaSemana()" id="btnGerar">
+                    GERAR PRÓXIMA SEMANA
                 </button>
                 <button class="btn-sheet bravo" onclick="window.open('https://docs.google.com/spreadsheets/d/1eZ3hFf0XEVaVbkgviJLZWJvpIkzufH8PQlfqbkDaT5s/edit?gid=1666370622#gid=1666370622', '_blank')">
                     MEN
@@ -998,15 +924,20 @@
                     GRAD
                 </button>
             </div>
+            <div class="week-navigation" style="display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap; width: 100%;">
+                <button class="btn-nav" onclick="navegarSemana('anterior')">
+                    <i class="ph ph-caret-left"></i> ANTERIOR
+                </button>
+                <span id="semanaDisplay" class="week-display">Carregando...</span>
+                <button class="btn-nav" onclick="navegarSemana('proxima')">
+                    PRÓXIMA <i class="ph ph-caret-right"></i>
+                </button>
+            </div>
         </div>
 
         <div id="errorMessage" class="error-message"></div>
         <div id="successMessage" class="success-message"></div>
         <div id="warningMessage" class="warning-message"></div>
-
-        <div class="week-info" style="display: none;">
-            <span id="semanaAtual">Carregando...</span>
-        </div>
 
         <div class="escala-card">
             <div class="escala-header alpha">
@@ -1027,9 +958,9 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>DATA</th>
+                            <th>DIA</th>
                             <th>ORDEM</th>
-                            <th>DATA FISCALIZADA</th>
+                            <th>DATA</th>
                             <th>FISCALIZADOR</th>
                             <th>PRAZO</th>
                             <th>STATUS</th>
@@ -1064,9 +995,9 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>DATA</th>
+                            <th>DIA</th>
                             <th>ORDEM</th>
-                            <th>DATA FISCALIZADA</th>
+                            <th>DATA</th>
                             <th>FISCALIZADOR</th>
                             <th>PRAZO</th>
                             <th>STATUS</th>
@@ -1174,7 +1105,6 @@
 
             currentUser = await Auth.getCurrentUser();
             userCargo = currentUser.cargo;
-            console.log('Usuário:', currentUser.nick, 'Cargo:', userCargo);
 
             const podeAcessar = ['Fiscalizador', 'Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
             if (!podeAcessar) {
@@ -1235,7 +1165,6 @@
                     .order('nick');
 
                 fiscalizadores = data || [];
-                console.log('Fiscalizadores carregados:', fiscalizadores.length);
             } catch (error) {
                 console.error('Erro ao carregar fiscalizadores:', error);
             }
@@ -1250,7 +1179,7 @@
                 const segundaBase = getDataSegunda(dataAlvo);
 
                 const dataInicio = new Date(segundaBase);
-                dataInicio.setDate(dataInicio.getDate() - 14);
+                dataInicio.setDate(dataInicio.getDate() - 7);
                 const dataFim = new Date(segundaBase);
                 dataFim.setDate(dataFim.getDate() + 14);
 
@@ -1273,8 +1202,6 @@
                     new Date(a.data_funcao) - new Date(b.data_funcao)
                 );
 
-                console.log('Escalas carregadas - Alpha:', escalaAlpha.length, 'Bravo:', escalaBravo.length);
-
                 const semanaAlvo = getDataSegunda(dataAlvo);
                 const temSemanaAlvo = escalas.some(e => {
                     const dataEscala = new Date(e.data_funcao);
@@ -1283,7 +1210,7 @@
                 });
 
                 if (!temSemanaAlvo) {
-                    console.log('Semana alvo não encontrada, mostrando vazia...');
+                    await gerarEscalaSemana(semanaAlvo);
                 }
 
                 atualizarTabelas();
@@ -1303,27 +1230,13 @@
             const domingo = new Date(segunda);
             domingo.setDate(segunda.getDate() + 6);
             
-            const mesSegunda = segunda.toLocaleDateString('pt-BR', { month: 'long' });
-            const mesDomingo = domingo.toLocaleDateString('pt-BR', { month: 'long' });
-            
-            let formatoSemana;
-            if (mesSegunda === mesDomingo) {
-                formatoSemana = `${segunda.toLocaleDateString('pt-BR')} a ${domingo.toLocaleDateString('pt-BR')}`;
-            } else {
-                formatoSemana = `${segunda.toLocaleDateString('pt-BR')} a ${domingo.toLocaleDateString('pt-BR')}`;
-            }
-
+            const formatoSemana = `${segunda.toLocaleDateString('pt-BR')} - ${domingo.toLocaleDateString('pt-BR')}`;
             const mesAno = segunda.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
             
             document.getElementById('semanaDisplay').innerHTML = `
                 <strong>${formatoSemana}</strong><br>
                 <span style="font-size: 0.8rem; color: var(--text-secondary);">${mesAno}</span>
             `;
-
-            const semanaAtualEl = document.getElementById('semanaAtual');
-            if (semanaAtualEl) {
-                semanaAtualEl.textContent = `SEMANA: ${formatoSemana}`;
-            }
         }
 
         function atualizarTabelas() {
@@ -1335,11 +1248,6 @@
             document.getElementById('alphaTableBody').innerHTML = gerarLinhasTabela('ALPHA', dias);
             document.getElementById('bravoTableBody').innerHTML = gerarLinhasTabela('BRAVO', dias);
             document.getElementById('lastUpdate').textContent = `Última atualização: ${getBrasiliaTime().toLocaleString('pt-BR')}`;
-        }
-
-        function voltarSemanaAtual() {
-            semanasOffset = 0;
-            carregarEscalas();
         }
 
         function gerarLinhasTabela(tipo, dias) {
@@ -1423,12 +1331,9 @@
 
         function registrarAlteracao(tipo, escalaId, novoNick) {
             alteracoes[tipo][escalaId] = novoNick || null;
-            console.log('Alteração registrada:', tipo, escalaId, novoNick);
         }
 
         function toggleEditMode(tipo) {
-            console.log('Toggle edit mode chamado para', tipo, 'Cargo:', userCargo);
-            
             const cargosPermitidos = ['Vice-Líder', 'Líder', 'DEV'];
             
             if (!cargosPermitidos.includes(userCargo)) {
@@ -1437,20 +1342,16 @@
             }
 
             editMode[tipo] = !editMode[tipo];
-            console.log('Edit mode', tipo, 'agora é', editMode[tipo]);
 
             const editBtn = document.getElementById(`edit${tipo}Btn`);
             const saveBtn = document.getElementById(`save${tipo}Btn`);
             const cancelBtn = document.getElementById(`cancel${tipo}Btn`);
             
-            if (!editBtn || !saveBtn || !cancelBtn) {
-                console.error('Botões não encontrados! Verifique os IDs no HTML');
-                return;
-            }
+            if (!editBtn || !saveBtn || !cancelBtn) return;
             
-            if (editBtn) editBtn.style.display = editMode[tipo] ? 'none' : 'inline-flex';
-            if (saveBtn) saveBtn.style.display = editMode[tipo] ? 'inline-flex' : 'none';
-            if (cancelBtn) cancelBtn.style.display = editMode[tipo] ? 'inline-flex' : 'none';
+            editBtn.style.display = editMode[tipo] ? 'none' : 'inline-flex';
+            saveBtn.style.display = editMode[tipo] ? 'inline-flex' : 'none';
+            cancelBtn.style.display = editMode[tipo] ? 'inline-flex' : 'none';
             
             if (!editMode[tipo]) {
                 alteracoes[tipo] = {};
@@ -1460,16 +1361,11 @@
         }
 
         async function salvarEdicoes(tipo) {
-            console.log('Salvando edições para', tipo);
-            
             const editBtn = document.getElementById(`edit${tipo}Btn`);
             const saveBtn = document.getElementById(`save${tipo}Btn`);
             const cancelBtn = document.getElementById(`cancel${tipo}Btn`);
             
-            if (!editBtn || !saveBtn || !cancelBtn) {
-                console.error('Botões não encontrados!');
-                return;
-            }
+            if (!editBtn || !saveBtn || !cancelBtn) return;
             
             try {
                 const alteracoesTipo = alteracoes[tipo];
@@ -1481,8 +1377,6 @@
                 }
 
                 for (const [escalaId, novoNick] of Object.entries(alteracoesTipo)) {
-                    console.log('Atualizando escala', escalaId, 'para', novoNick);
-                    
                     const { error } = await window.supabase
                         .from('escalas_fiscalizador')
                         .update({ fiscalizador_nick: novoNick || null })
@@ -1508,16 +1402,11 @@
         }
 
         function cancelarEdicoes(tipo) {
-            console.log('Cancelando edições para', tipo);
-            
             const editBtn = document.getElementById(`edit${tipo}Btn`);
             const saveBtn = document.getElementById(`save${tipo}Btn`);
             const cancelBtn = document.getElementById(`cancel${tipo}Btn`);
             
-            if (!editBtn || !saveBtn || !cancelBtn) {
-                console.error('Botões não encontrados!');
-                return;
-            }
+            if (!editBtn || !saveBtn || !cancelBtn) return;
             
             alteracoes[tipo] = {};
             editMode[tipo] = false;
@@ -1535,12 +1424,6 @@
             } else {
                 semanasOffset++;
             }
-            
-            carregarEscalas();
-        }
-
-        function resetarNavegacao() {
-            semanasOffset = 0;
             carregarEscalas();
         }
 
@@ -1558,16 +1441,16 @@
                 const resultado = await gerarEscalaSemana(proximaSegunda);
                 
                 if (resultado > 0) {
-                    mostrarSucesso(`${resultado} novas escalas geradas para a semana de ${proximaSegunda.toLocaleDateString('pt-BR')}!`);
+                    mostrarSucesso(`${resultado} novas escalas geradas!`);
                 } else {
-                    mostrarAviso('A semana já possui escalas geradas');
+                    mostrarAviso('A semana já possui escalas');
                 }
 
                 await carregarEscalas();
 
             } catch (error) {
                 console.error('Erro ao gerar escala:', error);
-                mostrarErro('Erro ao gerar escala: ' + error.message);
+                mostrarErro('Erro ao gerar escala');
             }
         }
 
@@ -1582,17 +1465,14 @@
                         const ordem = gerarOrdem(tipo.charAt(0), i);
                         const prazo = getPrazo(dia);
 
-                        const { data: existente, error: checkError } = await window.supabase
+                        const { data: existente } = await window.supabase
                             .from('escalas_fiscalizador')
                             .select('id')
                             .eq('tipo', tipo)
                             .eq('data_funcao', dia.toISOString())
                             .maybeSingle();
 
-                        if (checkError) throw checkError;
-
                         if (!existente) {
-                            console.log(`Criando escala ${tipo} para ${dia.toLocaleDateString()}`);
                             const { error } = await window.supabase
                                 .from('escalas_fiscalizador')
                                 .insert([{
@@ -1603,21 +1483,14 @@
                                     status: 'PENDENTE'
                                 }]);
 
-                            if (error) {
-                                console.error('Erro ao inserir:', error);
-                                throw error;
-                            }
+                            if (error) throw error;
                             novasEscalas++;
-                        } else {
-                            console.log(`Escala ${tipo} para ${dia.toLocaleDateString()} já existe, pulando...`);
                         }
                     }
                 }
 
-                console.log(`${novasEscalas} novas escalas criadas`);
-
                 if (novasEscalas > 0) {
-                    await atribuirFiscalizadoresAutomaticamente(dataSemana);
+                    await atribuirFiscalizadoresAleatorios(dataSemana);
                 }
 
                 return novasEscalas;
@@ -1628,7 +1501,7 @@
             }
         }
 
-        async function atribuirFiscalizadoresAutomaticamente(dataSemana) {
+        async function atribuirFiscalizadoresAleatorios(dataSemana) {
             try {
                 if (fiscalizadores.length === 0) return;
 
@@ -1644,33 +1517,29 @@
 
                 if (!escalasSemana || escalasSemana.length === 0) return;
 
-                const escalasAlpha = escalasSemana.filter(e => e.tipo === 'ALPHA').sort((a, b) => 
-                    new Date(a.data_funcao) - new Date(b.data_funcao)
-                );
-                const escalasBravo = escalasSemana.filter(e => e.tipo === 'BRAVO').sort((a, b) => 
-                    new Date(a.data_funcao) - new Date(b.data_funcao)
-                );
+                const escalasAlpha = escalasSemana.filter(e => e.tipo === 'ALPHA' && !e.fiscalizador_nick)
+                    .sort((a, b) => new Date(a.data_funcao) - new Date(b.data_funcao));
+                const escalasBravo = escalasSemana.filter(e => e.tipo === 'BRAVO' && !e.fiscalizador_nick)
+                    .sort((a, b) => new Date(a.data_funcao) - new Date(b.data_funcao));
 
-                for (let i = 0; i < escalasAlpha.length; i++) {
-                    const escala = escalasAlpha[i];
-                    if (!escala.fiscalizador_nick) {
-                        const fiscalizadorIndex = i % fiscalizadores.length;
-                        await window.supabase
-                            .from('escalas_fiscalizador')
-                            .update({ fiscalizador_nick: fiscalizadores[fiscalizadorIndex].nick })
-                            .eq('id', escala.id);
-                    }
+                for (const escala of escalasAlpha) {
+                    const fiscalizadoresDisponiveis = [...fiscalizadores];
+                    const fiscalizadorEscolhido = fiscalizadoresDisponiveis[Math.floor(Math.random() * fiscalizadoresDisponiveis.length)];
+                    
+                    await window.supabase
+                        .from('escalas_fiscalizador')
+                        .update({ fiscalizador_nick: fiscalizadorEscolhido.nick })
+                        .eq('id', escala.id);
                 }
 
-                for (let i = 0; i < escalasBravo.length; i++) {
-                    const escala = escalasBravo[i];
-                    if (!escala.fiscalizador_nick) {
-                        const fiscalizadorIndex = i % fiscalizadores.length;
-                        await window.supabase
-                            .from('escalas_fiscalizador')
-                            .update({ fiscalizador_nick: fiscalizadores[fiscalizadorIndex].nick })
-                            .eq('id', escala.id);
-                    }
+                for (const escala of escalasBravo) {
+                    const fiscalizadoresDisponiveis = [...fiscalizadores];
+                    const fiscalizadorEscolhido = fiscalizadoresDisponiveis[Math.floor(Math.random() * fiscalizadoresDisponiveis.length)];
+                    
+                    await window.supabase
+                        .from('escalas_fiscalizador')
+                        .update({ fiscalizador_nick: fiscalizadorEscolhido.nick })
+                        .eq('id', escala.id);
                 }
 
             } catch (error) {
@@ -1681,8 +1550,6 @@
         async function atualizarStatusAutomatico() {
             try {
                 const agora = getBrasiliaTime();
-                
-                console.log('Verificando status automático...', agora);
 
                 const { data: escalas, error } = await window.supabase
                     .from('escalas_fiscalizador')
@@ -1693,22 +1560,13 @@
                 if (error) throw error;
 
                 if (escalas && escalas.length > 0) {
-                    console.log(`Encontradas ${escalas.length} escalas com prazo expirado`);
-                    
                     for (const escala of escalas) {
-                        const { error: updateError } = await window.supabase
+                        await window.supabase
                             .from('escalas_fiscalizador')
                             .update({ status: 'NAO_REALIZADO' })
                             .eq('id', escala.id);
-                            
-                        if (updateError) throw updateError;
                     }
-
-                    mostrarAviso(`${escalas.length} escala(s) marcada(s) como NÃO REALIZADA`);
-
                     await carregarEscalas();
-                } else {
-                    console.log('Nenhuma escala com prazo expirado encontrada');
                 }
 
             } catch (error) {
@@ -1769,22 +1627,18 @@
             try {
                 const novoStatus = acao === 'CONCLUSÃO' ? 'CONCLUIDO' : 'JUSTIFICADO';
                 
-                const { data: escalaData, error: buscaError } = await window.supabase
+                const { data: escalaData } = await window.supabase
                     .from('escalas_fiscalizador')
                     .select('*')
                     .eq('tipo', tipo)
                     .eq('ordem', ordem)
                     .maybeSingle();
 
-                if (buscaError) throw buscaError;
-
                 if (escalaData) {
-                    const { error: updateError } = await window.supabase
+                    await window.supabase
                         .from('escalas_fiscalizador')
                         .update({ status: novoStatus })
                         .eq('id', escalaData.id);
-
-                    if (updateError) throw updateError;
                 }
 
                 const dados = {
@@ -1802,11 +1656,9 @@
                     dados.motivo = motivo;
                 }
 
-                const { error: insertError } = await window.supabase
+                await window.supabase
                     .from('registros_funcao')
                     .insert([dados]);
-
-                if (insertError) throw insertError;
 
                 document.getElementById('modalSuccess').style.display = 'block';
                 document.getElementById('modalSuccess').innerHTML = 'Registro concluído!';
@@ -1820,7 +1672,7 @@
 
             } catch (error) {
                 console.error('Erro:', error);
-                mostrarErroModal('Erro ao registrar: ' + error.message);
+                mostrarErroModal('Erro ao registrar');
             }
         }
 
