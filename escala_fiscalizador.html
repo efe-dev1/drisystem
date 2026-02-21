@@ -1116,9 +1116,7 @@
             }
         });
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log('DOM carregado, iniciando...');
-            
+        document.addEventListener('DOMContentLoaded', async () => { 
             const autenticado = await Auth.isAuthenticated();
             if (!autenticado) {
                 window.location.href = 'index.html';
@@ -1149,20 +1147,16 @@
                 adminItem.innerHTML = 'Painel';
                 nav.appendChild(adminItem);
             }
-
-            console.log('Pode editar escalas?', podeEditarEscalas);
             
-            const editAlphaBtn = document.getElementById('editAlphaBtn');
-            const editBravoBtn = document.getElementById('editBravoBtn');
+            const editAlphaBtn = document.getElementById('editALPHABtn');
+            const editBravoBtn = document.getElementById('editBRAVOBtn');
             
             if (editAlphaBtn) {
                 editAlphaBtn.style.display = podeEditarEscalas ? 'inline-flex' : 'none';
-                console.log('Botão Alpha:', editAlphaBtn.style.display);
             }
             
             if (editBravoBtn) {
                 editBravoBtn.style.display = podeEditarEscalas ? 'inline-flex' : 'none';
-                console.log('Botão Bravo:', editBravoBtn.style.display);
             }
 
             document.getElementById('userNick').textContent = currentUser.nick;
