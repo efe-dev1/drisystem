@@ -478,12 +478,50 @@
             color: var(--danger);
         }
 
-        .actions-bar {
+        .week-navigation {
             display: flex;
-            justify-content: center;
+            align-items: center;
             gap: 15px;
-            margin-bottom: 30px;
             flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn-nav {
+            padding: 10px 20px;
+            background: transparent;
+            border: 2px solid rgb(60, 60, 60);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-nav:hover {
+            border-color: var(--info);
+            color: var(--info);
+        }
+
+        .btn-nav:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .week-display {
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            background: rgb(40, 40, 40);
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 2px solid rgb(60, 60, 60);
+            min-width: 300px;
+            text-align: center;
         }
 
         .btn-primary {
@@ -934,6 +972,18 @@
             <div class="title-left">
                 <h1>ESCALA FISCALIZADOR</h1>
             </div>
+            <div class="week-navigation">
+                <button class="btn-nav" onclick="navegarSemana('anterior')">
+                    <i class="ph ph-caret-left"></i> SEMANA ANTERIOR
+                </button>
+                <span id="semanaDisplay" class="week-display">Carregando...</span>
+                <button class="btn-nav" onclick="navegarSemana('proxima')">
+                    PRÓXIMA SEMANA <i class="ph ph-caret-right"></i>
+                </button>
+                <button class="btn-primary" onclick="gerarProximaSemana()" id="btnGerar">
+                    GERAR PRÓXIMA SEMANA
+                </button>
+            </div>
             <div class="quick-access">
                 <button class="btn-sheet alpha" onclick="window.open('https://docs.google.com/spreadsheets/d/1f9fPMnAosjKEvyZ5LJtuAz-kmdn1-VXRA9Nawr2tR3k/edit?gid=482045927#gid=482045927', '_blank')">
                     PROF
@@ -954,13 +1004,7 @@
         <div id="successMessage" class="success-message"></div>
         <div id="warningMessage" class="warning-message"></div>
 
-        <div class="actions-bar">
-            <button class="btn-primary" onclick="gerarProximaSemana()" id="btnGerar">
-                GERAR PRÓXIMA SEMANA
-            </button>
-        </div>
-
-        <div class="week-info">
+        <div class="week-info" style="display: none;">
             <span id="semanaAtual">Carregando...</span>
         </div>
 
@@ -1054,6 +1098,7 @@
         let escalaBravo = [];
         let editMode = { ALPHA: false, BRAVO: false };
         let alteracoes = { ALPHA: {}, BRAVO: {} };
+        let semanasOffset = 0;
 
         const DIAS_SEMANA = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 
@@ -1199,10 +1244,13 @@
         async function carregarEscalas() {
             try {
                 const dataBase = new Date();
-                const segundaBase = getDataSegunda(dataBase);
+                const dataAlvo = new Date(dataBase);
+                dataAlvo.setDate(dataBase.getDate() + (semanasOffset * 7));
                 
+                const segundaBase = getDataSegunda(dataAlvo);
+
                 const dataInicio = new Date(segundaBase);
-                dataInicio.setDate(dataInicio.getDate() - 7);
+                dataInicio.setDate(dataInicio.getDate() - 14);
                 const dataFim = new Date(segundaBase);
                 dataFim.setDate(dataFim.getDate() + 14);
 
@@ -1227,18 +1275,15 @@
 
                 console.log('Escalas carregadas - Alpha:', escalaAlpha.length, 'Bravo:', escalaBravo.length);
 
-                const segundaAtual = getDataSegunda(new Date());
-                const temSemanaAtual = escalas.some(e => {
+                const semanaAlvo = getDataSegunda(dataAlvo);
+                const temSemanaAlvo = escalas.some(e => {
                     const dataEscala = new Date(e.data_funcao);
                     const semanaEscala = getDataSegunda(dataEscala);
-                    return semanaEscala.toDateString() === segundaAtual.toDateString();
+                    return semanaEscala.toDateString() === semanaAlvo.toDateString();
                 });
 
-                if (!temSemanaAtual) {
-                    console.log('Semana atual não encontrada, gerando...');
-                    await gerarEscalaSemana(segundaAtual);
-                } else {
-                    console.log('Semana atual já existe, não gerando novamente');
+                if (!temSemanaAlvo) {
+                    console.log('Semana alvo não encontrada, mostrando vazia...');
                 }
 
                 atualizarTabelas();
@@ -1250,18 +1295,51 @@
         }
 
         function atualizarInfoSemana() {
-            const segunda = getDataSegunda(new Date());
+            const dataBase = new Date();
+            const dataAlvo = new Date(dataBase);
+            dataAlvo.setDate(dataBase.getDate() + (semanasOffset * 7));
+            
+            const segunda = getDataSegunda(dataAlvo);
             const domingo = new Date(segunda);
             domingo.setDate(segunda.getDate() + 6);
-            const formatoSemana = `${segunda.toLocaleDateString('pt-BR')} - ${domingo.toLocaleDateString('pt-BR')}`;
-            document.getElementById('semanaAtual').textContent = `SEMANA: ${formatoSemana}`;
+            
+            const mesSegunda = segunda.toLocaleDateString('pt-BR', { month: 'long' });
+            const mesDomingo = domingo.toLocaleDateString('pt-BR', { month: 'long' });
+            
+            let formatoSemana;
+            if (mesSegunda === mesDomingo) {
+                formatoSemana = `${segunda.toLocaleDateString('pt-BR')} a ${domingo.toLocaleDateString('pt-BR')}`;
+            } else {
+                formatoSemana = `${segunda.toLocaleDateString('pt-BR')} a ${domingo.toLocaleDateString('pt-BR')}`;
+            }
+
+            const mesAno = segunda.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+            
+            document.getElementById('semanaDisplay').innerHTML = `
+                <strong>${formatoSemana}</strong><br>
+                <span style="font-size: 0.8rem; color: var(--text-secondary);">${mesAno}</span>
+            `;
+
+            const semanaAtualEl = document.getElementById('semanaAtual');
+            if (semanaAtualEl) {
+                semanaAtualEl.textContent = `SEMANA: ${formatoSemana}`;
+            }
         }
 
         function atualizarTabelas() {
-            const dias = getDiasSemana(new Date());
+            const dataBase = new Date();
+            const dataAlvo = new Date(dataBase);
+            dataAlvo.setDate(dataBase.getDate() + (semanasOffset * 7));
+            
+            const dias = getDiasSemana(dataAlvo);
             document.getElementById('alphaTableBody').innerHTML = gerarLinhasTabela('ALPHA', dias);
             document.getElementById('bravoTableBody').innerHTML = gerarLinhasTabela('BRAVO', dias);
             document.getElementById('lastUpdate').textContent = `Última atualização: ${getBrasiliaTime().toLocaleString('pt-BR')}`;
+        }
+
+        function voltarSemanaAtual() {
+            semanasOffset = 0;
+            carregarEscalas();
         }
 
         function gerarLinhasTabela(tipo, dias) {
@@ -1451,28 +1529,52 @@
             atualizarTabelas();
         }
 
+        function navegarSemana(direcao) {
+            if (direcao === 'anterior') {
+                semanasOffset--;
+            } else {
+                semanasOffset++;
+            }
+            
+            carregarEscalas();
+        }
+
+        function resetarNavegacao() {
+            semanasOffset = 0;
+            carregarEscalas();
+        }
+
         async function gerarProximaSemana() {
             if (!confirm('Deseja gerar a escala para a próxima semana?')) return;
 
             try {
                 const dataBase = new Date();
-                const proximaSegunda = getDataSegunda(dataBase);
+                const dataAtual = new Date(dataBase);
+                dataAtual.setDate(dataAtual.getDate() + (semanasOffset * 7));
+                
+                const proximaSegunda = getDataSegunda(dataAtual);
                 proximaSegunda.setDate(proximaSegunda.getDate() + 7);
                 
-                await gerarEscalaSemana(proximaSegunda);
-                mostrarSucesso('Escala da próxima semana gerada com sucesso!');
+                const resultado = await gerarEscalaSemana(proximaSegunda);
+                
+                if (resultado > 0) {
+                    mostrarSucesso(`${resultado} novas escalas geradas para a semana de ${proximaSegunda.toLocaleDateString('pt-BR')}!`);
+                } else {
+                    mostrarAviso('A semana já possui escalas geradas');
+                }
+
                 await carregarEscalas();
 
             } catch (error) {
                 console.error('Erro ao gerar escala:', error);
-                mostrarErro('Erro ao gerar escala');
+                mostrarErro('Erro ao gerar escala: ' + error.message);
             }
         }
 
         async function gerarEscalaSemana(dataSemana) {
             try {
                 const dias = getDiasSemana(dataSemana);
-                const resultados = [];
+                let novasEscalas = 0;
 
                 for (const tipo of ['ALPHA', 'BRAVO']) {
                     for (let i = 0; i < dias.length; i++) {
@@ -1505,18 +1607,20 @@
                                 console.error('Erro ao inserir:', error);
                                 throw error;
                             }
-                            resultados.push({ tipo, dia });
+                            novasEscalas++;
                         } else {
                             console.log(`Escala ${tipo} para ${dia.toLocaleDateString()} já existe, pulando...`);
                         }
                     }
                 }
 
-                console.log(`${resultados.length} novas escalas criadas`);
+                console.log(`${novasEscalas} novas escalas criadas`);
 
-                if (resultados.length > 0) {
+                if (novasEscalas > 0) {
                     await atribuirFiscalizadoresAutomaticamente(dataSemana);
                 }
+
+                return novasEscalas;
 
             } catch (error) {
                 console.error('Erro ao gerar escala da semana:', error);
