@@ -1,0 +1,822 @@
+:root {
+    --walter-primary: #00a884;
+    --walter-primary-dark: #008f72;
+    --walter-bg: #111b21;
+    --walter-bg-light: #1f2c33;
+    --walter-bg-lighter: #2a3942;
+    --walter-bg-input: #2a3942;
+    --walter-text: #e9edef;
+    --walter-text-secondary: #8696a0;
+    --walter-border: #222d34;
+    --walter-message-own: #005c4b;
+    --walter-message-other: #1f2c33;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.walter-toggle {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: var(--walter-primary);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    transition: all 0.3s ease;
+    z-index: 9999;
+}
+
+.walter-toggle:hover {
+    background: var(--walter-primary-dark);
+}
+
+.walter-toggle.has-unread::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 15px;
+    height: 15px;
+    background: #ff4444;
+    border: 2px solid white;
+    border-radius: 50%;
+}
+
+.walter-container {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 340px;
+    height: 460px;
+    background: var(--walter-bg);
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    pointer-events: none;
+}
+
+.walter-container.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+}
+
+.walter-header {
+    background: var(--walter-bg-light);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--walter-border);
+    cursor: move;
+}
+
+.walter-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.walter-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--walter-bg-lighter);
+}
+
+.walter-avatar i {
+    font-size: 20px;
+    color: var(--walter-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.walter-header-info h3 {
+    color: var(--walter-text);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.walter-header-info p {
+    color: var(--walter-text-secondary);
+    font-size: 0.75rem;
+}
+
+.walter-header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.walter-header-btn {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--walter-text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.2s ease;
+}
+
+.walter-header-btn:hover {
+    background: var(--walter-bg-lighter);
+    color: var(--walter-text);
+}
+
+.walter-tabs {
+    display: flex;
+    background: var(--walter-bg-light);
+    border-bottom: 2px solid var(--walter-border);
+}
+
+.walter-tab {
+    flex: 1;
+    padding: 12px;
+    background: transparent;
+    border: none;
+    color: var(--walter-text-secondary);
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.walter-tab:hover {
+    color: var(--walter-text);
+}
+
+.walter-tab.active {
+    color: var(--walter-primary);
+    border-bottom: 2px solid var(--walter-primary);
+}
+
+.walter-contacts {
+    flex: 1;
+    overflow-y: auto;
+    background: var(--walter-bg);
+}
+
+.walter-contact {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid var(--walter-border);
+}
+
+.walter-contact:hover {
+    background: var(--walter-bg-light);
+}
+
+.walter-contact.selected {
+    background: var(--walter-bg-lighter);
+}
+
+.walter-contact-avatar {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+}
+
+.walter-contact-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.walter-contact-avatar.group {
+    border-radius: 15px;
+}
+
+.walter-contact-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.walter-contact-name {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.walter-contact-name h4 {
+    color: var(--walter-text);
+    font-size: 0.95rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.walter-contact-time {
+    color: var(--walter-text-secondary);
+    font-size: 0.7rem;
+}
+
+.walter-contact-last {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.walter-contact-last p {
+    color: var(--walter-text-secondary);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+}
+
+.walter-unread {
+    background: var(--walter-primary);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+}
+
+.walter-chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--walter-bg);
+}
+
+.walter-back-btn {
+    display: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--walter-text-secondary);
+    cursor: pointer;
+    font-size: 1.2rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.walter-back-btn:hover {
+    background: var(--walter-bg-lighter);
+    color: var(--walter-text);
+}
+
+.walter-chat-header {
+    padding: 10px 16px;
+    background: var(--walter-bg-light);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--walter-border);
+}
+
+.walter-chat-info {
+    flex: 1;
+    cursor: pointer;
+}
+
+.walter-chat-info:hover {
+    opacity: 0.8;
+}
+
+.walter-chat-info h3 {
+    color: var(--walter-text);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.walter-chat-info p {
+    color: var(--walter-text-secondary);
+    font-size: 0.7rem;
+}
+
+.walter-chat-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.walter-chat-btn {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--walter-text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.2s ease;
+}
+
+.walter-chat-btn:hover {
+    background: var(--walter-bg-lighter);
+    color: var(--walter-text);
+}
+
+.walter-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--walter-bg);
+}
+
+.walter-message {
+    max-width: 65%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.walter-message.own {
+    align-self: flex-end;
+}
+
+.walter-message.other {
+    align-self: flex-start;
+}
+
+.walter-message-bubble {
+    padding: 8px 12px;
+    border-radius: 7.5px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+    position: relative;
+}
+
+.walter-message.own .walter-message-bubble {
+    background: var(--walter-message-own);
+    color: white;
+    border-top-right-radius: 0;
+}
+
+.walter-message.other .walter-message-bubble {
+    background: var(--walter-message-other);
+    color: var(--walter-text);
+    border-top-left-radius: 0;
+}
+
+.walter-message-time {
+    font-size: 0.6rem;
+    color: var(--walter-text-secondary);
+    margin-top: 2px;
+    text-align: right;
+}
+
+.walter-message.own .walter-message-time {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.walter-input-area {
+    background: var(--walter-bg-light);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-top: 1px solid var(--walter-border);
+}
+
+.walter-attach-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--walter-text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    transition: all 0.2s ease;
+}
+
+.walter-attach-btn:hover {
+    color: var(--walter-primary);
+}
+
+.walter-input {
+    flex: 1;
+    background: var(--walter-bg-input);
+    border: none;
+    border-radius: 8px;
+    padding: 9px 12px;
+    color: var(--walter-text);
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.walter-input::placeholder {
+    color: var(--walter-text-secondary);
+}
+
+.walter-send-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--walter-primary);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.2s ease;
+}
+
+.walter-send-btn:hover:not(:disabled) {
+    background: var(--walter-primary-dark);
+}
+
+.walter-send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.walter-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 11000;
+    align-items: center;
+    justify-content: center;
+}
+
+.walter-modal.show {
+    display: flex;
+}
+
+.walter-modal-content {
+    background: var(--walter-bg-light);
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.walter-modal-header {
+    padding: 13px;
+    border-bottom: 1px solid var(--walter-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.walter-modal-header h2 {
+    color: var(--walter-text);
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.walter-modal-close {
+    background: transparent;
+    border: none;
+    color: var(--walter-text-secondary);
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.walter-modal-body {
+    padding: 13px;
+}
+
+.walter-modal-body .form-group {
+    margin-bottom: 15px;
+}
+
+.walter-modal-body label {
+    display: block;
+    color: var(--walter-text-secondary);
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+}
+
+.walter-modal-body input,
+.walter-modal-body textarea,
+.walter-modal-body select {
+    width: 100%;
+    padding: 10px;
+    background: var(--walter-bg-input);
+    border: 1px solid var(--walter-border);
+    border-radius: 8px;
+    color: var(--walter-text);
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.walter-modal-body input:focus,
+.walter-modal-body textarea:focus,
+.walter-modal-body select:focus {
+    border-color: var(--walter-primary);
+}
+
+.walter-modal-footer {
+    padding: 12px;
+    border-top: 1px solid var(--walter-border);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.walter-btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.walter-btn.primary {
+    background: var(--walter-primary);
+    color: white;
+}
+
+.walter-btn.primary:hover {
+    background: var(--walter-primary-dark);
+}
+
+.walter-btn.secondary {
+    background: var(--walter-bg-lighter);
+    color: var(--walter-text);
+}
+
+.walter-btn.secondary:hover {
+    background: var(--walter-border);
+}
+
+.walter-loading {
+    text-align: center;
+    padding: 30px;
+    color: var(--walter-text-secondary);
+}
+
+.walter-loading .spinner {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top-color: var(--walter-primary);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.walter-contacts::-webkit-scrollbar,
+.walter-messages::-webkit-scrollbar,
+.walter-modal-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.walter-contacts::-webkit-scrollbar-track,
+.walter-messages::-webkit-scrollbar-track,
+.walter-modal-content::-webkit-scrollbar-track {
+    background: var(--walter-bg);
+}
+
+.walter-contacts::-webkit-scrollbar-thumb,
+.walter-messages::-webkit-scrollbar-thumb,
+.walter-modal-content::-webkit-scrollbar-thumb {
+    background: var(--walter-bg-lighter);
+    border-radius: 4px;
+}
+
+@media (max-width: 480px) {
+    .walter-container {
+        width: 100%;
+        height: 100%;
+        bottom: 0;
+        right: 0;
+        border-radius: 0;
+    }
+    
+    .walter-back-btn {
+        display: flex;
+    }
+}
+
+.walter-emoji-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--walter-text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    transition: all 0.2s ease;
+}
+
+.walter-emoji-btn:hover {
+    color: var(--walter-primary);
+}
+
+.walter-emoji-picker {
+    position: absolute;
+    bottom: 70px;
+    left: 10px;
+    background: var(--walter-bg-light);
+    border: 1px solid var(--walter-border);
+    border-radius: 10px;
+    padding: 10px;
+    display: none;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+    z-index: 1000;
+    max-width: 250px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.walter-emoji {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.2s ease;
+}
+
+.walter-emoji:hover {
+    background: var(--walter-bg-lighter);
+    transform: scale(1.1);
+}
+
+.walter-group-info {
+    padding: 0;
+}
+
+.walter-group-avatar {
+    text-align: center;
+    padding: 12px;
+    position: relative;
+}
+
+.walter-group-avatar img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--walter-primary);
+}
+
+.walter-group-avatar-edit {
+    position: absolute;
+    bottom: 20px;
+    right: 50%;
+    transform: translateX(50%);
+    background: var(--walter-primary);
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 2px solid var(--walter-bg-light);
+}
+
+.walter-group-avatar-edit:hover {
+    background: var(--walter-primary-dark);
+}
+
+.walter-group-details {
+    padding: 12px;
+    border-top: 1px solid var(--walter-border);
+}
+
+.walter-group-detail {
+    margin-bottom: 15px;
+}
+
+.walter-group-detail label {
+    display: block;
+    color: var(--walter-text-secondary);
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+}
+
+.walter-group-detail p {
+    color: var(--walter-text);
+    font-size: 0.95rem;
+}
+
+.walter-group-detail input,
+.walter-group-detail textarea {
+    width: 100%;
+    padding: 8px;
+    background: var(--walter-bg-input);
+    border: 1px solid var(--walter-border);
+    border-radius: 4px;
+    color: var(--walter-text);
+    font-size: 0.95rem;
+}
+
+.walter-group-detail input:focus,
+.walter-group-detail textarea:focus {
+    border-color: var(--walter-primary);
+    outline: none;
+}
+
+.walter-members-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.walter-member-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--walter-border);
+}
+
+.walter-member-item:last-child {
+    border-bottom: none;
+}
+
+.walter-member-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.walter-member-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.walter-member-info {
+    flex: 1;
+}
+
+.walter-member-name {
+    color: var(--walter-text);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
