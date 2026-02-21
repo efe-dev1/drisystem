@@ -12,8 +12,7 @@ class WalterZAP {
         this.dragOffset = { x: 0, y: 0 };
         this.currentView = 'chats';
         this.emojiPickerVisible = false;
-        
-        // Lista de emojis comuns
+
         this.commonEmojis = ['😀', '😂', '😍', '🥰', '😎', '😢', '😡', '👍', '👎', '❤️', '🔥', '🎉', '✨', '⭐', '💯', '🤔', '👀', '🙏', '💪', '🎈'];
         
         this.init();
@@ -407,7 +406,15 @@ class WalterZAP {
                     </div>
                 </div>
             </div>
-            
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', html);
+
+        this.createGroupModal();
+    }
+
+    createGroupModal() {
+        const modalHtml = `
             <div class="walter-modal" id="walterGroupModal">
                 <div class="walter-modal-content">
                     <div class="walter-modal-header">
@@ -442,8 +449,8 @@ class WalterZAP {
                 </div>
             </div>
         `;
-
-        document.body.insertAdjacentHTML('beforeend', html);
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
 
     renderChatsList() {
@@ -582,7 +589,6 @@ class WalterZAP {
             <p>${this.currentRoom.type === 'group' ? (this.currentRoom.description || '') : ''}</p>
         `;
 
-        // Esconder o emoji picker ao abrir novo chat
         const emojiPicker = document.getElementById('walterEmojiPicker');
         if (emojiPicker) {
             emojiPicker.style.display = 'none';
@@ -612,10 +618,15 @@ class WalterZAP {
             r.members?.some(m => m.user_nick === this.currentUser?.nick)
         );
 
-        if (!room) {
+        if (room) {
+            await this.openChat(room.id);
+            return;
+        }
+
+        try {
             const name = [this.currentUser?.nick, userNick].sort().join(' & ');
             
-            const { data } = await window.supabase
+            const { data, error } = await window.supabase
                 .from('rooms')
                 .insert({
                     name: name,
@@ -626,6 +637,8 @@ class WalterZAP {
                 .select()
                 .single();
 
+            if (error) throw error;
+
             await window.supabase
                 .from('room_members')
                 .insert([
@@ -633,11 +646,17 @@ class WalterZAP {
                     { room_id: data.id, user_nick: userNick }
                 ]);
 
-            room = data;
             await this.loadRooms();
-        }
 
-        await this.openChat(room.id);
+            const newRoom = this.rooms.find(r => r.id === data.id);
+            if (newRoom) {
+                await this.openChat(newRoom.id);
+            }
+
+        } catch (error) {
+            console.error('Erro ao criar chat privado:', error);
+            alert('Erro ao criar chat: ' + error.message);
+        }
     }
 
     async createGroupFromModal() {
@@ -750,7 +769,6 @@ class WalterZAP {
                     input.value = '';
                     sendBtn.disabled = true;
                     
-                    // Fechar emoji picker ao enviar
                     if (this.emojiPickerVisible) {
                         this.toggleEmojiPicker();
                     }
@@ -762,7 +780,6 @@ class WalterZAP {
             emojiBtn.addEventListener('click', () => this.toggleEmojiPicker());
         }
 
-        // Fechar emoji picker ao clicar fora
         document.addEventListener('click', (e) => {
             if (this.emojiPickerVisible && 
                 !e.target.closest('.walter-emoji-picker') && 
