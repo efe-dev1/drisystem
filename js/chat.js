@@ -372,23 +372,24 @@ class WalterZAP {
                 </div>
                 
                 <div id="walterChatView" class="walter-chat-area" style="display: none;">
-                    <div class="walter-chat-header">
-                        <button class="walter-back-btn" id="walterBackBtn">
-                            <i class="ph ph-arrow-left"></i>
-                        </button>
-                        <div class="walter-chat-info" id="walterChatInfo">
-                            <h3>Selecione um chat</h3>
-                            <p>Clique em um chat para começar</p>
-                        </div>
+                <div class="walter-chat-header">
+                    <button class="walter-back-btn" id="walterBackBtn">
+                        <i class="ph ph-arrow-left"></i>
+                    </button>
+                    <div class="walter-chat-info" id="walterChatInfo">
+                        <h3>Selecione um chat</h3>
+                        <p>Clique em um chat para começar</p>
                     </div>
-                    
-                    <div class="walter-messages" id="walterMessages">
-                        <div class="walter-loading">
-                            <div class="spinner"></div>
-                            <p>Carregando mensagens...</p>
-                        </div>
+                </div>
+                
+                <div class="walter-messages" id="walterMessages">
+                    <div class="walter-loading">
+                        <div class="spinner"></div>
+                        <p>Carregando mensagens...</p>
                     </div>
-                    
+                </div>
+                
+                <div class="walter-input-container">
                     <div class="walter-input-area">
                         <button class="walter-emoji-btn" id="walterEmojiBtn">
                             <i class="ph ph-smiley"></i>
