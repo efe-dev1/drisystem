@@ -307,11 +307,16 @@
             margin: 0 auto;
         }
 
-        .memorial-image {
+        .memorial-media {
             width: 100%;
             height: 280px;
             object-fit: cover;
             border-bottom: 2px solid rgb(40, 40, 40);
+        }
+
+        .memorial-media.video {
+            object-fit: contain;
+            background: #000;
         }
 
         .memorial-info {
@@ -685,7 +690,7 @@
                 MEMORIAL
             </h1>
             <button class="btn-primary" onclick="abrirModalAdicionar()">
-                ADICIONAR IMAGEM
+                ADICIONAR MÍDIA
             </button>
         </div>
 
@@ -693,7 +698,7 @@
         <div id="successMessage" class="success-message"></div>
 
         <div class="memorial-grid" id="memorialGrid">
-            <div class="empty-message">Carregando imagens...</div>
+            <div class="empty-message">Carregando mídias...</div>
         </div>
     </div>
 
@@ -708,19 +713,19 @@
 
             <div class="form-group">
                 <div class="input-wrapper">
-                    <input type="text" id="imagemTitulo" placeholder="TÍTULO DA IMAGEM">
+                    <input type="text" id="midiaTitulo" placeholder="TÍTULO">
                 </div>
             </div>
 
             <div class="form-group">
                 <div class="input-wrapper">
-                    <input type="url" id="imagemUrl" placeholder="URL DA IMAGEM">
+                    <input type="url" id="midiaUrl" placeholder="URL DA IMAGEM OU VÍDEO (MP4, WEBM, etc)">
                 </div>
             </div>
 
             <div class="modal-footer">
                 <button class="btn-modal secondary" onclick="fecharModalAdicionar()">CANCELAR</button>
-                <button class="btn-modal primary" onclick="adicionarImagem()">ADICIONAR</button>
+                <button class="btn-modal primary" onclick="adicionarMidia()">ADICIONAR</button>
             </div>
         </div>
     </div>
@@ -734,7 +739,7 @@
         let currentUser = null;
         let activeSubmenu = null;
         let userCargo = null;
-        let todasImagens = [];
+        let todasMidias = [];
         let meusLikes = new Set();
 
         function getBrasiliaTime() {
@@ -807,14 +812,14 @@
             const avatarUrl = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
             document.getElementById('userAvatar').src = avatarUrl;
 
-            await carregarImagens();
+            await carregarMidias();
             await carregarMeusLikes();
         });
 
         function abrirModalAdicionar() {
             document.getElementById('modalAdicionar').classList.add('show');
-            document.getElementById('imagemTitulo').value = '';
-            document.getElementById('imagemUrl').value = '';
+            document.getElementById('midiaTitulo').value = '';
+            document.getElementById('midiaUrl').value = '';
             document.getElementById('modalError').style.display = 'none';
             document.getElementById('modalSuccess').style.display = 'none';
         }
@@ -823,9 +828,18 @@
             document.getElementById('modalAdicionar').classList.remove('show');
         }
 
-        async function adicionarImagem() {
-            const titulo = document.getElementById('imagemTitulo').value.trim();
-            const url = document.getElementById('imagemUrl').value.trim();
+        function isVideoUrl(url) {
+            const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv'];
+            const lowerUrl = url.toLowerCase();
+            return videoExtensions.some(ext => lowerUrl.endsWith(ext)) || 
+                   lowerUrl.includes('youtube.com') || 
+                   lowerUrl.includes('youtu.be') ||
+                   lowerUrl.includes('vimeo.com');
+        }
+
+        async function adicionarMidia() {
+            const titulo = document.getElementById('midiaTitulo').value.trim();
+            const url = document.getElementById('midiaUrl').value.trim();
 
             if (!titulo || !url) {
                 mostrarErroModal('Preencha todos os campos');
@@ -846,36 +860,36 @@
                 if (error) throw error;
 
                 document.getElementById('modalSuccess').style.display = 'block';
-                document.getElementById('modalSuccess').innerHTML = 'Imagem adicionada!';
+                document.getElementById('modalSuccess').innerHTML = 'Mídia adicionada!';
                 
                 setTimeout(() => {
                     document.getElementById('modalSuccess').style.display = 'none';
                     fecharModalAdicionar();
                 }, 1500);
 
-                await carregarImagens();
+                await carregarMidias();
 
             } catch (error) {
-                console.error('Erro ao adicionar imagem:', error);
+                console.error('Erro ao adicionar mídia:', error);
                 mostrarErroModal('Erro ao adicionar: ' + error.message);
             }
         }
 
-        async function carregarImagens() {
+        async function carregarMidias() {
             try {
-                const { data: imagens, error } = await window.supabase
+                const { data: midias, error } = await window.supabase
                     .from('memorial_imagens')
                     .select('*')
                     .order('data_publicacao', { ascending: false });
 
                 if (error) throw error;
 
-                todasImagens = imagens || [];
+                todasMidias = midias || [];
                 atualizarGrid();
 
             } catch (error) {
-                console.error('Erro ao carregar imagens:', error);
-                document.getElementById('memorialGrid').innerHTML = '<div class="empty-message">Erro ao carregar imagens</div>';
+                console.error('Erro ao carregar mídias:', error);
+                document.getElementById('memorialGrid').innerHTML = '<div class="empty-message">Erro ao carregar mídias</div>';
             }
         }
 
@@ -899,43 +913,53 @@
         function atualizarGrid() {
             const grid = document.getElementById('memorialGrid');
 
-            if (todasImagens.length === 0) {
-                grid.innerHTML = '<div class="empty-message">Nenhuma imagem no memorial ainda</div>';
+            if (todasMidias.length === 0) {
+                grid.innerHTML = '<div class="empty-message">Nenhuma mídia no memorial ainda</div>';
                 return;
             }
 
-            grid.innerHTML = todasImagens.map(img => {
-                const data = new Date(img.data_publicacao);
+            grid.innerHTML = todasMidias.map(midia => {
+                const data = new Date(midia.data_publicacao);
                 const dataFormatada = data.toLocaleDateString('pt-BR');
                 
-                const liked = meusLikes.has(img.id);
+                const liked = meusLikes.has(midia.id);
                 const likeIcon = liked ? 'ph-fill' : 'ph';
                 const likeClass = liked ? 'liked' : '';
 
-                const avatarPublicador = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${img.publicada_por}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=s`;
+                const avatarPublicador = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${midia.publicada_por}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=s`;
+
+                const isVideo = isVideoUrl(midia.imagem_url);
+                const mediaElement = isVideo ? 
+                    `<video src="${midia.imagem_url}" 
+                        class="memorial-media video" 
+                        controls
+                        preload="metadata"
+                        onerror="this.style.display='none'; this.parentElement.innerHTML='<img src=\'https://i.imgur.com/8b3rI5q.png\' class=\'memorial-media\'>'">
+                    </video>` : 
+                    `<img src="${midia.imagem_url}" 
+                        alt="${midia.titulo}" 
+                        class="memorial-media"
+                        onerror="this.src='https://i.imgur.com/8b3rI5q.png'">`;
 
                 return `
                     <div class="memorial-card">
-                        <img src="${img.imagem_url}" 
-                             alt="${img.titulo}" 
-                             class="memorial-image"
-                             onerror="this.src='https://i.imgur.com/8b3rI5q.png'">
+                        ${mediaElement}
                         <div class="memorial-info">
-                            <div class="memorial-titulo">${img.titulo}</div>
+                            <div class="memorial-titulo">${midia.titulo}</div>
                             <div class="memorial-meta">
                                 <div class="memorial-publicado">
-                                    <img src="${avatarPublicador}" alt="${img.publicada_por}">
-                                    <span>${img.publicada_por}</span>
+                                    <img src="${avatarPublicador}" alt="${midia.publicada_por}">
+                                    <span>${midia.publicada_por}</span>
                                 </div>
                                 <div class="memorial-data">${dataFormatada}</div>
                             </div>
                             <div class="memorial-likes">
-                                <button class="like-button ${likeClass}" onclick="toggleLike(${img.id})">
+                                <button class="like-button ${likeClass}" onclick="toggleLike(${midia.id})">
                                     <i class="${likeIcon} ph-heart"></i>
-                                    <span class="like-count">${img.total_likes || 0}</span>
+                                    <span class="like-count">${midia.total_likes || 0}</span>
                                 </button>
-                                ${img.publicada_por === currentUser.nick || ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo) ? 
-                                    `<button class="btn-modal danger" style="padding: 4px 8px;" onclick="excluirImagem(${img.id})">
+                                ${midia.publicada_por === currentUser.nick || ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo) ? 
+                                    `<button class="btn-modal danger" style="padding: 4px 8px;" onclick="excluirMidia(${midia.id})">
                                         <i class="ph ph-trash"></i>
                                     </button>` : ''}
                             </div>
@@ -945,25 +969,25 @@
             }).join('');
         }
 
-        async function toggleLike(imagemId) {
+        async function toggleLike(midiaId) {
             try {
-                const liked = meusLikes.has(imagemId);
+                const liked = meusLikes.has(midiaId);
 
                 if (liked) {
                     const { error } = await window.supabase
                         .from('memorial_likes')
                         .delete()
-                        .eq('imagem_id', imagemId)
+                        .eq('imagem_id', midiaId)
                         .eq('usuario_nick', currentUser.nick);
 
                     if (error) throw error;
 
-                    meusLikes.delete(imagemId);
+                    meusLikes.delete(midiaId);
 
                     const { error: updateError } = await window.supabase
                         .from('memorial_imagens')
-                        .update({ total_likes: Math.max(0, (todasImagens.find(i => i.id === imagemId)?.total_likes || 0) - 1) })
-                        .eq('id', imagemId);
+                        .update({ total_likes: Math.max(0, (todasMidias.find(i => i.id === midiaId)?.total_likes || 0) - 1) })
+                        .eq('id', midiaId);
 
                     if (updateError) throw updateError;
 
@@ -971,7 +995,7 @@
                     const { error } = await window.supabase
                         .from('memorial_likes')
                         .insert({
-                            imagem_id: imagemId,
+                            imagem_id: midiaId,
                             usuario_nick: currentUser.nick,
                             data_like: getBrasiliaTime()
                         });
@@ -981,18 +1005,18 @@
                     }
 
                     if (!error) {
-                        meusLikes.add(imagemId);
+                        meusLikes.add(midiaId);
 
                         const { error: updateError } = await window.supabase
                             .from('memorial_imagens')
-                            .update({ total_likes: (todasImagens.find(i => i.id === imagemId)?.total_likes || 0) + 1 })
-                            .eq('id', imagemId);
+                            .update({ total_likes: (todasMidias.find(i => i.id === midiaId)?.total_likes || 0) + 1 })
+                            .eq('id', midiaId);
 
                         if (updateError) throw updateError;
                     }
                 }
 
-                await carregarImagens();
+                await carregarMidias();
                 await carregarMeusLikes();
 
             } catch (error) {
@@ -1001,23 +1025,23 @@
             }
         }
 
-        async function excluirImagem(imagemId) {
-            if (!confirm('Tem certeza que deseja excluir esta imagem?')) return;
+        async function excluirMidia(midiaId) {
+            if (!confirm('Tem certeza que deseja excluir esta mídia?')) return;
 
             try {
                 const { error } = await window.supabase
                     .from('memorial_imagens')
                     .delete()
-                    .eq('id', imagemId);
+                    .eq('id', midiaId);
 
                 if (error) throw error;
 
-                await carregarImagens();
-                mostrarSucesso('Imagem excluída!');
+                await carregarMidias();
+                mostrarSucesso('Mídia excluída!');
 
             } catch (error) {
                 console.error('Erro ao excluir:', error);
-                mostrarErro('Erro ao excluir imagem');
+                mostrarErro('Erro ao excluir mídia');
             }
         }
 
