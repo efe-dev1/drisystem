@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DRI System</title>
+    <title>DRI System - Escala Superintendente</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/iUwP1jk.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -39,8 +39,7 @@
             --success: #28a745;
             --warning: #ffc107;
             --info: #17a2b8;
-            --alpha: #4a90e2;
-            --bravo: #e24a4a;
+            --superintendente: #6f42c1;
             --justified: #6610f2;
         }
 
@@ -266,7 +265,7 @@
         }
 
         .title-left i {
-            color: var(--info);
+            color: var(--superintendente);
             font-size: 2rem;
         }
 
@@ -294,8 +293,8 @@
         }
 
         .btn-nav:hover {
-            border-color: var(--info);
-            color: var(--info);
+            border-color: var(--superintendente);
+            color: var(--superintendente);
         }
 
         .week-display {
@@ -333,41 +332,6 @@
         .btn-primary:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-        }
-
-        .quick-access {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-top: 20px;
-            justify-content: flex-end;
-            width: 100%;
-        }
-
-        .btn-sheet {
-            padding: 12px 25px;
-            background: transparent;
-            border: 2px solid rgb(60, 60, 60);
-            border-radius: 8px;
-            color: white;
-            font-weight: 600;
-            font-size: 0.95rem;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-sheet.alpha:hover {
-            border-color: var(--alpha);
-            color: var(--alpha);
-        }
-
-        .btn-sheet.bravo:hover {
-            border-color: var(--bravo);
-            color: var(--bravo);
         }
 
         .table-container {
@@ -408,7 +372,7 @@
 
         .ordem {
             font-weight: 700;
-            color: var(--info);
+            color: var(--superintendente);
         }
 
         .status-badge {
@@ -443,28 +407,28 @@
             border: 2px solid var(--justified);
         }
 
-        .fiscalizador-select {
+        .superintendente-select {
             background: rgb(40, 40, 40);
             border: 2px solid rgb(60, 60, 60);
             border-radius: 6px;
             color: white;
             padding: 6px;
             font-size: 0.85rem;
-            width: 140px;
+            width: 160px;
             cursor: pointer;
         }
 
-        .fiscalizador-select:focus {
+        .superintendente-select:focus {
             outline: none;
-            border-color: var(--info);
+            border-color: var(--superintendente);
         }
 
-        .fiscalizador-select option {
+        .superintendente-select option {
             background: rgb(40, 40, 40);
             color: white;
         }
 
-        .fiscalizador-text {
+        .superintendente-text {
             font-weight: 500;
             color: white;
             cursor: pointer;
@@ -473,7 +437,7 @@
             transition: all 0.3s ease;
         }
 
-        .fiscalizador-text:hover {
+        .superintendente-text:hover {
             background: rgba(255, 255, 255, 0.1);
         }
 
@@ -492,8 +456,8 @@
         }
 
         .btn-action:hover {
-            border-color: var(--info);
-            color: var(--info);
+            border-color: var(--superintendente);
+            color: var(--superintendente);
         }
 
         .btn-action:disabled {
@@ -521,8 +485,8 @@
         }
 
         .edit-btn:hover {
-            border-color: var(--info);
-            color: var(--info);
+            border-color: var(--superintendente);
+            color: var(--superintendente);
         }
 
         .modal {
@@ -627,7 +591,7 @@
         .radio-label input[type="radio"] {
             width: 18px;
             height: 18px;
-            accent-color: var(--info);
+            accent-color: var(--superintendente);
         }
 
         .modal-footer {
@@ -740,12 +704,8 @@
             border-bottom: 2px solid rgb(40, 40, 40);
         }
 
-        .escala-header.alpha {
-            border-bottom-color: var(--alpha);
-        }
-
-        .escala-header.bravo {
-            border-bottom-color: var(--bravo);
+        .escala-header.superintendente {
+            border-bottom-color: var(--superintendente);
         }
 
         .escala-header h2 {
@@ -756,14 +716,7 @@
 
         .escala-header i {
             font-size: 1.5rem;
-        }
-
-        .escala-header.alpha i {
-            color: var(--alpha);
-        }
-
-        .escala-header.bravo i {
-            color: var(--bravo);
+            color: var(--superintendente);
         }
 
         .loading {
@@ -831,10 +784,10 @@
                     </div>
 
                     <div class="submenu" id="escalasSubmenu">
-                        <div class="submenu-item active" onclick="window.location.href='escala_fiscalizador.html'">
+                        <div class="submenu-item" onclick="window.location.href='escala_fiscalizador.html'">
                             Fiscalizador
                         </div>
-                        <div class="submenu-item" onclick="window.location.href='escala_superintendente.html'">
+                        <div class="submenu-item active" onclick="window.location.href='escala_superintendente.html'">
                             Superintendente
                         </div>
                     </div>
@@ -867,7 +820,6 @@
             <div id="modalError" class="error-message"></div>
             <div id="modalSuccess" class="success-message"></div>
             
-            <input type="hidden" id="modalTipo" value="">
             <input type="hidden" id="modalDataFuncao" value="">
             
             <div class="form-group">
@@ -911,24 +863,7 @@
     <div class="main-content">
         <div class="page-title">
             <div class="title-left">
-                <h1>ESCALA FISCALIZADOR</h1>
-            </div>
-            <div class="quick-access" style="display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap; width: 100%; margin-top: 20px;">
-                <button class="btn-sheet alpha" onclick="window.open('https://docs.google.com/spreadsheets/d/1f9fPMnAosjKEvyZ5LJtuAz-kmdn1-VXRA9Nawr2tR3k/edit?gid=482045927#gid=482045927', '_blank')">
-                    PROF
-                </button>
-                <button class="btn-sheet alpha" onclick="window.open('https://docs.google.com/spreadsheets/d/1q744dbqoXuX-bzbH_mqcnly1AeFd3vzKHGaNGrA45kg/edit?gid=1666370622#gid=1666370622', '_blank')">
-                    CAP
-                </button>
-                <button class="btn-primary" onclick="gerarEscalaAtual()" id="btnGerar">
-                    GERAR ESCALA ATUAL
-                </button>
-                <button class="btn-sheet bravo" onclick="window.open('https://docs.google.com/spreadsheets/d/1eZ3hFf0XEVaVbkgviJLZWJvpIkzufH8PQlfqbkDaT5s/edit?gid=1666370622#gid=1666370622', '_blank')">
-                    MEN
-                </button>
-                <button class="btn-sheet bravo" onclick="window.open('https://docs.google.com/spreadsheets/d/1TWbKL2P0kk8wIrR0uDxDk47ZYOKOlkCDakFkKD-ruHA/edit?gid=593055626#gid=593055626', '_blank')">
-                    GRAD
-                </button>
+                <h1>ESCALA SUPERINTENDENTE</h1>
             </div>
             <div class="week-navigation" style="display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap; width: 100%;">
                 <button class="btn-nav" onclick="navegarSemana('anterior')">
@@ -939,6 +874,11 @@
                     PRÓXIMA <i class="ph ph-caret-right"></i>
                 </button>
             </div>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap; width: 100%; margin-top: 20px;">
+                <button class="btn-primary" onclick="gerarEscalaAtual()" id="btnGerar">
+                    GERAR ESCALA ATUAL
+                </button>
+            </div>
         </div>
 
         <div id="errorMessage" class="error-message"></div>
@@ -946,16 +886,16 @@
         <div id="warningMessage" class="warning-message"></div>
 
         <div class="escala-card">
-            <div class="escala-header alpha">
-                <h2>ESCALA ALPHA</h2>
+            <div class="escala-header superintendente">
+                <h2>ESCALA SEMANAL</h2>
                 <div class="edit-controls">
-                    <button class="edit-btn" id="editALPHABtn" onclick="toggleEditMode('ALPHA')">
+                    <button class="edit-btn" id="editSUPERINTENDENTEBtn" onclick="toggleEditMode()">
                         EDITAR
                     </button>
-                    <button class="edit-btn" id="saveALPHABtn" style="display: none;" onclick="salvarEdicoes('ALPHA')">
+                    <button class="edit-btn" id="saveSUPERINTENDENTEBtn" style="display: none;" onclick="salvarEdicoes()">
                         SALVAR
                     </button>
-                    <button class="edit-btn" id="cancelALPHABtn" style="display: none;" onclick="cancelarEdicoes('ALPHA')">
+                    <button class="edit-btn" id="cancelSUPERINTENDENTEBtn" style="display: none;" onclick="cancelarEdicoes()">
                         CANCELAR
                     </button>
                 </div>
@@ -967,50 +907,13 @@
                             <th>DIA</th>
                             <th>ORDEM</th>
                             <th>DATA</th>
-                            <th>FISCALIZADOR</th>
+                            <th>SUPERINTENDENTE</th>
                             <th>PRAZO</th>
                             <th>STATUS</th>
                             <th>AÇÃO</th>
                         </tr>
                     </thead>
-                    <tbody id="alphaTableBody">
-                        <tr>
-                            <td colspan="7" class="empty-message">Carregando...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="escala-card">
-            <div class="escala-header bravo">
-                <h2>ESCALA BRAVO</h2>
-                <div class="edit-controls">
-                    <button class="edit-btn" id="editBRAVOBtn" onclick="toggleEditMode('BRAVO')">
-                        EDITAR
-                    </button>
-                    <button class="edit-btn" id="saveBRAVOBtn" style="display: none;" onclick="salvarEdicoes('BRAVO')">
-                        SALVAR
-                    </button>
-                    <button class="edit-btn" id="cancelBRAVOBtn" style="display: none;" onclick="cancelarEdicoes('BRAVO')">
-                        CANCELAR
-                    </button>
-                </div>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>DIA</th>
-                            <th>ORDEM</th>
-                            <th>DATA</th>
-                            <th>FISCALIZADOR</th>
-                            <th>PRAZO</th>
-                            <th>STATUS</th>
-                            <th>AÇÃO</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bravoTableBody">
+                    <tbody id="superintendenteTableBody">
                         <tr>
                             <td colspan="7" class="empty-message">Carregando...</td>
                         </tr>
@@ -1033,11 +936,10 @@
         let currentUser = null;
         let activeSubmenu = null;
         let userCargo = null;
-        let fiscalizadores = [];
-        let escalaAlpha = [];
-        let escalaBravo = [];
-        let editMode = { ALPHA: false, BRAVO: false };
-        let alteracoes = { ALPHA: {}, BRAVO: {} };
+        let superintendentes = [];
+        let escalaSuperintendente = [];
+        let editMode = false;
+        let alteracoes = {};
         let semanasOffset = 0;
 
         const DIAS_SEMANA = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
@@ -1074,9 +976,9 @@
             return prazo;
         }
 
-        function gerarOrdem(tipo, data) {
+        function gerarOrdem(data) {
             const dia = data.getDate();
-            return `${tipo}${dia}`;
+            return `S${dia}`;
         }
 
         function toggleProfileDropdown() {
@@ -1105,7 +1007,7 @@
             }
         });
 
-        document.addEventListener('DOMContentLoaded', async () => { 
+        document.addEventListener('DOMContentLoaded', async () => {
             const autenticado = await Auth.isAuthenticated();
             if (!autenticado) {
                 window.location.href = 'index.html';
@@ -1115,7 +1017,7 @@
             currentUser = await Auth.getCurrentUser();
             userCargo = currentUser.cargo;
 
-            const podeAcessar = ['Fiscalizador', 'Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+            const podeAcessar = ['Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
             if (!podeAcessar) {
                 window.location.href = 'home.html';
                 return;
@@ -1136,22 +1038,16 @@
                 nav.appendChild(adminItem);
             }
             
-            const editAlphaBtn = document.getElementById('editALPHABtn');
-            const editBravoBtn = document.getElementById('editBRAVOBtn');
-            
-            if (editAlphaBtn) {
-                editAlphaBtn.style.display = podeEditarEscalas ? 'inline-flex' : 'none';
-            }
-            
-            if (editBravoBtn) {
-                editBravoBtn.style.display = podeEditarEscalas ? 'inline-flex' : 'none';
+            const editBtn = document.getElementById('editSUPERINTENDENTEBtn');
+            if (editBtn) {
+                editBtn.style.display = podeEditarEscalas ? 'inline-flex' : 'none';
             }
 
             document.getElementById('userNick').textContent = currentUser.nick;
             const avatarUrl = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
             document.getElementById('userAvatar').src = avatarUrl;
 
-            await carregarFiscalizadores();
+            await carregarSuperintendentes();
             await carregarEscalas();
 
             setInterval(() => {
@@ -1163,19 +1059,19 @@
             }, 1000);
         });
 
-        async function carregarFiscalizadores() {
+        async function carregarSuperintendentes() {
             try {
                 const { data } = await window.supabase
                     .from('usuarios')
                     .select('nick')
-                    .eq('cargo', 'Fiscalizador')
+                    .eq('cargo', 'Superintendente')
                     .eq('status', 'ATIVO')
                     .eq('verificado', true)
                     .order('nick');
 
-                fiscalizadores = data || [];
+                superintendentes = data || [];
             } catch (error) {
-                console.error('Erro ao carregar fiscalizadores:', error);
+                console.error('Erro ao carregar superintendentes:', error);
             }
         }
 
@@ -1193,7 +1089,7 @@
                 dataFim.setDate(dataFim.getDate() + 14);
 
                 const { data, error } = await window.supabase
-                    .from('escalas_fiscalizador')
+                    .from('escalas_superintendente')
                     .select('*')
                     .gte('data_funcao', dataInicio.toISOString().split('T')[0])
                     .lte('data_funcao', dataFim.toISOString().split('T')[0])
@@ -1201,15 +1097,7 @@
 
                 if (error) throw error;
 
-                const escalas = data || [];
-                
-                escalaAlpha = escalas.filter(e => e.tipo === 'ALPHA').sort((a, b) => 
-                    new Date(a.data_funcao) - new Date(b.data_funcao)
-                );
-                
-                escalaBravo = escalas.filter(e => e.tipo === 'BRAVO').sort((a, b) => 
-                    new Date(a.data_funcao) - new Date(b.data_funcao)
-                );
+                escalaSuperintendente = data || [];
 
                 atualizarTabelas();
                 atualizarInfoSemana();
@@ -1243,23 +1131,20 @@
             dataAlvo.setDate(dataBase.getDate() + (semanasOffset * 7));
             
             const dias = getDiasSemana(dataAlvo);
-            document.getElementById('alphaTableBody').innerHTML = gerarLinhasTabela('ALPHA', dias);
-            document.getElementById('bravoTableBody').innerHTML = gerarLinhasTabela('BRAVO', dias);
+            document.getElementById('superintendenteTableBody').innerHTML = gerarLinhasTabela(dias);
             document.getElementById('lastUpdate').textContent = `Última atualização: ${getBrasiliaTime().toLocaleString('pt-BR')}`;
         }
 
-        function gerarLinhasTabela(tipo, dias) {
-            const escalas = tipo === 'ALPHA' ? escalaAlpha : escalaBravo;
+        function gerarLinhasTabela(dias) {
             const podeEditar = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
-            const podeRegistrar = ['Fiscalizador', 'Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
-            const emEdicao = editMode[tipo];
+            const podeRegistrar = ['Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
 
             return dias.map((dia) => {
                 const diaSemana = DIAS_SEMANA[dia.getDay()];
 
-                const escala = escalas.find(e => {
+                const escala = escalaSuperintendente.find(e => {
                     const dataEscala = new Date(e.data_funcao + 'T00:00:00');
-                    return dataEscala.toDateString() === dia.toDateString() && e.tipo === tipo;
+                    return dataEscala.toDateString() === dia.toDateString();
                 });
                 
                 const prazo = escala ? new Date(escala.prazo) : getPrazo(dia);
@@ -1283,27 +1168,27 @@
                     statusText = 'JUSTIFICADO';
                 }
 
-                let fiscalizadorDisplay = '';
+                let superintendenteDisplay = '';
                 const escalaId = escala ? escala.id : null;
-                const fiscalizadorAtual = escala ? escala.fiscalizador_nick : null;
+                const superintendenteAtual = escala ? escala.superintendente_nick : null;
 
-                if (emEdicao && escalaId && podeEditar) {
-                    const valorAlterado = alteracoes[tipo][escalaId] !== undefined ? alteracoes[tipo][escalaId] : fiscalizadorAtual;
-                    fiscalizadorDisplay = `
-                        <select class="fiscalizador-select" data-escala-id="${escalaId}" data-tipo="${tipo}" onchange="registrarAlteracao('${tipo}', ${escalaId}, this.value)">
+                if (editMode && escalaId && podeEditar) {
+                    const valorAlterado = alteracoes[escalaId] !== undefined ? alteracoes[escalaId] : superintendenteAtual;
+                    superintendenteDisplay = `
+                        <select class="superintendente-select" data-escala-id="${escalaId}" onchange="registrarAlteracao(${escalaId}, this.value)">
                             <option value="">SELECIONAR</option>
-                            ${fiscalizadores.map(f => 
-                                `<option value="${f.nick}" ${valorAlterado === f.nick ? 'selected' : ''}>${f.nick}</option>`
+                            ${superintendentes.map(s => 
+                                `<option value="${s.nick}" ${valorAlterado === s.nick ? 'selected' : ''}>${s.nick}</option>`
                             ).join('')}
                         </select>
                     `;
                 } else {
-                    fiscalizadorDisplay = escala && escala.fiscalizador_nick ? 
-                        `<span class="fiscalizador-text">${escala.fiscalizador_nick}</span>` : 
-                        '<span class="fiscalizador-text">-</span>';
+                    superintendenteDisplay = escala && escala.superintendente_nick ? 
+                        `<span class="superintendente-text">${escala.superintendente_nick}</span>` : 
+                        '<span class="superintendente-text">-</span>';
                 }
 
-                const ordem = escala ? escala.ordem : gerarOrdem(tipo.charAt(0), dia);
+                const ordem = escala ? escala.ordem : gerarOrdem(dia);
                 const podeClicar = podeRegistrar && status === 'PENDENTE';
 
                 return `
@@ -1311,12 +1196,12 @@
                         <td class="dia-semana">${diaSemana}</td>
                         <td class="ordem">${ordem}</td>
                         <td>${dataFiscalizadaStr}</td>
-                        <td>${fiscalizadorDisplay}</td>
+                        <td>${superintendenteDisplay}</td>
                         <td class="prazo-cell">${prazoStr}</td>
                         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                         <td>
                             ${escalaId ? 
-                                `<button class="btn-action" onclick="abrirModal('${tipo}', '${dia.toISOString()}')" ${!podeClicar ? 'disabled' : ''}>
+                                `<button class="btn-action" onclick="abrirModal('${dia.toISOString()}')" ${!podeClicar ? 'disabled' : ''}>
                                     REGISTRAR
                                 </button>` 
                                 : '<span class="btn-action" style="opacity:0.3;">-</span>'
@@ -1327,11 +1212,11 @@
             }).join('');
         }
 
-        function registrarAlteracao(tipo, escalaId, novoNick) {
-            alteracoes[tipo][escalaId] = novoNick || null;
+        function registrarAlteracao(escalaId, novoNick) {
+            alteracoes[escalaId] = novoNick || null;
         }
 
-        function toggleEditMode(tipo) {
+        function toggleEditMode() {
             const cargosPermitidos = ['Vice-Líder', 'Líder', 'DEV'];
             
             if (!cargosPermitidos.includes(userCargo)) {
@@ -1339,52 +1224,50 @@
                 return;
             }
 
-            editMode[tipo] = !editMode[tipo];
+            editMode = !editMode;
 
-            const editBtn = document.getElementById(`edit${tipo}Btn`);
-            const saveBtn = document.getElementById(`save${tipo}Btn`);
-            const cancelBtn = document.getElementById(`cancel${tipo}Btn`);
+            const editBtn = document.getElementById('editSUPERINTENDENTEBtn');
+            const saveBtn = document.getElementById('saveSUPERINTENDENTEBtn');
+            const cancelBtn = document.getElementById('cancelSUPERINTENDENTEBtn');
             
             if (!editBtn || !saveBtn || !cancelBtn) return;
             
-            editBtn.style.display = editMode[tipo] ? 'none' : 'inline-flex';
-            saveBtn.style.display = editMode[tipo] ? 'inline-flex' : 'none';
-            cancelBtn.style.display = editMode[tipo] ? 'inline-flex' : 'none';
+            editBtn.style.display = editMode ? 'none' : 'inline-flex';
+            saveBtn.style.display = editMode ? 'inline-flex' : 'none';
+            cancelBtn.style.display = editMode ? 'inline-flex' : 'none';
             
-            if (!editMode[tipo]) {
-                alteracoes[tipo] = {};
+            if (!editMode) {
+                alteracoes = {};
             }
             
             atualizarTabelas();
         }
 
-        async function salvarEdicoes(tipo) {
-            const editBtn = document.getElementById(`edit${tipo}Btn`);
-            const saveBtn = document.getElementById(`save${tipo}Btn`);
-            const cancelBtn = document.getElementById(`cancel${tipo}Btn`);
+        async function salvarEdicoes() {
+            const editBtn = document.getElementById('editSUPERINTENDENTEBtn');
+            const saveBtn = document.getElementById('saveSUPERINTENDENTEBtn');
+            const cancelBtn = document.getElementById('cancelSUPERINTENDENTEBtn');
             
             if (!editBtn || !saveBtn || !cancelBtn) return;
             
             try {
-                const alteracoesTipo = alteracoes[tipo];
-                
-                if (Object.keys(alteracoesTipo).length === 0) {
+                if (Object.keys(alteracoes).length === 0) {
                     mostrarSucesso('Nenhuma alteração para salvar');
-                    cancelarEdicoes(tipo);
+                    cancelarEdicoes();
                     return;
                 }
 
-                for (const [escalaId, novoNick] of Object.entries(alteracoesTipo)) {
+                for (const [escalaId, novoNick] of Object.entries(alteracoes)) {
                     const { error } = await window.supabase
-                        .from('escalas_fiscalizador')
-                        .update({ fiscalizador_nick: novoNick || null })
+                        .from('escalas_superintendente')
+                        .update({ superintendente_nick: novoNick || null })
                         .eq('id', escalaId);
 
                     if (error) throw error;
                 }
                 
-                alteracoes[tipo] = {};
-                editMode[tipo] = false;
+                alteracoes = {};
+                editMode = false;
                 
                 editBtn.style.display = 'inline-flex';
                 saveBtn.style.display = 'none';
@@ -1399,15 +1282,15 @@
             }
         }
 
-        function cancelarEdicoes(tipo) {
-            const editBtn = document.getElementById(`edit${tipo}Btn`);
-            const saveBtn = document.getElementById(`save${tipo}Btn`);
-            const cancelBtn = document.getElementById(`cancel${tipo}Btn`);
+        function cancelarEdicoes() {
+            const editBtn = document.getElementById('editSUPERINTENDENTEBtn');
+            const saveBtn = document.getElementById('saveSUPERINTENDENTEBtn');
+            const cancelBtn = document.getElementById('cancelSUPERINTENDENTEBtn');
             
             if (!editBtn || !saveBtn || !cancelBtn) return;
             
-            alteracoes[tipo] = {};
-            editMode[tipo] = false;
+            alteracoes = {};
+            editMode = false;
             
             editBtn.style.display = 'inline-flex';
             saveBtn.style.display = 'none';
@@ -1463,38 +1346,35 @@
                 const dias = getDiasSemana(dataSemana);
                 let novasEscalas = 0;
 
-                for (const tipo of ['ALPHA', 'BRAVO']) {
-                    for (const dia of dias) {
-                        const dataStr = dia.toISOString().split('T')[0];
-                        const ordem = gerarOrdem(tipo.charAt(0), dia);
-                        const prazo = getPrazo(dia);
+                for (const dia of dias) {
+                    const dataStr = dia.toISOString().split('T')[0];
+                    const ordem = gerarOrdem(dia);
+                    const prazo = getPrazo(dia);
 
-                        const { data: existente } = await window.supabase
-                            .from('escalas_fiscalizador')
-                            .select('id')
-                            .eq('tipo', tipo)
-                            .eq('data_funcao', dataStr)
-                            .maybeSingle();
+                    const { data: existente } = await window.supabase
+                        .from('escalas_superintendente')
+                        .select('id')
+                        .eq('data_funcao', dataStr)
+                        .maybeSingle();
 
-                        if (!existente) {
-                            const { error } = await window.supabase
-                                .from('escalas_fiscalizador')
-                                .insert([{
-                                    tipo: tipo,
-                                    ordem: ordem,
-                                    data_funcao: dataStr,
-                                    prazo: prazo.toISOString(),
-                                    status: 'PENDENTE'
-                                }]);
+                    if (!existente) {
+                        const { error } = await window.supabase
+                            .from('escalas_superintendente')
+                            .insert([{
+                                tipo: 'SUPERINTENDENTE',
+                                ordem: ordem,
+                                data_funcao: dataStr,
+                                prazo: prazo.toISOString(),
+                                status: 'PENDENTE'
+                            }]);
 
-                            if (error) throw error;
-                            novasEscalas++;
-                        }
+                        if (error) throw error;
+                        novasEscalas++;
                     }
                 }
 
                 if (novasEscalas > 0) {
-                    await atribuirFiscalizadoresAleatorios(dataSemana);
+                    await atribuirSuperintendentesAleatorios(dataSemana);
                 }
 
                 return novasEscalas;
@@ -1505,9 +1385,9 @@
             }
         }
 
-        async function atribuirFiscalizadoresAleatorios(dataSemana) {
+        async function atribuirSuperintendentesAleatorios(dataSemana) {
             try {
-                if (fiscalizadores.length === 0) return;
+                if (superintendentes.length === 0) return;
 
                 const dataInicio = dataSemana.toISOString().split('T')[0];
                 const dataFim = new Date(dataSemana);
@@ -1515,58 +1395,44 @@
                 const dataFimStr = dataFim.toISOString().split('T')[0];
 
                 const { data: escalasSemana } = await window.supabase
-                    .from('escalas_fiscalizador')
+                    .from('escalas_superintendente')
                     .select('*')
                     .gte('data_funcao', dataInicio)
                     .lt('data_funcao', dataFimStr);
 
                 if (!escalasSemana || escalasSemana.length === 0) return;
 
-                const fiscalizadoresCopy = [...fiscalizadores];
-                const fiscalizadoresAlpha = [];
-                const fiscalizadoresBravo = [];
+                const superintendentesCopy = [...superintendentes];
+                const superintendentesEscala = [];
 
                 for (let i = 0; i < 7; i++) {
-                    if (fiscalizadoresCopy.length > 0) {
-                        const randomIndex = Math.floor(Math.random() * fiscalizadoresCopy.length);
-                        fiscalizadoresAlpha.push(fiscalizadoresCopy[randomIndex].nick);
-                        fiscalizadoresCopy.splice(randomIndex, 1);
-                    }
-                }
-
-                fiscalizadoresCopy.push(...fiscalizadores);
-
-                for (let i = 0; i < 7; i++) {
-                    if (fiscalizadoresCopy.length > 0) {
-                        const randomIndex = Math.floor(Math.random() * fiscalizadoresCopy.length);
-                        fiscalizadoresBravo.push(fiscalizadoresCopy[randomIndex].nick);
-                        fiscalizadoresCopy.splice(randomIndex, 1);
+                    if (superintendentesCopy.length > 0) {
+                        const randomIndex = Math.floor(Math.random() * superintendentesCopy.length);
+                        superintendentesEscala.push(superintendentesCopy[randomIndex].nick);
+                        superintendentesCopy.splice(randomIndex, 1);
+                    } else {
+                        superintendentesCopy.push(...superintendentes);
+                        const randomIndex = Math.floor(Math.random() * superintendentesCopy.length);
+                        superintendentesEscala.push(superintendentesCopy[randomIndex].nick);
+                        superintendentesCopy.splice(randomIndex, 1);
                     }
                 }
 
                 for (const escala of escalasSemana) {
-                    if (!escala.fiscalizador_nick) {
-                        let nickEscolhido = null;
-                        
-                        if (escala.tipo === 'ALPHA') {
-                            const index = new Date(escala.data_funcao).getDay();
-                            const diaIndex = index === 0 ? 6 : index - 1;
-                            nickEscolhido = fiscalizadoresAlpha[diaIndex] || fiscalizadores[Math.floor(Math.random() * fiscalizadores.length)].nick;
-                        } else {
-                            const index = new Date(escala.data_funcao).getDay();
-                            const diaIndex = index === 0 ? 6 : index - 1;
-                            nickEscolhido = fiscalizadoresBravo[diaIndex] || fiscalizadores[Math.floor(Math.random() * fiscalizadores.length)].nick;
-                        }
+                    if (!escala.superintendente_nick) {
+                        const index = new Date(escala.data_funcao).getDay();
+                        const diaIndex = index === 0 ? 6 : index - 1;
+                        const nickEscolhido = superintendentesEscala[diaIndex] || superintendentes[Math.floor(Math.random() * superintendentes.length)].nick;
                         
                         await window.supabase
-                            .from('escalas_fiscalizador')
-                            .update({ fiscalizador_nick: nickEscolhido })
+                            .from('escalas_superintendente')
+                            .update({ superintendente_nick: nickEscolhido })
                             .eq('id', escala.id);
                     }
                 }
 
             } catch (error) {
-                console.error('Erro ao atribuir fiscalizadores:', error);
+                console.error('Erro ao atribuir superintendentes:', error);
             }
         }
 
@@ -1575,7 +1441,7 @@
                 const agora = getBrasiliaTime();
 
                 const { data: escalas, error } = await window.supabase
-                    .from('escalas_fiscalizador')
+                    .from('escalas_superintendente')
                     .select('*')
                     .eq('status', 'PENDENTE')
                     .lt('prazo', agora.toISOString());
@@ -1585,7 +1451,7 @@
                 if (escalas && escalas.length > 0) {
                     for (const escala of escalas) {
                         await window.supabase
-                            .from('escalas_fiscalizador')
+                            .from('escalas_superintendente')
                             .update({ status: 'NAO_REALIZADO' })
                             .eq('id', escala.id);
                     }
@@ -1597,8 +1463,7 @@
             }
         }
 
-        function abrirModal(tipo, dataFuncao) {
-            document.getElementById('modalTipo').value = tipo;
+        function abrirModal(dataFuncao) {
             document.getElementById('modalDataFuncao').value = dataFuncao;
             document.getElementById('modalNick').value = currentUser.nick;
             document.getElementById('modalError').style.display = 'none';
@@ -1627,7 +1492,6 @@
 
         async function enviarRegistro() {
             const nick = document.getElementById('modalNick').value.trim();
-            const tipo = document.getElementById('modalTipo').value;
             const dataFuncao = document.getElementById('modalDataFuncao').value;
             const acao = document.querySelector('input[name="modalAcao"]:checked').value;
             
@@ -1651,37 +1515,36 @@
                 const dataStr = new Date(dataFuncao).toISOString().split('T')[0];
 
                 const { data: escalaData, error } = await window.supabase
-                    .from('escalas_fiscalizador')
+                    .from('escalas_superintendente')
                     .select('*')
-                    .eq('tipo', tipo)
                     .eq('data_funcao', dataStr)
                     .maybeSingle();
 
                 if (error) throw error;
 
                 if (!escalaData) {
-                    mostrarErroModal(`Escala ${tipo} não encontrada para a data ${new Date(dataFuncao).toLocaleDateString('pt-BR')}`);
+                    mostrarErroModal(`Escala não encontrada para a data ${new Date(dataFuncao).toLocaleDateString('pt-BR')}`);
                     return;
                 }
 
-                if (escalaData.fiscalizador_nick !== currentUser.nick && !['Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo)) {
-                    mostrarErroModal('Apenas o fiscalizador designado pode registrar');
+                if (escalaData.superintendente_nick !== currentUser.nick && !['Vice-Líder', 'Líder', 'DEV'].includes(userCargo)) {
+                    mostrarErroModal('Apenas o superintendente designado pode registrar');
                     return;
                 }
 
                 const novoStatus = acao === 'CONCLUSÃO' ? 'CONCLUIDO' : 'JUSTIFICADO';
                 
                 const { error: updateError } = await window.supabase
-                    .from('escalas_fiscalizador')
+                    .from('escalas_superintendente')
                     .update({ status: novoStatus })
                     .eq('id', escalaData.id);
 
                 if (updateError) throw updateError;
 
                 const dados = {
-                    fiscalizador_nick: nick,
+                    superintendente_nick: nick,
                     escala_id: escalaData.id,
-                    escala_tipo: tipo,
+                    escala_tipo: 'SUPERINTENDENTE',
                     ordem: escalaData.ordem,
                     tipo_registro: acao,
                     autor_nick: currentUser.nick,
