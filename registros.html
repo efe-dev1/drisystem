@@ -379,23 +379,23 @@
             border: 2px solid var(--danger);
         }
 
-        .status-select {
+        .punicao-select {
             background: rgb(40, 40, 40);
             border: 2px solid rgb(60, 60, 60);
             border-radius: 6px;
             color: white;
-            padding: 6px 10px;
+            padding: 6px;
+            font-size: 0.85rem;
+            width: 140px;
             cursor: pointer;
-            font-size: 0.9rem;
-            width: 130px;
         }
 
-        .status-select:focus {
+        .punicao-select:focus {
             outline: none;
             border-color: var(--info);
         }
 
-        .status-select option {
+        .punicao-select option {
             background: rgb(40, 40, 40);
             color: white;
         }
@@ -559,6 +559,25 @@
         .profile-dropdown-item.logout:hover {
             background: rgba(220, 53, 69, 0.1);
         }
+
+        .btn-action {
+            padding: 6px 12px;
+            background: transparent;
+            border: 2px solid rgb(60, 60, 60);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-action:hover {
+            border-color: white;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -593,7 +612,7 @@
                         <div class="submenu-item" onclick="window.location.href='documentacoes.html'">
                             <i class="ph ph-folder"></i> Documentações
                         </div>
-                        <div class="submenu-item active" onclick="window.location.href='memorial.html'">
+                        <div class="submenu-item" onclick="window.location.href='memorial.html'">
                             <i class="ph ph-image"></i> Memorial
                         </div>
                         <div class="submenu-item" onclick="window.location.href='reportar.html'">
@@ -722,14 +741,16 @@
                             <th>FISCALIZADOR</th>
                             <th>INFRATOR</th>
                             <th>INFRAÇÃO</th>
+                            <th>CRIME</th>
                             <th>PUNIÇÃO</th>
                             <th>COMPROVAÇÃO</th>
                             <th>STATUS</th>
+                            <th>AÇÕES</th>
                         </tr>
                     </thead>
                     <tbody id="infracoesTableBody">
                         <tr>
-                            <td colspan="7" class="empty-message">Carregando infrações...</td>
+                            <td colspan="9" class="empty-message">Carregando infrações...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -761,6 +782,15 @@
         let paginaAtual = 1;
         let itensPorPagina = 15;
 
+        const opcoesPunicao = [
+            'Advertência verbal',
+            'Advertência interna',
+            'Rebaixamento',
+            'Expulsão',
+            'Notificação por erros de postagem',
+            'Medalhas efetivas negativas'
+        ];
+
         function getBrasiliaTime() {
             const data = new Date();
             const offsetBrasilia = -3;
@@ -768,9 +798,9 @@
             return new Date(utc + (3600000 * offsetBrasilia));
         }
 
-        function toggleDropdown() {
-            const button = document.getElementById('profileButton');
-            button.classList.toggle('active');
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
         }
 
         function toggleSubmenu(menu) {
@@ -805,7 +835,7 @@
             }
 
             currentUser = await Auth.getCurrentUser();
-            const userCargo = currentUser.cargo;
+            userCargo = currentUser.cargo;
 
             const podeAcessar = ['Fiscalizador', 'Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
             if (!podeAcessar) {
@@ -852,13 +882,8 @@
             } catch (error) {
                 console.error('Erro ao carregar infrações:', error);
                 document.getElementById('infracoesTableBody').innerHTML = 
-                    '<tr><td colspan="7" class="empty-message">Erro ao carregar infrações</td></tr>';
+                    '<tr><td colspan="9" class="empty-message">Erro ao carregar infrações</td></tr>';
             }
-        }
-
-        function toggleProfileDropdown() {
-            const dropdown = document.getElementById('profileDropdown');
-            dropdown.classList.toggle('show');
         }
 
         function atualizarStats() {
@@ -923,7 +948,7 @@
             const tbody = document.getElementById('infracoesTableBody');
 
             if (infracoesFiltradas.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="empty-message">Nenhuma infração encontrada</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" class="empty-message">Nenhuma infração encontrada</td></tr>';
                 return;
             }
 
@@ -931,7 +956,7 @@
             const fim = inicio + itensPorPagina;
             const infracoesPagina = infracoesFiltradas.slice(inicio, fim);
 
-            const podeAlterarStatus = ['Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+            const podeDefinirPunicao = ['Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
 
             tbody.innerHTML = infracoesPagina.map(inf => {
                 const dataUTC = new Date(inf.data_criacao);
@@ -943,17 +968,30 @@
                 if (inf.status === 'APROVADO') statusClass = 'status-aprovado';
                 if (inf.status === 'REPROVADO') statusClass = 'status-reprovado';
 
-                let statusDisplay = '';
-                if (podeAlterarStatus) {
-                    statusDisplay = `
-                        <select class="status-select" onchange="alterarStatus('${inf.id}', this.value)">
-                            <option value="PENDENTE" ${inf.status === 'PENDENTE' ? 'selected' : ''}>PENDENTE</option>
-                            <option value="APROVADO" ${inf.status === 'APROVADO' ? 'selected' : ''}>APROVADO</option>
-                            <option value="REPROVADO" ${inf.status === 'REPROVADO' ? 'selected' : ''}>REPROVADO</option>
+                let punicaoDisplay = '';
+                if (podeDefinirPunicao && inf.status === 'PENDENTE') {
+                    punicaoDisplay = `
+                        <select class="punicao-select" data-id="${inf.id}" onchange="definirPunicao('${inf.id}', this.value)">
+                            <option value="">SELECIONE</option>
+                            ${opcoesPunicao.map(p => `<option value="${p}" ${inf.punicao === p ? 'selected' : ''}>${p}</option>`).join('')}
                         </select>
                     `;
                 } else {
-                    statusDisplay = `<span class="status-badge ${statusClass}">${inf.status}</span>`;
+                    punicaoDisplay = inf.punicao && inf.punicao !== 'PENDENTE' ? inf.punicao : '<span style="color: var(--text-secondary);">—</span>';
+                }
+
+                let botoesAcao = '';
+                if (podeDefinirPunicao && inf.status === 'PENDENTE') {
+                    botoesAcao = `
+                        <button class="btn-action aprovar-btn" data-id="${inf.id}" style="border-color: var(--success); color: var(--success); margin-right: 5px;">
+                            <i class="ph ph-check"></i>
+                        </button>
+                        <button class="btn-action reprovar-btn" data-id="${inf.id}" style="border-color: var(--danger); color: var(--danger);">
+                            <i class="ph ph-x"></i>
+                        </button>
+                    `;
+                } else {
+                    botoesAcao = '<span style="color: var(--text-secondary);">—</span>';
                 }
 
                 return `
@@ -962,16 +1000,32 @@
                         <td><strong>${inf.fiscalizador_nick}</strong></td>
                         <td><strong>${inf.infrator_nick}</strong></td>
                         <td>${inf.infracao}</td>
-                        <td>${inf.punicao}</td>
+                        <td>${inf.crime || '-'}</td>
+                        <td>${punicaoDisplay}</td>
                         <td>
                             <a href="${inf.comprovacao}" target="_blank" class="comprovacao-link">
                                 <i class="ph ph-link"></i> Ver
                             </a>
                         </td>
-                        <td>${statusDisplay}</td>
+                        <td><span class="status-badge ${statusClass}">${inf.status}</span></td>
+                        <td>${botoesAcao}</td>
                     </tr>
                 `;
             }).join('');
+
+            document.querySelectorAll('.aprovar-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    aprovarInfracao(id);
+                });
+            });
+
+            document.querySelectorAll('.reprovar-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    reprovarInfracao(id);
+                });
+            });
         }
 
         function atualizarPaginacao() {
@@ -992,25 +1046,75 @@
             atualizarPaginacao();
         }
 
-        async function alterarStatus(id, novoStatus) {
+        async function definirPunicao(id, punicao) {
+            if (!punicao) return;
+            
             try {
                 const { error } = await window.supabase
                     .from('infracoes')
-                    .update({ status: novoStatus })
+                    .update({ punicao: punicao })
                     .eq('id', id);
 
                 if (error) throw error;
 
                 const index = todasInfracoes.findIndex(i => i.id === id);
                 if (index !== -1) {
-                    todasInfracoes[index].status = novoStatus;
+                    todasInfracoes[index].punicao = punicao;
                 }
 
                 aplicarFiltros();
 
             } catch (error) {
-                console.error('Erro ao alterar status:', error);
-                alert('Erro ao alterar status');
+                console.error('Erro ao definir punição:', error);
+                alert('Erro ao definir punição');
+            }
+        }
+
+        async function aprovarInfracao(id) {
+            if (!confirm('Tem certeza que deseja APROVAR esta infração?')) return;
+            
+            try {
+                const { error } = await window.supabase
+                    .from('infracoes')
+                    .update({ status: 'APROVADO' })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                const index = todasInfracoes.findIndex(i => i.id === id);
+                if (index !== -1) {
+                    todasInfracoes[index].status = 'APROVADO';
+                }
+
+                aplicarFiltros();
+
+            } catch (error) {
+                console.error('Erro ao aprovar infração:', error);
+                alert('Erro ao aprovar infração');
+            }
+        }
+
+        async function reprovarInfracao(id) {
+            if (!confirm('Tem certeza que deseja REPROVAR esta infração?')) return;
+            
+            try {
+                const { error } = await window.supabase
+                    .from('infracoes')
+                    .update({ status: 'REPROVADO' })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                const index = todasInfracoes.findIndex(i => i.id === id);
+                if (index !== -1) {
+                    todasInfracoes[index].status = 'REPROVADO';
+                }
+
+                aplicarFiltros();
+
+            } catch (error) {
+                console.error('Erro ao reprovar infração:', error);
+                alert('Erro ao reprovar infração');
             }
         }
     </script>

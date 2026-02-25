@@ -497,14 +497,10 @@
             
             <div class="form-group">
                 <div class="input-wrapper">
-                    <select id="punicao">
-                        <option value="" disabled selected>SELECIONE A PUNIÇÃO</option>
-                        <option value="Advertência verbal">Advertência verbal</option>
-                        <option value="Advertência interna">Advertência interna</option>
-                        <option value="Rebaixamento">Rebaixamento</option>
-                        <option value="Expulsão">Expulsão</option>
-                        <option value="Notificação por erros de postagem">Notificação por erros de postagem</option>
-                        <option value="Medalhas efetivas negativas">Medalhas efetivas negativas</option>
+                    <select id="crime">
+                        <option value="" disabled selected>SELECIONE O CRIME</option>
+                        <option value="Abandono de dever/negligência">Abandono de dever/negligência</option>
+                        <option value="Falsificação de informações">Falsificação de informações</option>
                     </select>
                 </div>
             </div>
@@ -600,10 +596,10 @@
         async function enviarInfracao() {
             const infrator = document.getElementById('infratorNick').value.trim();
             const infracao = document.getElementById('infracao').value;
-            const punicao = document.getElementById('punicao').value;
+            const crime = document.getElementById('crime').value;
             const comprovacao = document.getElementById('comprovacao').value.trim();
 
-            if (!infrator || !infracao || !punicao || !comprovacao) {
+            if (!infrator || !infracao || !crime || !comprovacao) {
                 mostrarErro('Preencha todos os campos');
                 return;
             }
@@ -615,7 +611,8 @@
                         fiscalizador_nick: currentUser.nick,
                         infrator_nick: infrator,
                         infracao: infracao,
-                        punicao: punicao,
+                        crime: crime,
+                        punicao: 'PENDENTE',
                         comprovacao: comprovacao,
                         status: 'PENDENTE',
                         data_criacao: getBrasiliaTime().toISOString()
@@ -632,7 +629,7 @@
 
                 document.getElementById('infratorNick').value = '';
                 document.getElementById('infracao').value = '';
-                document.getElementById('punicao').value = '';
+                document.getElementById('crime').value = '';
                 document.getElementById('comprovacao').value = '';
 
             } catch (error) {
