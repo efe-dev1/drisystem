@@ -1017,7 +1017,7 @@
             currentUser = await Auth.getCurrentUser();
             userCargo = currentUser.cargo;
 
-            const podeAcessar = ['Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+            const podeAcessar = ['Fiscalizador','Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
             if (!podeAcessar) {
                 window.location.href = 'home.html';
                 return;
