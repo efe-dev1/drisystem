@@ -386,7 +386,7 @@
             color: white;
             padding: 6px;
             font-size: 0.85rem;
-            width: 140px;
+            width: 180px;
             cursor: pointer;
         }
 
@@ -740,7 +740,6 @@
                             <th>DATA</th>
                             <th>FISCALIZADOR</th>
                             <th>INFRATOR</th>
-                            <th>INFRAÇÃO</th>
                             <th>CRIME</th>
                             <th>PUNIÇÃO</th>
                             <th>COMPROVAÇÃO</th>
@@ -750,7 +749,7 @@
                     </thead>
                     <tbody id="infracoesTableBody">
                         <tr>
-                            <td colspan="9" class="empty-message">Carregando infrações...</td>
+                            <td colspan="8" class="empty-message">Carregando infrações...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -783,12 +782,13 @@
         let itensPorPagina = 15;
 
         const opcoesPunicao = [
-            'Advertência verbal',
-            'Advertência interna',
-            'Rebaixamento',
+            'Advertencia Verbal',
+            'Advertencia Interna',
+            'Rebaixamento interno',
             'Expulsão',
             'Notificação por erros de postagem',
-            'Medalhas efetivas negativas'
+            'Medalhas efetivas negativas',
+            'Exoneração'
         ];
 
         function getBrasiliaTime() {
@@ -882,7 +882,7 @@
             } catch (error) {
                 console.error('Erro ao carregar infrações:', error);
                 document.getElementById('infracoesTableBody').innerHTML = 
-                    '<tr><td colspan="9" class="empty-message">Erro ao carregar infrações</td></tr>';
+                    '<tr><td colspan="8" class="empty-message">Erro ao carregar infrações</td></tr>';
             }
         }
 
@@ -948,7 +948,7 @@
             const tbody = document.getElementById('infracoesTableBody');
 
             if (infracoesFiltradas.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" class="empty-message">Nenhuma infração encontrada</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-message">Nenhuma infração encontrada</td></tr>';
                 return;
             }
 
@@ -999,7 +999,6 @@
                         <td style="white-space: nowrap;">${dataFormatada}</td>
                         <td><strong>${inf.fiscalizador_nick}</strong></td>
                         <td><strong>${inf.infrator_nick}</strong></td>
-                        <td>${inf.infracao}</td>
                         <td>${inf.crime || '-'}</td>
                         <td>${punicaoDisplay}</td>
                         <td>

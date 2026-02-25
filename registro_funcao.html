@@ -39,7 +39,6 @@
             --success: #28a745;
             --warning: #ffc107;
             --info: #17a2b8;
-            --justified: #6610f2;
         }
 
         body {
@@ -481,27 +480,24 @@
             
             <div class="form-group">
                 <div class="input-wrapper">
-                    <select id="infracao">
-                        <option value="" disabled selected>SELECIONE A INFRAÇÃO</option>
-                        <option value="Erro de postagem">Erro de postagem</option>
-                        <option value="Aplicação imprópria">Aplicação imprópria</option>
-                        <option value="Abandono de dever/negligência">Abandono de dever/negligência</option>
-                        <option value="Conduta imprópria">Conduta imprópria</option>
-                        <option value="Abuso de poder">Abuso de poder</option>
-                        <option value="Falsificação de informações">Falsificação de informações</option>
-                        <option value="Manipulação de conteúdo">Manipulação de conteúdo</option>
-                        <option value="Quebra de sigilo">Quebra de sigilo</option>
+                    <select id="crime" onchange="verificarCrimeOutro()">
+                        <option value="" disabled selected>SELECIONE O CRIME</option>
+                        <option value="ERRO DE POSTAGEM">ERRO DE POSTAGEM</option>
+                        <option value="APLICAÇÃO IMPRÓPRIA">APLICAÇÃO IMPRÓPRIA</option>
+                        <option value="ABANDONO DE DEVER/NEGLIGÊNCIA">ABANDONO DE DEVER/NEGLIGÊNCIA</option>
+                        <option value="CONDUTA IMPRÓPRIA">CONDUTA IMPRÓPRIA</option>
+                        <option value="ABUSO DE PODER">ABUSO DE PODER</option>
+                        <option value="FALSIFICAÇÃO DE INFORMAÇÕES">FALSIFICAÇÃO DE INFORMAÇÕES</option>
+                        <option value="MANIPULAÇÃO DE CONTEÚDO">MANIPULAÇÃO DE CONTEÚDO</option>
+                        <option value="QUEBRA DE SIGILO">QUEBRA DE SIGILO</option>
+                        <option value="OUTRO">OUTRO (ESPECIFICAR)</option>
                     </select>
                 </div>
             </div>
-            
-            <div class="form-group">
+
+            <div class="form-group" id="outroCrimeGroup" style="display: none;">
                 <div class="input-wrapper">
-                    <select id="crime">
-                        <option value="" disabled selected>SELECIONE O CRIME</option>
-                        <option value="Abandono de dever/negligência">Abandono de dever/negligência</option>
-                        <option value="Falsificação de informações">Falsificação de informações</option>
-                    </select>
+                    <input type="text" id="outroCrime" placeholder="ESPECIFIQUE O CRIME">
                 </div>
             </div>
             
@@ -593,13 +589,32 @@
             document.getElementById('userAvatar').src = avatarUrl;
         });
 
+        function verificarCrimeOutro() {
+            const crime = document.getElementById('crime').value;
+            const outroGroup = document.getElementById('outroCrimeGroup');
+            if (crime === 'OUTRO') {
+                outroGroup.style.display = 'block';
+            } else {
+                outroGroup.style.display = 'none';
+                document.getElementById('outroCrime').value = '';
+            }
+        }
+
         async function enviarInfracao() {
             const infrator = document.getElementById('infratorNick').value.trim();
-            const infracao = document.getElementById('infracao').value;
-            const crime = document.getElementById('crime').value;
+            let crime = document.getElementById('crime').value;
+            const outroCrime = document.getElementById('outroCrime').value.trim();
             const comprovacao = document.getElementById('comprovacao').value.trim();
 
-            if (!infrator || !infracao || !crime || !comprovacao) {
+            if (crime === 'OUTRO') {
+                if (!outroCrime) {
+                    mostrarErro('Especifique o crime');
+                    return;
+                }
+                crime = outroCrime;
+            }
+
+            if (!infrator || !crime || !comprovacao) {
                 mostrarErro('Preencha todos os campos');
                 return;
             }
@@ -610,7 +625,6 @@
                     .insert([{
                         fiscalizador_nick: currentUser.nick,
                         infrator_nick: infrator,
-                        infracao: infracao,
                         crime: crime,
                         punicao: 'PENDENTE',
                         comprovacao: comprovacao,
@@ -628,8 +642,9 @@
                 }, 3000);
 
                 document.getElementById('infratorNick').value = '';
-                document.getElementById('infracao').value = '';
                 document.getElementById('crime').value = '';
+                document.getElementById('outroCrime').value = '';
+                document.getElementById('outroCrimeGroup').style.display = 'none';
                 document.getElementById('comprovacao').value = '';
 
             } catch (error) {
