@@ -1,5 +1,8 @@
 const VersionChecker = {
-    files: [
+    currentVersion: null,
+    checkInterval: null,
+    toastShown: false,
+    filesToCheck: [
         'js/auth.js',
         'js/chat.js',
         'js/session.js',
@@ -22,35 +25,72 @@ const VersionChecker = {
         'reportar.html',
         'req_membros.html'
     ],
-    
-    fileHashes: {},
-    checkInterval: null,
-    toastElement: null,
-    lastCheck: 0,
-    toastTimeout: null,
 
-    async init() {
-        console.log('Version iniciado...');
-        
-        this.loadSavedHashes();
+    async generateFileHash(url) {
+        try {
+            const response = await fetch(`${url}?t=${Date.now()}`, {
+                cache: 'no-store',
+                headers: {
+                    'Pragma': 'no-cache',
+                    'Cache-Control': 'no-cache'
+                }
+            });
+            
+            if (!response.ok) return null;
+            
+            const content = await response.text();
+            const encoder = new TextEncoder();
+            const data = encoder.encode(content);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
+        } catch (error) {
+            return null;
+        }
+    },
 
-        this.createToastElement();
-        
-        await this.checkAllFiles();
-
-        this.checkInterval = setInterval(() => this.checkAllFiles(), 30000);
-
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                this.checkAllFiles();
+    async generateMasterHash() {
+        try {
+            const hashes = [];
+            
+            for (const file of this.filesToCheck) {
+                const hash = await this.generateFileHash(file);
+                if (hash) {
+                    hashes.push(`${file}:${hash}`);
+                }
             }
-        });
+            
+            const combined = hashes.sort().join('|');
+            const encoder = new TextEncoder();
+            const data = encoder.encode(combined);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 32);
+        } catch (error) {
+            return Date.now().toString();
+        }
+    },
 
-        window.addEventListener('pageshow', (event) => {
-            if (event.persisted) {
-                this.checkAllFiles();
+    async checkForUpdates() {
+        try {
+            const masterHash = await this.generateMasterHash();
+
+            if (!this.currentVersion) {
+                this.currentVersion = masterHash;
+                return false;
             }
-        });
+
+            const hasChanged = this.currentVersion !== masterHash;
+            
+            if (hasChanged) {
+                this.currentVersion = masterHash;
+                return true;
+            }
+            
+            return false;
+        } catch (error) {
+            return false;
+        }
     },
 
     createToastElement() {
@@ -64,26 +104,30 @@ const VersionChecker = {
             right: 20px;
             background: #00a884;
             color: white;
-            padding: 11px 17px;
+            padding: 11px 16px;
             border-radius: 8px;
             z-index: 10001;
-            display: none;
             font-family: 'Poppins', sans-serif;
             font-weight: 500;
+            display: flex;
             align-items: center;
             gap: 12px;
-            animation: toastIn 0.3s ease;
+            animation: slideIn 0.3s ease;
             border: 2px solid rgba(255,255,255,0.2);
             max-width: 350px;
-            pointer-events: none;
+            cursor: pointer;
         `;
         
         toast.innerHTML = `
             <div style="flex: 1;">
                 <strong style="font-size: 1rem; display: block; margin-bottom: 3px;">Nova versão disponível!</strong>
-                <span style="font-size: 0.85rem; opacity: 0.9;">Recarregue a página</span>
+                <span style="font-size: 0.85rem; opacity: 0.9;">Clique para recarregar</span>
             </div>
         `;
+
+        toast.addEventListener('click', () => {
+            window.location.reload(true);
+        });
         
         document.body.appendChild(toast);
         this.toastElement = toast;
@@ -92,7 +136,7 @@ const VersionChecker = {
             const style = document.createElement('style');
             style.id = 'version-checker-styles';
             style.textContent = `
-                @keyframes toastIn {
+                @keyframes slideIn {
                     from {
                         transform: translateX(100%);
                         opacity: 0;
@@ -102,7 +146,7 @@ const VersionChecker = {
                         opacity: 1;
                     }
                 }
-                @keyframes toastOut {
+                @keyframes slideOut {
                     from {
                         transform: translateX(0);
                         opacity: 1;
@@ -111,129 +155,70 @@ const VersionChecker = {
                         transform: translateX(100%);
                         opacity: 0;
                     }
+                }
+                #version-toast:hover {
+                    background: #008f72;
                 }
             `;
             document.head.appendChild(style);
         }
     },
 
-    loadSavedHashes() {
-        try {
-            const saved = localStorage.getItem('file_hashes');
-            if (saved) {
-                this.fileHashes = JSON.parse(saved);
-                console.log('Hashes carregados:', Object.keys(this.fileHashes).length, 'arquivos');
-            }
-        } catch (error) {
-            console.log('Erro ao carregar hashes:', error);
-            this.fileHashes = {};
-        }
-    },
-
-    saveHashes() {
-        try {
-            localStorage.setItem('file_hashes', JSON.stringify(this.fileHashes));
-        } catch (error) {
-            console.log('Erro ao salvar hashes:', error);
-        }
-    },
-
-    async getFileHash(url) {
-        try {
-            const cacheBuster = localStorage.getItem('version_cache_buster') || 'v1';
-            
-            const response = await fetch(`${url}?v=${cacheBuster}`, {
-                method: 'HEAD',
-                cache: 'default'
-            });
-            
-            if (!response.ok) return null;
-
-            const lastModified = response.headers.get('last-modified');
-            const etag = response.headers.get('etag');
-            const contentLength = response.headers.get('content-length');
-
-            if (lastModified || etag || contentLength) {
-                const hashInput = `${lastModified || ''}|${etag || ''}|${contentLength || ''}`;
-                return this.simpleHash(hashInput);
-            }
-
-            const fullResponse = await fetch(`${url}`, {
-                cache: 'default'
-            });
-            const text = await fullResponse.text();
-            const cleanText = text.substring(0, 1000).replace(/\d{13,}/g, '');
-            return this.simpleHash(cleanText);
-            
-        } catch (error) {
-            return null;
-        }
-    },
-
-    simpleHash(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            const char = str.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
-        }
-        return Math.abs(hash).toString(36);
-    },
-
-    async checkAllFiles() {
-        const now = Date.now();
-        if (now - this.lastCheck < 5000) return;
-        this.lastCheck = now;
-
-        let hasChanges = false;
-        let changedFiles = [];
-
-        for (const file of this.files) {
-            const currentHash = await this.getFileHash(file);
-            
-            if (currentHash) {
-                const savedHash = this.fileHashes[file];
-                
-                if (!savedHash) {
-                    this.fileHashes[file] = currentHash;
-                    console.log(`Arquivo registrado: ${file} -> ${currentHash}`);
-                }
-                else if (savedHash !== currentHash) {
-                    console.log(`Arquivo alterado: ${file} (${savedHash} -> ${currentHash})`);
-                    hasChanges = true;
-                    changedFiles.push(file);
-                    this.fileHashes[file] = currentHash;
-                }
-            }
-        }
-
-        if (hasChanges) {
-            console.log('Mudanças detectadas nos arquivos:', changedFiles);
-            this.saveHashes();
-            this.showToast();
-        }
-    },
-
-    showToast() {
-        if (!this.toastElement) return;
-
-        if (this.toastTimeout) {
-            clearTimeout(this.toastTimeout);
-        }
-
-        this.toastElement.style.display = 'flex';
-        this.toastElement.style.animation = 'toastIn 0.3s ease';
+    showUpdateToast() {
+        if (this.toastShown) return;
         
-        this.toastTimeout = setTimeout(() => {
+        this.toastShown = true;
+        
+        if (!this.toastElement) {
+            this.createToastElement();
+        }
+        
+        this.toastElement.style.display = 'flex';
+        this.toastElement.style.animation = 'slideIn 0.3s ease';
+        
+        setTimeout(() => {
             if (this.toastElement) {
-                this.toastElement.style.animation = 'toastOut 0.3s ease';
+                this.toastElement.style.animation = 'slideOut 0.3s ease';
                 setTimeout(() => {
                     if (this.toastElement) {
                         this.toastElement.style.display = 'none';
+                        this.toastShown = false;
                     }
                 }, 300);
             }
         }, 5000);
+    },
+
+    async init() {
+        console.log('Version iniciado...');
+        
+        this.createToastElement();
+        
+        setTimeout(async () => {
+            if (await this.checkForUpdates()) {
+                this.showUpdateToast();
+            }
+        }, 2000);
+
+        this.checkInterval = setInterval(async () => {
+            try {
+                if (await this.checkForUpdates()) {
+                    this.showUpdateToast();
+                }
+            } catch (error) {}
+        }, 30000);
+
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                this.checkForUpdates();
+            }
+        });
+
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) {
+                this.checkForUpdates();
+            }
+        });
     },
 
     stopChecking() {
@@ -244,17 +229,9 @@ const VersionChecker = {
     },
 
     async forceCheck() {
-        await this.checkAllFiles();
-    },
-
-    resetHashes() {
-        this.fileHashes = {};
-        localStorage.removeItem('file_hashes');
-        console.log('Hashes resetados');
-
-        const currentBuster = localStorage.getItem('version_cache_buster') || 'v1';
-        const newBuster = 'v' + (parseInt(currentBuster.substring(1)) + 1);
-        localStorage.setItem('version_cache_buster', newBuster);
+        if (await this.checkForUpdates()) {
+            this.showUpdateToast();
+        }
     }
 };
 
@@ -262,6 +239,10 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         VersionChecker.init();
     }, 1500);
+});
+
+window.addEventListener('beforeunload', () => {
+    VersionChecker.stopChecking();
 });
 
 window.VersionChecker = VersionChecker;
