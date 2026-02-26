@@ -116,8 +116,8 @@ const VersionChecker = {
     toast.id = 'update-toast';
     toast.innerHTML = `
       <div style="display: flex; flex-direction: column; gap: 4px;">
-        <strong style="font-size: 14px; color: #1e293b;">Nova atualização disponível!</strong>
-        <span style="font-size: 12px; color: #475569;">Recarregue a página.</span>
+        <strong style="font-size: 14px; color: #f2f2f2;">Nova atualização disponível!</strong>
+        <span style="font-size: 12px; color: #b5b5b5;">Recarregue a página.</span>
       </div>
     `;
     
