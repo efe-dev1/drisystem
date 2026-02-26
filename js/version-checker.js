@@ -125,17 +125,17 @@ const VersionChecker = {
     style.textContent = `
       .update-toast {
         position: fixed;
-        bottom: 24px;
-        right: 24px;
+        bottom: 20px;
+        right: 20px;
+        color: white;
         min-width: 280px;
-        background: rgb(26, 26, 26);
-        border: 2px solid #00a884;
+        background: rgb(40, 40, 40);
+        border: 2px solid #161616;
         border-radius: 8px;
         padding: 16px 20px;
         z-index: 999999;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         font-family: 'Poppins', sans-serif;
       }
       .update-toast strong {
@@ -145,8 +145,6 @@ const VersionChecker = {
         color: #afafaf;
       }
       .update-toast:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0,0,0,0.4);
         border-color: white;
       }
     `;
