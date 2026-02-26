@@ -60,11 +60,11 @@ const VersionChecker = {
         toast.id = 'version-toast';
         toast.style.cssText = `
             position: fixed;
-            top: 80px;
+            bottom: 20px;
             right: 20px;
             background: #00a884;
             color: white;
-            padding: 11px 18px;
+            padding: 11px 17px;
             border-radius: 8px;
             z-index: 10001;
             display: none;
@@ -79,7 +79,6 @@ const VersionChecker = {
         `;
         
         toast.innerHTML = `
-            <i class="ph ph-arrow-clockwise" style="font-size: 1.4rem;"></i>
             <div style="flex: 1;">
                 <strong style="font-size: 1rem; display: block; margin-bottom: 3px;">Nova versão disponível!</strong>
                 <span style="font-size: 0.85rem; opacity: 0.9;">Recarregue a página</span>
@@ -141,9 +140,11 @@ const VersionChecker = {
 
     async getFileHash(url) {
         try {
-            const response = await fetch(`${url}?t=${Date.now()}`, {
+            const cacheBuster = localStorage.getItem('version_cache_buster') || 'v1';
+            
+            const response = await fetch(`${url}?v=${cacheBuster}`, {
                 method: 'HEAD',
-                cache: 'no-cache'
+                cache: 'default'
             });
             
             if (!response.ok) return null;
@@ -151,15 +152,18 @@ const VersionChecker = {
             const lastModified = response.headers.get('last-modified');
             const etag = response.headers.get('etag');
             const contentLength = response.headers.get('content-length');
-            
+
             if (lastModified || etag || contentLength) {
                 const hashInput = `${lastModified || ''}|${etag || ''}|${contentLength || ''}`;
                 return this.simpleHash(hashInput);
             }
 
-            const fullResponse = await fetch(`${url}?t=${Date.now()}`);
+            const fullResponse = await fetch(`${url}`, {
+                cache: 'default'
+            });
             const text = await fullResponse.text();
-            return this.simpleHash(text.substring(0, 1000));
+            const cleanText = text.substring(0, 1000).replace(/\d{13,}/g, '');
+            return this.simpleHash(cleanText);
             
         } catch (error) {
             return null;
@@ -182,6 +186,7 @@ const VersionChecker = {
         this.lastCheck = now;
 
         let hasChanges = false;
+        let changedFiles = [];
 
         for (const file of this.files) {
             const currentHash = await this.getFileHash(file);
@@ -191,16 +196,19 @@ const VersionChecker = {
                 
                 if (!savedHash) {
                     this.fileHashes[file] = currentHash;
+                    console.log(`Arquivo registrado: ${file} -> ${currentHash}`);
                 }
                 else if (savedHash !== currentHash) {
-                    console.log(`Arquivo alterado: ${file}`);
+                    console.log(`Arquivo alterado: ${file} (${savedHash} -> ${currentHash})`);
                     hasChanges = true;
+                    changedFiles.push(file);
                     this.fileHashes[file] = currentHash;
                 }
             }
         }
 
         if (hasChanges) {
+            console.log('Mudanças detectadas nos arquivos:', changedFiles);
             this.saveHashes();
             this.showToast();
         }
@@ -242,7 +250,11 @@ const VersionChecker = {
     resetHashes() {
         this.fileHashes = {};
         localStorage.removeItem('file_hashes');
-        console.log('🔄 Hashes resetados');
+        console.log('Hashes resetados');
+
+        const currentBuster = localStorage.getItem('version_cache_buster') || 'v1';
+        const newBuster = 'v' + (parseInt(currentBuster.substring(1)) + 1);
+        localStorage.setItem('version_cache_buster', newBuster);
     }
 };
 
