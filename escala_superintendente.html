@@ -455,7 +455,7 @@
             gap: 5px;
         }
 
-        .btn-action:hover {
+        .btn-action:hover:not(:disabled) {
             border-color: var(--superintendente);
             color: var(--superintendente);
         }
@@ -766,7 +766,7 @@
                         <div class="submenu-item" onclick="window.location.href='documentacoes.html'">
                             <i class="ph ph-folder"></i> Documentações
                         </div>
-                        <div class="submenu-item active" onclick="window.location.href='memorial.html'">
+                        <div class="submenu-item" onclick="window.location.href='memorial.html'">
                             <i class="ph ph-image"></i> Memorial
                         </div>
                         <div class="submenu-item" onclick="window.location.href='reportar.html'">
@@ -815,7 +815,7 @@
     <div class="modal" id="modalRegistro">
         <div class="modal-content">
             <div class="modal-title">
-                REGISTRAR
+                REGISTRAR FUNÇÃO
             </div>
             <div id="modalError" class="error-message"></div>
             <div id="modalSuccess" class="success-message"></div>
@@ -969,9 +969,9 @@
             return dias;
         }
 
-        function getPrazo(dataFuncao) {
+        function getPrazoSuperintendente(dataFuncao) {
             const prazo = new Date(dataFuncao);
-            prazo.setDate(prazo.getDate() + 1);
+            prazo.setDate(prazo.getDate() + 2);
             prazo.setHours(23, 59, 59, 999);
             return prazo;
         }
@@ -1147,7 +1147,7 @@
                     return dataEscala.toDateString() === dia.toDateString();
                 });
                 
-                const prazo = escala ? new Date(escala.prazo) : getPrazo(dia);
+                const prazo = escala ? new Date(escala.prazo) : getPrazoSuperintendente(dia);
                 const prazoStr = prazo.toLocaleDateString('pt-BR');
                 const dataFiscalizadaStr = dia.toLocaleDateString('pt-BR');
                 
@@ -1189,7 +1189,7 @@
                 }
 
                 const ordem = escala ? escala.ordem : gerarOrdem(dia);
-                const podeClicar = podeRegistrar && status === 'PENDENTE';
+                const podeClicar = podeRegistrar;
 
                 return `
                     <tr>
@@ -1318,7 +1318,7 @@
             try {
                 const dataBase = new Date();
                 const dataAtual = new Date(dataBase);
-                dataAtual.setDate(dataAtual.getDate() + (semanasOffset * 7));
+                dataAtual.setDate(dataBase.getDate() + (semanasOffset * 7));
                 
                 const segundaAtual = getDataSegunda(dataAtual);
                 
@@ -1349,7 +1349,7 @@
                 for (const dia of dias) {
                     const dataStr = dia.toISOString().split('T')[0];
                     const ordem = gerarOrdem(dia);
-                    const prazo = getPrazo(dia);
+                    const prazo = getPrazoSuperintendente(dia);
 
                     const { data: existente } = await window.supabase
                         .from('escalas_superintendente')
@@ -1527,11 +1527,6 @@
                     return;
                 }
 
-                if (escalaData.superintendente_nick !== currentUser.nick && !['Vice-Líder', 'Líder', 'DEV'].includes(userCargo)) {
-                    mostrarErroModal('Apenas o superintendente designado pode registrar');
-                    return;
-                }
-
                 const novoStatus = acao === 'CONCLUSÃO' ? 'CONCLUIDO' : 'JUSTIFICADO';
                 
                 const { error: updateError } = await window.supabase
@@ -1541,25 +1536,25 @@
 
                 if (updateError) throw updateError;
 
-                const dados = {
-                    superintendente_nick: nick,
-                    escala_id: escalaData.id,
-                    escala_tipo: 'SUPERINTENDENTE',
+                const dadosConclusao = {
+                    nick: nick,
+                    acao: acao,
                     ordem: escalaData.ordem,
-                    tipo_registro: acao,
                     autor_nick: currentUser.nick,
                     data_criacao: getBrasiliaTime().toISOString()
                 };
 
                 if (acao === 'CONCLUSÃO') {
-                    dados.comprovacao = comprovacao;
+                    dadosConclusao.comprovacao = comprovacao;
                 } else {
-                    dados.motivo = motivo;
+                    dadosConclusao.motivo = motivo;
                 }
 
-                await window.supabase
-                    .from('registros_funcao')
-                    .insert([dados]);
+                const { error: insertError } = await window.supabase
+                    .from('conclusoes')
+                    .insert([dadosConclusao]);
+
+                if (insertError) throw insertError;
 
                 document.getElementById('modalSuccess').style.display = 'block';
                 document.getElementById('modalSuccess').innerHTML = 'Registro concluído!';
