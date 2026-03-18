@@ -945,6 +945,7 @@
 
         const DIAS_SEMANA = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 
+        // Retorna a data atual no horário de Brasília como objeto Date (sem timezone shift)
         function getBrasiliaTime() {
             const data = new Date();
             const offsetBrasilia = -3;
@@ -952,33 +953,61 @@
             return new Date(utc + (3600000 * offsetBrasilia));
         }
 
-        function getDataSegunda(data) {
-            const d = new Date(data);
-            const dia = d.getDay();
-            const diff = d.getDate() - dia + (dia === 0 ? -6 : 1);
-            return new Date(d.setDate(diff));
+        // Retorna string YYYY-MM-DD da data de Brasília atual
+        function getHojeBrasiliaStr() {
+            const d = getBrasiliaTime();
+            return dateToStr(d);
         }
 
-        function getDiasSemana(data) {
-            const segunda = getDataSegunda(data);
+        // Converte Date local para string YYYY-MM-DD sem shift de timezone
+        function dateToStr(d) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${dd}`;
+        }
+
+        // Cria um Date local a partir de string YYYY-MM-DD (sem UTC shift)
+        function strToDate(str) {
+            const [y, m, d] = str.split('-').map(Number);
+            return new Date(y, m - 1, d);
+        }
+
+        // Retorna string YYYY-MM-DD da segunda-feira da semana de 'data' (Date local)
+        function getSegundaStr(data) {
+            const d = new Date(data.getFullYear(), data.getMonth(), data.getDate());
+            const dia = d.getDay();
+            const diff = dia === 0 ? -6 : 1 - dia;
+            d.setDate(d.getDate() + diff);
+            return dateToStr(d);
+        }
+
+        // Retorna array de 7 strings YYYY-MM-DD (seg a dom) da semana
+        function getDiasSemanaStrs(dataStr) {
+            const segunda = strToDate(getSegundaStr(strToDate(dataStr)));
             const dias = [];
             for (let i = 0; i < 7; i++) {
-                const dia = new Date(segunda);
-                dia.setDate(segunda.getDate() + i);
-                dias.push(dia);
+                const d = new Date(segunda.getFullYear(), segunda.getMonth(), segunda.getDate() + i);
+                dias.push(dateToStr(d));
             }
             return dias;
         }
 
-        function getPrazoSuperintendente(dataFuncao) {
-            const prazo = new Date(dataFuncao);
-            prazo.setDate(prazo.getDate() + 2);
-            prazo.setHours(23, 59, 59, 999);
-            return prazo;
+        // Prazo = 2 dias após a função, às 23:59
+        function getPrazoStr(dataFuncaoStr) {
+            const d = strToDate(dataFuncaoStr);
+            d.setDate(d.getDate() + 2);
+            return dateToStr(d) + 'T23:59:59.000';
         }
 
-        function gerarOrdem(data) {
-            const dia = data.getDate();
+        // Formata YYYY-MM-DD para DD/MM/YYYY
+        function formatarData(str) {
+            const [y, m, d] = str.split('-');
+            return `${d}/${m}/${y}`;
+        }
+
+        function gerarOrdem(dataStr) {
+            const dia = parseInt(dataStr.split('-')[2]);
             return `S${dia}`;
         }
 
@@ -1078,27 +1107,31 @@
 
         async function carregarEscalas() {
             try {
-                const dataBase = new Date();
-                const dataAlvo = new Date(dataBase);
-                dataAlvo.setDate(dataBase.getDate() + (semanasOffset * 7));
-                
-                const segundaBase = getDataSegunda(dataAlvo);
+                const hojeStr = getHojeBrasiliaStr();
+                const hojeDate = strToDate(hojeStr);
+                hojeDate.setDate(hojeDate.getDate() + (semanasOffset * 7));
+                const segundaStr = getSegundaStr(hojeDate);
 
-                const dataInicio = new Date(segundaBase);
-                dataInicio.setDate(dataInicio.getDate() - 7);
-                const dataFim = new Date(segundaBase);
-                dataFim.setDate(dataFim.getDate() + 14);
+                const inicioDate = strToDate(segundaStr);
+                inicioDate.setDate(inicioDate.getDate() - 7);
+                const fimDate = strToDate(segundaStr);
+                fimDate.setDate(fimDate.getDate() + 14);
+
+                const dataInicio = dateToStr(inicioDate);
+                const dataFim = dateToStr(fimDate);
 
                 const { data, error } = await window.supabase
                     .from('escalas_superintendente')
                     .select('*')
-                    .gte('data_funcao', dataInicio.toISOString().split('T')[0])
-                    .lte('data_funcao', dataFim.toISOString().split('T')[0])
+                    .gte('data_funcao', dataInicio)
+                    .lte('data_funcao', dataFim)
                     .order('data_funcao');
 
                 if (error) throw error;
 
-                escalaSuperintendente = data || [];
+                escalaSuperintendente = (data || []).sort((a, b) =>
+                    a.data_funcao.localeCompare(b.data_funcao)
+                );
 
                 atualizarTabelas();
                 atualizarInfoSemana();
@@ -1109,65 +1142,62 @@
         }
 
         function atualizarInfoSemana() {
-            const dataBase = new Date();
-            const dataAlvo = new Date(dataBase);
-            dataAlvo.setDate(dataBase.getDate() + (semanasOffset * 7));
+            const hojeStr = getHojeBrasiliaStr();
+            const hojeDate = strToDate(hojeStr);
+            hojeDate.setDate(hojeDate.getDate() + (semanasOffset * 7));
+            const segundaStr = getSegundaStr(hojeDate);
+            const diasStrs = getDiasSemanaStrs(segundaStr);
+            const domingoStr = diasStrs[6];
             
-            const segunda = getDataSegunda(dataAlvo);
-            const domingo = new Date(segunda);
-            domingo.setDate(segunda.getDate() + 6);
-            
-            const formatoSemana = `${segunda.toLocaleDateString('pt-BR')} - ${domingo.toLocaleDateString('pt-BR')}`;
-            const mesAno = segunda.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+            const segundaDate = strToDate(segundaStr);
+            const mesAno = segundaDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
             
             document.getElementById('semanaDisplay').innerHTML = `
-                <strong>${formatoSemana}</strong><br>
+                <strong>${formatarData(segundaStr)} - ${formatarData(domingoStr)}</strong><br>
                 <span style="font-size: 0.8rem; color: var(--text-secondary);">${mesAno}</span>
             `;
         }
 
         function atualizarTabelas() {
-            const dataBase = new Date();
-            const dataAlvo = new Date(dataBase);
-            dataAlvo.setDate(dataBase.getDate() + (semanasOffset * 7));
-            
-            const dias = getDiasSemana(dataAlvo);
-            document.getElementById('superintendenteTableBody').innerHTML = gerarLinhasTabela(dias);
+            const hojeStr = getHojeBrasiliaStr();
+            const hojeDate = strToDate(hojeStr);
+            hojeDate.setDate(hojeDate.getDate() + (semanasOffset * 7));
+            const segundaStr = getSegundaStr(hojeDate);
+            const diasStrs = getDiasSemanaStrs(segundaStr);
+
+            document.getElementById('superintendenteTableBody').innerHTML = gerarLinhasTabela(diasStrs);
             document.getElementById('lastUpdate').textContent = `Última atualização: ${getBrasiliaTime().toLocaleString('pt-BR')}`;
         }
 
-        function gerarLinhasTabela(dias) {
+        function gerarLinhasTabela(diasStrs) {
             const podeEditar = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
             const podeRegistrar = ['Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
 
-            return dias.map((dia) => {
-                const diaSemana = DIAS_SEMANA[dia.getDay()];
+            return diasStrs.map((dataStr) => {
+                const diaDate = strToDate(dataStr);
+                const diaSemana = DIAS_SEMANA[diaDate.getDay()];
 
-                const escala = escalaSuperintendente.find(e => {
-                    const dataEscala = new Date(e.data_funcao + 'T00:00:00');
-                    return dataEscala.toDateString() === dia.toDateString();
-                });
+                const escala = escalaSuperintendente.find(e => e.data_funcao === dataStr);
                 
-                const prazo = escala ? new Date(escala.prazo) : getPrazoSuperintendente(dia);
-                const prazoStr = prazo.toLocaleDateString('pt-BR');
-                const dataFiscalizadaStr = dia.toLocaleDateString('pt-BR');
+                let prazoStr;
+                if (escala && escala.prazo) {
+                    const prazoDate = new Date(escala.prazo);
+                    const prazoUtc = prazoDate.getTime() + (prazoDate.getTimezoneOffset() * 60000);
+                    const prazoBrasilia = new Date(prazoUtc + (3600000 * -3));
+                    prazoStr = prazoBrasilia.toLocaleDateString('pt-BR');
+                } else {
+                    prazoStr = formatarData(getPrazoStr(dataStr).split('T')[0]);
+                }
+
+                const dataFiscalizadaStr = formatarData(dataStr);
                 
                 let status = escala ? escala.status : 'PENDENTE';
                 let statusClass = 'status-pendente';
                 let statusText = 'PENDENTE';
                 
-                if (status === 'CONCLUIDO') {
-                    statusClass = 'status-concluido';
-                    statusText = 'CONCLUÍDO';
-                }
-                if (status === 'NAO_REALIZADO') {
-                    statusClass = 'status-nao-realizado';
-                    statusText = 'NÃO REALIZADO';
-                }
-                if (status === 'JUSTIFICADO') {
-                    statusClass = 'status-justificado';
-                    statusText = 'JUSTIFICADO';
-                }
+                if (status === 'CONCLUIDO') { statusClass = 'status-concluido'; statusText = 'CONCLUÍDO'; }
+                if (status === 'NAO_REALIZADO') { statusClass = 'status-nao-realizado'; statusText = 'NÃO REALIZADO'; }
+                if (status === 'JUSTIFICADO') { statusClass = 'status-justificado'; statusText = 'JUSTIFICADO'; }
 
                 let superintendenteDisplay = '';
                 const escalaId = escala ? escala.id : null;
@@ -1189,7 +1219,7 @@
                         '<span class="superintendente-text">-</span>';
                 }
 
-                const ordem = escala ? escala.ordem : gerarOrdem(dia);
+                const ordem = escala ? escala.ordem : gerarOrdem(dataStr);
                 const podeClicar = podeRegistrar;
 
                 return `
@@ -1202,7 +1232,7 @@
                         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                         <td>
                             ${escalaId ? 
-                                `<button class="btn-action" onclick="abrirModal('${dia.toISOString()}')" ${!podeClicar ? 'disabled' : ''}>
+                                `<button class="btn-action" onclick="abrirModal('${dataStr}')" ${!podeClicar ? 'disabled' : ''}>
                                     REGISTRAR
                                 </button>` 
                                 : '<span class="btn-action" style="opacity:0.3;">-</span>'
@@ -1317,13 +1347,12 @@
             btn.disabled = true;
 
             try {
-                const dataBase = new Date();
-                const dataAtual = new Date(dataBase);
-                dataAtual.setDate(dataBase.getDate() + (semanasOffset * 7));
+                const hojeStr = getHojeBrasiliaStr();
+                const hojeDate = strToDate(hojeStr);
+                hojeDate.setDate(hojeDate.getDate() + (semanasOffset * 7));
+                const segundaStr = getSegundaStr(hojeDate);
                 
-                const segundaAtual = getDataSegunda(dataAtual);
-                
-                const resultado = await gerarEscalaSemana(segundaAtual);
+                const resultado = await gerarEscalaSemana(segundaStr);
                 
                 if (resultado > 0) {
                     mostrarSucesso(`${resultado} novas escalas geradas!`);
@@ -1342,15 +1371,14 @@
             }
         }
 
-        async function gerarEscalaSemana(dataSemana) {
+        async function gerarEscalaSemana(segundaStr) {
             try {
-                const dias = getDiasSemana(dataSemana);
+                const diasStrs = getDiasSemanaStrs(segundaStr);
                 let novasEscalas = 0;
 
-                for (const dia of dias) {
-                    const dataStr = dia.toISOString().split('T')[0];
-                    const ordem = gerarOrdem(dia);
-                    const prazo = getPrazoSuperintendente(dia);
+                for (const dataStr of diasStrs) {
+                    const ordem = gerarOrdem(dataStr);
+                    const prazoISO = getPrazoStr(dataStr);
 
                     const { data: existente } = await window.supabase
                         .from('escalas_superintendente')
@@ -1365,7 +1393,7 @@
                                 tipo: 'SUPERINTENDENTE',
                                 ordem: ordem,
                                 data_funcao: dataStr,
-                                prazo: prazo.toISOString(),
+                                prazo: prazoISO,
                                 status: 'PENDENTE'
                             }]);
 
@@ -1375,7 +1403,7 @@
                 }
 
                 if (novasEscalas > 0) {
-                    await atribuirSuperintendentesAleatorios(dataSemana);
+                    await atribuirSuperintendentesAleatorios(segundaStr);
                 }
 
                 return novasEscalas;
@@ -1386,44 +1414,47 @@
             }
         }
 
-        async function atribuirSuperintendentesAleatorios(dataSemana) {
+        async function atribuirSuperintendentesAleatorios(segundaStr) {
             try {
                 if (superintendentes.length === 0) return;
 
-                const dataInicio = dataSemana.toISOString().split('T')[0];
-                const dataFim = new Date(dataSemana);
-                dataFim.setDate(dataFim.getDate() + 7);
-                const dataFimStr = dataFim.toISOString().split('T')[0];
+                const diasStrs = getDiasSemanaStrs(segundaStr);
+                const fimStr = diasStrs[6];
 
                 const { data: escalasSemana } = await window.supabase
                     .from('escalas_superintendente')
                     .select('*')
-                    .gte('data_funcao', dataInicio)
-                    .lt('data_funcao', dataFimStr);
+                    .gte('data_funcao', segundaStr)
+                    .lte('data_funcao', fimStr);
 
                 if (!escalasSemana || escalasSemana.length === 0) return;
 
-                const superintendentesCopy = [...superintendentes];
-                const superintendentesEscala = [];
-
-                for (let i = 0; i < 7; i++) {
-                    if (superintendentesCopy.length > 0) {
-                        const randomIndex = Math.floor(Math.random() * superintendentesCopy.length);
-                        superintendentesEscala.push(superintendentesCopy[randomIndex].nick);
-                        superintendentesCopy.splice(randomIndex, 1);
-                    } else {
-                        superintendentesCopy.push(...superintendentes);
-                        const randomIndex = Math.floor(Math.random() * superintendentesCopy.length);
-                        superintendentesEscala.push(superintendentesCopy[randomIndex].nick);
-                        superintendentesCopy.splice(randomIndex, 1);
+                // Embaralha de forma correta (Fisher-Yates)
+                const shuffleList = (arr) => {
+                    const copy = [...arr];
+                    for (let i = copy.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [copy[i], copy[j]] = [copy[j], copy[i]];
                     }
+                    return copy;
+                };
+
+                // Monta mapa dataStr -> nick, reutilizando pool se necessário
+                const mapa = {};
+                let pool = shuffleList(superintendentes);
+                let poolIdx = 0;
+                for (const dataStr of diasStrs) {
+                    if (poolIdx >= pool.length) {
+                        pool = shuffleList(superintendentes);
+                        poolIdx = 0;
+                    }
+                    mapa[dataStr] = pool[poolIdx].nick;
+                    poolIdx++;
                 }
 
                 for (const escala of escalasSemana) {
                     if (!escala.superintendente_nick) {
-                        const index = new Date(escala.data_funcao).getDay();
-                        const diaIndex = index === 0 ? 6 : index - 1;
-                        const nickEscolhido = superintendentesEscala[diaIndex] || superintendentes[Math.floor(Math.random() * superintendentes.length)].nick;
+                        const nickEscolhido = mapa[escala.data_funcao] || superintendentes[Math.floor(Math.random() * superintendentes.length)].nick;
                         
                         await window.supabase
                             .from('escalas_superintendente')
@@ -1440,12 +1471,13 @@
         async function atualizarStatusAutomatico() {
             try {
                 const agora = getBrasiliaTime();
+                const agoraISO = agora.toISOString();
 
                 const { data: escalas, error } = await window.supabase
                     .from('escalas_superintendente')
                     .select('*')
                     .eq('status', 'PENDENTE')
-                    .lt('prazo', agora.toISOString());
+                    .lt('prazo', agoraISO);
 
                 if (error) throw error;
 
@@ -1464,8 +1496,8 @@
             }
         }
 
-        function abrirModal(dataFuncao) {
-            document.getElementById('modalDataFuncao').value = dataFuncao;
+        function abrirModal(dataStr) {
+            document.getElementById('modalDataFuncao').value = dataStr;
             document.getElementById('modalNick').value = currentUser.nick;
             document.getElementById('modalError').style.display = 'none';
             document.getElementById('modalSuccess').style.display = 'none';
@@ -1493,7 +1525,7 @@
 
         async function enviarRegistro() {
             const nick = document.getElementById('modalNick').value.trim();
-            const dataFuncao = document.getElementById('modalDataFuncao').value;
+            const dataStr = document.getElementById('modalDataFuncao').value; // YYYY-MM-DD direto
             const acao = document.querySelector('input[name="modalAcao"]:checked').value;
             
             let comprovacao, motivo;
@@ -1513,8 +1545,6 @@
             }
 
             try {
-                const dataStr = new Date(dataFuncao).toISOString().split('T')[0];
-
                 const { data: escalaData, error } = await window.supabase
                     .from('escalas_superintendente')
                     .select('*')
@@ -1524,7 +1554,7 @@
                 if (error) throw error;
 
                 if (!escalaData) {
-                    mostrarErroModal(`Escala não encontrada para a data ${new Date(dataFuncao).toLocaleDateString('pt-BR')}`);
+                    mostrarErroModal(`Escala não encontrada para a data ${formatarData(dataStr)}`);
                     return;
                 }
 

@@ -6,352 +6,399 @@
     <title>DRI System</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/iUwP1jk.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #161616;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #2b2b2b;
-        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --navy-dark: #161616;
-            --navy-medium: #0f2740;
-            --navy-light: #2b2b2b;
-            --text-primary: #e5e9f0;
-            --text-secondary: #afafaf;
-            --danger: #dc3545;
-            --success: #28a745;
+            --bg: #0c0c0c;
+            --card: #131313;
+            --border: #1f1f1f;
+            --border2: #2c2c2c;
+            --input: #0c0c0c;
+            --text: #efefef;
+            --muted: #505050;
+            --muted2: #787878;
+            --white: #fff;
+            --danger: #d95555;
         }
 
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border2); }
+
         body {
-            background: url('https://i.imgur.com/8b3rI5q.png') repeat center center fixed;
-            background-size: contain;
-            background-size: 300px 300px;
-            font-family: 'Poppins', sans-serif;
-            color: #fff;
-            font-family: 'Poppins', sans-serif;
-            color: #fff;
-            position: relative;
+            background: var(--bg);
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
         }
 
         body::before {
-            content: "";
+            content: '';
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(4, 4, 4, 0.478);
-            z-index: -1;
-        }
-        
-        .login-container {
-            width: 100%;
-            max-width: 400px;
+            inset: 0;
+            background-image: radial-gradient(#ffffff06 1px, transparent 1px);
+            background-size: 24px 24px;
+            pointer-events: none;
         }
 
-        .login-card {
-            background: rgb(26, 26, 26);
-            border: 2px solid rgb(17, 17, 17);
-            border-radius: 10px;
-            padding: 12px;
+        .wrap {
             position: relative;
-            overflow: hidden;
-        }
-
-        .avatar-container {
-            text-align: center;
-            margin-bottom: 10px;
-            min-height: 130px;
-            display: block;
-        }
-
-        .avatar-image {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: 3px solid rgb(17, 17, 17);
-            background: var(--navy-dark);
-            object-fit: cover;
-            display: block;
-            margin: 0 auto;
-        }
-
-        .welcome-text {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .welcome-text h2 {
-            color: white;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .welcome-text p {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .input-wrapper input {
+            z-index: 1;
             width: 100%;
-            padding: 8px 0;
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid rgb(80, 80, 80);
-            color: white;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
+            max-width: 360px;
+            padding: 0 16px;
+            animation: up 0.45s cubic-bezier(0.16,1,0.3,1) both;
         }
 
-        .input-wrapper input:focus {
-            outline: none;
-            border-bottom-color: white;
-        }
-
-        .input-wrapper input::placeholder {
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        .action-buttons {
+        .topbar {
             display: flex;
-            gap: 10px;
-            margin: 25px 0 15px;
-        }
-
-        .btn-primary {
-            flex: 1;
-            padding: 14px;
-            background: white;
-            border: none;
-            border-radius: 11px;
-            color: var(--navy-dark);
-            font-weight: 700;
-            font-size: 0.95rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
+            margin-bottom: 14px;
+            padding: 0 2px;
         }
 
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            flex: 1;
-            padding: 14px;
-            background: transparent;
-            border: 2px solid white;
-            border-radius: 11px;
-            color: white;
-            font-weight: 700;
-            font-size: 0.95rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .topbar-item {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 0.4px;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .forgot-link {
-            text-align: center;
-            margin-top: 15px;
-        }
-
-        .forgot-link a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.85rem;
-            display: inline-flex;
             align-items: center;
             gap: 5px;
         }
 
-        .forgot-link a:hover {
-            text-decoration: underline;
-        }
-
-        .error-message {
-            background: rgba(220, 53, 69, 0.1);
-            border: 2px solid var(--danger);
-            border-radius: 10px;
-            padding: 10px;
-            margin-bottom: 20px;
-            color: var(--danger);
-            text-align: center;
-            display: none;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid var(--navy-dark);
+        .dot {
+            width: 5px;
+            height: 5px;
             border-radius: 50%;
-            border-top-color: var(--gold);
-            animation: spin 1s ease-in-out infinite;
+            background: var(--border2);
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 24px 22px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 15%; right: 15%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #ffffff12, transparent);
+        }
+
+        .avatar-section {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .avatar-wrap {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .avatar-img {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border2);
+            background: #0c0c0c;
+            object-fit: cover;
+            display: block;
+            image-rendering: pixelated;
+        }
+
+        .avatar-ring {
+            position: absolute;
+            inset: -5px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            pointer-events: none;
+        }
+
+        .avatar-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9.5px;
+            color: var(--muted);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .avatar-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--white);
+            letter-spacing: -0.4px;
+            line-height: 1;
+        }
+
+        .avatar-sub {
+            font-size: 12px;
+            color: var(--muted2);
+            margin-top: 3px;
+        }
+
+        .sep {
+            height: 1px;
+            background: var(--border);
+            margin: 0 0 20px;
+        }
+
+        .error-box {
+            background: rgba(217,85,85,0.07);
+            border: 1px solid rgba(217,85,85,0.2);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 14px;
+            color: var(--danger);
+            font-size: 11.5px;
+            display: none;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .error-box.show { display: flex; animation: glitch 0.18s ease; }
+
+        .fields { display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px; }
+
+        .field { position: relative; }
+
+        .field i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 15px;
+            color: var(--muted);
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+
+        .field input {
+            width: 100%;
+            height: 42px;
+            padding: 0 13px 0 36px;
+            background: var(--input);
+            border: 1px solid var(--border2);
+            border-radius: 10px;
+            color: var(--white);
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .field input::placeholder { color: #2e2e2e; }
+        .field input:focus { border-color: #444; }
+        .field:has(input:focus) i { color: var(--muted2); }
+
+        .actions { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; margin-bottom: 16px; }
+
+        .btn {
+            height: 42px;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            transition: opacity 0.15s, transform 0.1s;
+        }
+
+        .btn:active { transform: scale(0.98); }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid var(--border2);
+            color: var(--muted2);
+        }
+
+        .btn-ghost:hover { border-color: #444; color: var(--text); }
+
+        .btn-solid { background: var(--white); color: #0c0c0c; font-weight: 600; }
+        .btn-solid:hover { background: #e8e8e8; }
+        .btn-solid:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        .spinner {
+            width: 13px; height: 13px;
+            border: 2px solid rgba(0,0,0,0.15);
+            border-top-color: #0c0c0c;
+            border-radius: 50%;
+            animation: spin 0.65s linear infinite;
+            display: none;
+        }
+
+        .footer-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            color: var(--muted);
+            font-size: 11.5px;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover { color: var(--muted2); }
+
+        @keyframes up {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @keyframes glitch {
+            0%   { transform: translateX(-3px); }
+            50%  { transform: translateX(2px); }
+            100% { transform: translateX(0); }
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-card"> 
-            <div class="avatar-container">
-                <img src="https://www.habbo.com.br/habbo-imaging/avatarimage?&user=Padrao&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=0&size=l" 
-                     alt="Avatar" 
-                     class="avatar-image" 
-                     id="avatarPreview">
-            </div>
-            
-            <div class="welcome-text">
-                <h2>Bem-vindo(a) ao DRI System!</h2>
-                <p>Entre com seu usuário e senha</p>
-            </div>
-            
-            <div id="errorMessage" class="error-message"></div>
-            
-            <div class="form-group">
-                <div class="input-wrapper">
-                    <input type="text" id="nick" placeholder="Usuário" autocomplete="off" autofocus>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <div class="input-wrapper">
-                    <input type="password" id="senha" placeholder="Senha">
-                </div>
-            </div>
-            
-            <div class="action-buttons">
-                <button class="btn-secondary" onclick="window.location.href='criar_conta.html'">
-                    CRIAR
-                </button>
-                <button class="btn-primary" id="btnLogin" onclick="fazerLogin()">
-                    <span id="btnLoginText">ENTRAR</span>
-                    <span id="btnLoginLoading" class="loading" style="display: none;"></span>
-                </button>
-            </div>
-            
-            <div class="forgot-link">
-                <a href="redefinir_senha.html">
-                    <i class="ph ph-lock-simple-open"></i> Esqueceu a senha? Clique aqui
-                </a>
-            </div>
+<div class="wrap">
+
+    <div class="topbar">
+        <div class="topbar-item">
+            <div class="dot"></div>
+            v2.1.1
         </div>
+        <div class="topbar-item" id="clock">--:--:--</div>
     </div>
 
-    <script src="js/supabase.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/session.js"></script>
-    <script src="js/version-checker.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const autenticado = await Auth.isAuthenticated();
-            if (autenticado) {
-                window.location.href = 'home.html';
-            }
+    <div class="card">
+        <div class="avatar-section">
+            <div class="avatar-wrap">
+                <img
+                    src="https://www.habbo.com.br/habbo-imaging/avatarimage?&user=Padrao&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=0&size=l"
+                    alt="Avatar"
+                    class="avatar-img"
+                    id="avatarPreview">
+                <div class="avatar-ring"></div>
+            </div>
+            <div>
+                <div class="avatar-label">DRI System</div>
+                <div class="avatar-title">Bem-vindo(a)</div>
+                <div class="avatar-sub">Entre com seu usuário</div>
+            </div>
+        </div>
 
-            document.getElementById('nick').addEventListener('input', function(e) {
-                const nick = e.target.value.trim();
-                const avatar = document.getElementById('avatarPreview');
-                if (nick) {
-                    avatar.src = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=0&size=l`;
-                } else {
-                    avatar.src = 'https://www.habbo.com.br/habbo-imaging/avatarimage?&user=Padrao&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=0&size=l';
-                }
-            });
+        <div class="sep"></div>
+
+        <div class="error-box" id="errorMessage">
+            <i class="ph ph-warning" style="font-size:13px;flex-shrink:0;"></i>
+            <span id="errorText"></span>
+        </div>
+
+        <div class="fields">
+            <div class="field">
+                <i class="ph ph-user"></i>
+                <input type="text" id="nick" placeholder="Usuário" autocomplete="off" autofocus>
+            </div>
+            <div class="field">
+                <i class="ph ph-lock-simple"></i>
+                <input type="password" id="senha" placeholder="Senha">
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-ghost" onclick="window.location.href='criar_conta.html'">Criar</button>
+            <button class="btn btn-solid" id="btnLogin" onclick="fazerLogin()">
+                <span id="btnText">Entrar</span>
+                <div class="spinner" id="btnSpinner"></div>
+            </button>
+        </div>
+
+        <a href="redefinir_senha.html" class="footer-link">
+            <i class="ph ph-lock-key" style="font-size:13px;"></i>
+            Esqueceu a senha?
+        </a>
+    </div>
+</div>
+
+<script src="js/supabase.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/session.js"></script>
+<script src="js/version-checker.js"></script>
+<script>
+    (function tick() {
+        const el = document.getElementById('clock');
+        if (el) el.textContent = new Date().toLocaleTimeString('pt-BR');
+        setTimeout(tick, 1000);
+    })();
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            if (await Auth.isAuthenticated()) window.location.href = 'home.html';
+        } catch(e) {}
+
+        document.getElementById('nick').addEventListener('input', function() {
+            const v = this.value.trim();
+            document.getElementById('avatarPreview').src = v
+                ? `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${v}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=0&size=l`
+                : `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=Padrao&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=0&size=l`;
         });
+    });
 
-        async function fazerLogin() {
-            const nick = document.getElementById('nick').value.trim();
-            const senha = document.getElementById('senha').value;
-            const errorDiv = document.getElementById('errorMessage');
-            const btn = document.getElementById('btnLogin');
-            const btnText = document.getElementById('btnLoginText');
-            const btnLoading = document.getElementById('btnLoginLoading');
-            
-            if (!nick || !senha) {
-                mostrarErro('Preencha todos os campos');
-                return;
-            }
+    async function fazerLogin() {
+        const nick = document.getElementById('nick').value.trim();
+        const senha = document.getElementById('senha').value;
+        const btn = document.getElementById('btnLogin');
+        const txt = document.getElementById('btnText');
+        const spinner = document.getElementById('btnSpinner');
 
-            btnText.style.display = 'none';
-            btnLoading.style.display = 'inline-block';
-            btn.disabled = true;
-            errorDiv.style.display = 'none';
-            
-            const resultado = await Auth.login(nick, senha);
-            
-            if (resultado.success) {
+        if (!nick || !senha) { showError('Preencha todos os campos'); return; }
+
+        txt.style.display = 'none';
+        spinner.style.display = 'block';
+        btn.disabled = true;
+
+        try {
+            const r = await Auth.login(nick, senha);
+            if (r.success) {
                 window.location.href = 'home.html';
             } else {
-                mostrarErro(resultado.message);
-                btnText.style.display = 'inline-block';
-                btnLoading.style.display = 'none';
+                showError(r.message);
+                txt.style.display = '';
+                spinner.style.display = 'none';
                 btn.disabled = false;
             }
+        } catch(e) {
+            showError('Erro de conexão');
+            txt.style.display = '';
+            spinner.style.display = 'none';
+            btn.disabled = false;
         }
-        
-        function mostrarErro(msg) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = msg;
-            errorDiv.style.display = 'block';
-            
-            setTimeout(() => {
-                errorDiv.style.display = 'none';
-            }, 4000);
-        }
-        
-        document.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                fazerLogin();
-            }
-        });
-    </script>
+    }
+
+    function showError(msg) {
+        const box = document.getElementById('errorMessage');
+        document.getElementById('errorText').textContent = msg;
+        box.classList.add('show');
+        setTimeout(() => box.classList.remove('show'), 4000);
+    }
+
+    document.addEventListener('keypress', e => { if (e.key === 'Enter') fazerLogin(); });
+</script>
 </body>
 </html>

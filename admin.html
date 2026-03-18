@@ -412,6 +412,41 @@
             color: var(--success);
         }
 
+        .btn-action.delete:hover {
+            border-color: #ff4444;
+            color: #ff4444;
+            background: rgba(255, 68, 68, 0.05);
+        }
+
+        .modal-confirm-danger .modal-title {
+            color: #ff4444;
+        }
+
+        .modal-confirm-danger .btn-modal.danger {
+            background: #dc3545;
+            color: white;
+            border: none;
+        }
+
+        .modal-confirm-danger .btn-modal.danger:hover {
+            background: #c82333;
+        }
+
+        .usuario-remover-info {
+            background: rgba(220, 53, 69, 0.08);
+            border: 2px solid rgba(220, 53, 69, 0.3);
+            border-radius: 8px;
+            padding: 14px 18px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .usuario-remover-info strong {
+            color: white;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -893,6 +928,35 @@
         </div>
     </div>
 
+    <div class="modal modal-confirm-danger" id="modalRemoverUsuario">
+        <div class="modal-content">
+            <div class="modal-title">
+                <i class="ph ph-warning"></i> Remover conta
+            </div>
+            <div class="modal-body">
+                <div class="usuario-remover-info">
+                    Você está prestes a remover permanentemente a conta de <strong id="removerNickDisplay">-</strong>.<br><br>
+                    Isso irá apagar o usuário do sistema. <strong>Esta ação não pode ser desfeita.</strong>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 0.88rem; margin-top: 10px;">
+                    Digite o nick abaixo para confirmar:
+                </p>
+                <div class="form-group" style="margin-top: 10px;">
+                    <div class="input-wrapper">
+                        <input type="text" id="removerNickConfirm" placeholder="Digite o nick para confirmar">
+                    </div>
+                </div>
+                <div id="removerErro" style="color: var(--danger); font-size: 0.85rem; margin-top: 8px; display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal secondary" onclick="fecharModalRemoverUsuario()">CANCELAR</button>
+                <button class="btn-modal danger" onclick="confirmarRemocaoUsuario()">
+                    <i class="ph ph-trash"></i> REMOVER CONTA
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/supabase.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/auth.js"></script>
@@ -1044,6 +1108,9 @@
                                         <i class="ph ph-x"></i> Banir
                                     </button>`
                                 }
+                                <button class="btn-action delete" onclick="abrirModalRemoverUsuario('${user.nick}')">
+                                    <i class="ph ph-trash"></i> Remover
+                                </button>
                             </td>
                         </tr>
                     `;
@@ -1128,6 +1195,77 @@
             } catch (error) {
                 console.error('Erro ao desbanir:', error);
                 alert('Erro ao desbanir usuário');
+            }
+        }
+
+        let nickParaRemover = null;
+
+        function abrirModalRemoverUsuario(nick) {
+            // Impede remover a si mesmo
+            if (nick === currentUser.nick) {
+                alert('Você não pode remover sua própria conta.');
+                return;
+            }
+            nickParaRemover = nick;
+            document.getElementById('removerNickDisplay').textContent = nick;
+            document.getElementById('removerNickConfirm').value = '';
+            document.getElementById('removerErro').style.display = 'none';
+            document.getElementById('modalRemoverUsuario').classList.add('show');
+        }
+
+        function fecharModalRemoverUsuario() {
+            document.getElementById('modalRemoverUsuario').classList.remove('show');
+            nickParaRemover = null;
+            document.getElementById('removerNickConfirm').value = '';
+            document.getElementById('removerErro').style.display = 'none';
+        }
+
+        async function confirmarRemocaoUsuario() {
+            const nickDigitado = document.getElementById('removerNickConfirm').value.trim();
+            const erroDiv = document.getElementById('removerErro');
+
+            if (!nickDigitado) {
+                erroDiv.textContent = 'Digite o nick para confirmar.';
+                erroDiv.style.display = 'block';
+                return;
+            }
+
+            if (nickDigitado !== nickParaRemover) {
+                erroDiv.textContent = 'O nick digitado não confere. Tente novamente.';
+                erroDiv.style.display = 'block';
+                return;
+            }
+
+            erroDiv.style.display = 'none';
+
+            try {
+                // 1. Apaga sessões ativas do usuário
+                await window.supabase
+                    .from('sessoes')
+                    .delete()
+                    .eq('usuario_nick', nickParaRemover);
+
+                // 2. Apaga códigos de verificação
+                await window.supabase
+                    .from('codigos_verificacao')
+                    .delete()
+                    .eq('usuario_nick', nickParaRemover);
+
+                // 3. Apaga o usuário
+                const { error } = await window.supabase
+                    .from('usuarios')
+                    .delete()
+                    .eq('nick', nickParaRemover);
+
+                if (error) throw error;
+
+                fecharModalRemoverUsuario();
+                await carregarUsuarios();
+
+            } catch (error) {
+                console.error('Erro ao remover usuário:', error);
+                erroDiv.textContent = 'Erro ao remover: ' + error.message;
+                erroDiv.style.display = 'block';
             }
         }
 
