@@ -6,1117 +6,717 @@
     <title>DRI System</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/iUwP1jk.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
-    <link rel="stylesheet" href="js/chat.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #161616;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #2b2b2b;
-        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --navy-dark: #161616;
-            --navy-medium: #0f2740;
-            --navy-light: #2b2b2b;
-            --text-primary: #e5e9f0;
-            --text-secondary: #afafaf;
-            --danger: #dc3545;
-            --success: #28a745;
-            --warning: #ffc107;
-            --info: #17a2b8;
+            --bg: #0c0c0c; --card: #131313; --border: #1f1f1f; --border2: #2a2a2a;
+            --input: #0c0c0c; --text: #efefef; --muted: #505050; --muted2: #787878;
+            --white: #fff; --danger: #d95555; --success: #4caf7d; --warning: #d4943a;
+            --info: #4a9eca;
         }
 
-        body {
-            background: url('https://i.imgur.com/8b3rI5q.png') repeat center center fixed;
-            background-size: contain;
-            background-size: 300px 300px;
-            font-family: 'Poppins', sans-serif;
-            color: #fff;
-            position: relative;
-            min-height: 100vh;
-        }
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border2); }
+
+        body { background: var(--bg); min-height: 100vh; font-family: 'Inter', sans-serif; color: var(--text); }
 
         body::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(4, 4, 4, 0.478);
-            z-index: -1;
-        }
-
-        .header {
-            background: rgb(26, 26, 26);
-            border-bottom: 2px solid rgb(17, 17, 17);
-            width: 100%;
-            padding: 0 30px;
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 40px;
-        }
-
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo-area img {
-            height: 40px;
-            width: auto;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: white;
-        }
-
-        .nav {
-            display: flex;
-            gap: 5px;
-            position: relative;
-        }
-
-        .nav-item {
-            padding: 8px 16px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.95rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .nav-item:hover {
-            color: white;
-        }
-
-        .submenu {
-            position: absolute;
-            top: 100%;
-            background: rgb(30, 30, 30);
-            border-radius: 8px;
-            padding: 8px 0;
-            min-width: 200px;
-            display: none;
-            z-index: 1000;
-        }
-
-        .submenu.show {
-            display: block;
-        }
-
-        .submenu-item {
-            padding: 10px 20px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .submenu-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-
-        #geralSubmenu {
-            left: 0;
-        }
-
-        #requerimentosSubmenu {
-            left: 85px;
-        }
-
-        #escalasSubmenu {
-            left: 260px;
-        }
-
-        .profile {
-            position: relative;
-        }
-
-        .profile-button {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 5px 10px 5px 5px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgb(40, 40, 40);
-            border-radius: 12px;
-            cursor: pointer;
-        }
-
-        .profile-avatar {
-            width: 36px;
-            height: 36px;
-            overflow: hidden;
-        }
-
-        .profile-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .profile-nick {
-            font-weight: 500;
-            color: white;
-            font-size: 0.9rem;
-        }
-
-        .main-content {
-            padding: 40px 20px;
-            max-width: 1400px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .filters {
-            background: rgb(26, 26, 26);
-            border: 2px solid rgb(17, 17, 17);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            display: flex;
-            gap: 15px;
-            align-items: flex-end;
-            flex-wrap: wrap;
-        }
-
-        .filter-group {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .filter-group label {
-            display: block;
-            color: white;
-            font-weight: 600;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-        }
-
-        .filter-group input,
-        .filter-group select {
-            width: 100%;
-            padding: 8px 0;
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid rgb(80, 80, 80);
-            color: white;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-        }
-
-        .filter-group input:focus,
-        .filter-group select:focus {
-            outline: none;
-            border-bottom-color: white;
-        }
-
-        .filter-group select option {
-            background: rgb(26, 26, 26);
-            color: white;
-        }
-
-        .btn-filter {
-            padding: 10px 24px;
-            background: white;
-            border: none;
-            border-radius: 8px;
-            color: var(--navy-dark);
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            height: 40px;
-        }
-
-        .btn-filter:hover {
-            background: #f0f0f0;
-        }
-
-        .btn-clear {
-            padding: 10px 24px;
-            background: transparent;
-            border: 2px solid rgb(80, 80, 80);
-            border-radius: 8px;
-            color: var(--text-secondary);
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            height: 40px;
-        }
-
-        .btn-clear:hover {
-            border-color: white;
-            color: white;
-        }
-
-        .card {
-            background: rgb(26, 26, 26);
-            border: 2px solid rgb(17, 17, 17);
-            border-radius: 10px;
-            padding: 25px;
-        }
-
-        .card-title {
-            color: white;
-            font-weight: 600;
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid rgb(40, 40, 40);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .table-container {
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th {
-            text-align: left;
-            padding: 15px 12px;
-            background: rgb(40, 40, 40);
-            color: white;
-            font-weight: 600;
-            font-size: 0.9rem;
-            white-space: nowrap;
-        }
-
-        td {
-            padding: 15px 12px;
-            border-bottom: 1px solid rgb(40, 40, 40);
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 11px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 0.8rem;
-            white-space: nowrap;
-        }
-
-        .status-pendente {
-            background: rgba(255, 193, 7, 0.1);
-            color: var(--warning);
-            border: 2px solid var(--warning);
-        }
-
-        .status-aprovado {
-            background: rgba(40, 167, 69, 0.1);
-            color: var(--success);
-            border: 2px solid var(--success);
-        }
-
-        .status-reprovado {
-            background: rgba(220, 53, 69, 0.1);
-            color: var(--danger);
-            border: 2px solid var(--danger);
-        }
-
-        .punicao-select {
-            background: rgb(40, 40, 40);
-            border: 2px solid rgb(60, 60, 60);
-            border-radius: 6px;
-            color: white;
-            padding: 6px;
-            font-size: 0.85rem;
-            width: 180px;
-            cursor: pointer;
-        }
-
-        .punicao-select:focus {
-            outline: none;
-            border-color: var(--info);
-        }
-
-        .punicao-select option {
-            background: rgb(40, 40, 40);
-            color: white;
-        }
+            content: ''; position: fixed; inset: 0;
+            background-image: radial-gradient(#ffffff05 1px, transparent 1px);
+            background-size: 24px 24px; pointer-events: none; z-index: 0;
+        }
+
+        .header { position: sticky; top: 0; z-index: 200; background: rgba(12,12,12,0.94); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); }
+        .header-content { max-width: 1400px; margin: 0 auto; height: 56px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+        .header-left { display: flex; align-items: center; gap: 24px; min-width: 0; }
+        .logo-area { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .logo-area img { height: 24px; }
+        .logo { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500; color: var(--white); }
+        .nav { display: flex; align-items: center; gap: 2px; position: relative; }
+        .nav-item { padding: 6px 11px; color: var(--muted2); font-size: 13px; border-radius: 7px; cursor: pointer; transition: color 0.15s, background 0.15s; display: flex; align-items: center; gap: 4px; white-space: nowrap; user-select: none; }
+        .nav-item:hover { color: var(--white); background: rgba(255,255,255,0.04); }
+        .nav-item i { font-size: 11px; }
+        .submenu { position: absolute; top: calc(100% + 8px); background: #161616; border: 1px solid var(--border2); border-radius: 10px; padding: 6px; min-width: 185px; display: none; z-index: 300; }
+        .submenu.show { display: block; animation: fadeDown 0.15s ease; }
+        #geralSubmenu { left: 0; } #requerimentosSubmenu { left: 70px; } #escalasSubmenu { left: 204px; }
+        .submenu-item { padding: 8px 11px; color: var(--muted2); font-size: 12.5px; border-radius: 7px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: color 0.15s, background 0.15s; }
+        .submenu-item:hover { background: rgba(255,255,255,0.05); color: var(--white); }
+        .submenu-item i { font-size: 14px; color: var(--muted); }
+        .header-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+        .clock-badge { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
+        .header-version { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
+        .hamburger { display: none; background: transparent; border: 1px solid var(--border2); border-radius: 8px; width: 36px; height: 36px; align-items: center; justify-content: center; cursor: pointer; color: var(--muted2); font-size: 18px; transition: border-color 0.15s, color 0.15s; flex-shrink: 0; }
+        .hamburger:hover { border-color: #444; color: var(--white); }
+        .profile { position: relative; }
+        .profile-button { display: flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; background: rgba(255,255,255,0.04); border: 1px solid var(--border2); border-radius: 10px; cursor: pointer; transition: border-color 0.15s; }
+        .profile-button:hover { border-color: #444; }
+        .profile-avatar { width: 28px; height: 28px; border-radius: 7px; overflow: hidden; background: var(--card); flex-shrink: 0; }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-nick { font-size: 12.5px; font-weight: 500; color: var(--white); }
+        .profile-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: #161616; border: 1px solid var(--border2); border-radius: 10px; padding: 6px; min-width: 150px; display: none; z-index: 300; }
+        .profile-dropdown.show { display: block; animation: fadeDown 0.15s ease; }
+        .profile-dropdown-item { padding: 8px 11px; color: var(--muted2); font-size: 12.5px; border-radius: 7px; display: flex; align-items: center; gap: 8px; cursor: pointer; text-decoration: none; transition: color 0.15s, background 0.15s; }
+        .profile-dropdown-item:hover { background: rgba(255,255,255,0.05); color: var(--white); }
+        .profile-dropdown-item.logout { color: var(--danger); }
+        .profile-dropdown-item.logout:hover { background: rgba(217,85,85,0.08); }
+
+        .mobile-menu { display: none; flex-direction: column; background: #111; border-bottom: 1px solid var(--border); padding: 8px 16px 12px; }
+        .mobile-menu.open { display: flex; }
+        .mobile-nav-item { padding: 10px 4px; color: var(--muted2); font-size: 13px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .mobile-nav-item:last-child { border-bottom: none; }
+        .mobile-nav-item:hover { color: var(--white); }
+        .mobile-nav-item i { font-size: 15px; color: var(--muted); }
+        .mobile-section-title { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; padding: 12px 4px 6px; }
+
+        .main-content { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 28px 20px; }
+
+        .page-header { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+        .page-title-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,0.04); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--muted2); flex-shrink: 0; }
+        .page-title { font-size: 18px; font-weight: 600; color: var(--white); letter-spacing: -0.4px; }
+
+        .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+
+        .stat-item { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; position: relative; overflow: hidden; }
+        .stat-item::after { content: ''; position: absolute; top: 0; left: 15%; right: 15%; height: 1px; background: linear-gradient(90deg, transparent, #ffffff0d, transparent); }
+
+        .stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+        .stat-icon.total { background: rgba(74,158,202,0.1); border: 1px solid rgba(74,158,202,0.2); color: var(--info); }
+        .stat-icon.pendente { background: rgba(212,148,58,0.1); border: 1px solid rgba(212,148,58,0.2); color: var(--warning); }
+        .stat-icon.aprovado { background: rgba(76,175,125,0.1); border: 1px solid rgba(76,175,125,0.2); color: var(--success); }
+        .stat-icon.reprovado { background: rgba(217,85,85,0.1); border: 1px solid rgba(217,85,85,0.2); color: var(--danger); }
+
+        .stat-info h3 { font-size: 22px; font-weight: 600; color: var(--white); letter-spacing: -0.5px; line-height: 1; }
+        .stat-info p { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+        .filters { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 16px; display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; position: relative; overflow: hidden; }
+        .filters::after { content: ''; position: absolute; top: 0; left: 15%; right: 15%; height: 1px; background: linear-gradient(90deg, transparent, #ffffff0d, transparent); }
+
+        .filter-group { flex: 1; min-width: 160px; }
+
+        .filter-group label { display: block; font-family: 'JetBrains Mono', monospace; color: var(--muted); font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
+
+        .filter-group input, .filter-group select {
+            width: 100%; height: 36px; padding: 0 10px;
+            background: var(--input); border: 1px solid var(--border2);
+            border-radius: 8px; color: var(--white); font-size: 12.5px;
+            font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s;
+        }
+
+        .filter-group input::placeholder { color: #333; }
+        .filter-group input:focus, .filter-group select:focus { border-color: #444; }
+        .filter-group select { cursor: pointer; appearance: none; -webkit-appearance: none; }
+        .filter-group select option { background: #161616; color: var(--white); }
+
+        .filter-actions { display: flex; gap: 8px; align-items: flex-end; }
+
+        .btn-filter { height: 36px; padding: 0 16px; background: var(--white); border: none; border-radius: 8px; color: #0c0c0c; font-size: 12.5px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.15s; }
+        .btn-filter:hover { background: #e8e8e8; }
+
+        .btn-clear { height: 36px; padding: 0 14px; background: transparent; border: 1px solid var(--border2); border-radius: 8px; color: var(--muted2); font-size: 12.5px; font-family: 'Inter', sans-serif; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: border-color 0.15s, color 0.15s; }
+        .btn-clear:hover { border-color: #444; color: var(--white); }
+
+        .table-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; position: relative; }
+        .table-card::after { content: ''; position: absolute; top: 0; left: 15%; right: 15%; height: 1px; background: linear-gradient(90deg, transparent, #ffffff0d, transparent); pointer-events: none; }
+
+        .table-card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .table-card-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 500; color: var(--muted2); letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+
+        .table-container { overflow-x: auto; }
 
-        .comprovacao-link {
-            color: var(--info);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .comprovacao-link:hover {
-            text-decoration: underline;
-        }
-
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            margin-top: 25px;
-        }
-
-        .pagination button {
-            padding: 8px 20px;
-            background: transparent;
-            border: 2px solid rgb(60, 60, 60);
-            border-radius: 6px;
-            color: var(--text-secondary);
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .pagination button:hover:not(:disabled) {
-            border-color: white;
-            color: white;
-        }
-
-        .pagination button:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        .pagination span {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-        }
-
-        .empty-message {
-            text-align: center;
-            padding: 60px;
-            color: var(--text-secondary);
-            font-size: 1rem;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .stats-bar {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .stat-item {
-            background: rgb(26, 26, 26);
-            border: 2px solid rgb(17, 17, 17);
-            border-radius: 10px;
-            padding: 15px 25px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .stat-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-        }
+        table { width: 100%; border-collapse: collapse; min-width: 780px; }
+        th { padding: 10px 12px; background: rgba(255,255,255,0.02); color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; white-space: nowrap; text-align: left; border-bottom: 1px solid var(--border); }
+        td { padding: 11px 12px; border-bottom: 1px solid var(--border); font-size: 12.5px; color: var(--muted2); }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,0.013); }
 
-        .stat-icon.total { background: rgba(23, 162, 184, 0.1); color: var(--info); }
-        .stat-icon.pendente { background: rgba(255, 193, 7, 0.1); color: var(--warning); }
-        .stat-icon.aprovado { background: rgba(40, 167, 69, 0.1); color: var(--success); }
-        .stat-icon.reprovado { background: rgba(220, 53, 69, 0.1); color: var(--danger); }
+        .td-date { font-family: 'JetBrains Mono', monospace; font-size: 11px; white-space: nowrap; }
+        .td-nick { color: var(--text); font-weight: 500; }
+        .td-crime { max-width: 160px; }
 
-        .stat-info h3 {
-            color: white;
-            font-size: 1.5rem;
-            font-weight: 700;
-            line-height: 1.2;
-        }
+        .status-badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 500; letter-spacing: 0.5px; white-space: nowrap; }
+        .status-pendente { background: rgba(212,148,58,0.1); border: 1px solid rgba(212,148,58,0.3); color: var(--warning); }
+        .status-aprovado { background: rgba(76,175,125,0.1); border: 1px solid rgba(76,175,125,0.3); color: var(--success); }
+        .status-reprovado { background: rgba(217,85,85,0.1); border: 1px solid rgba(217,85,85,0.3); color: var(--danger); }
 
-        .stat-info p {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .punicao-select { background: var(--input); border: 1px solid var(--border2); border-radius: 7px; color: var(--white); padding: 4px 8px; font-size: 11.5px; font-family: 'Inter', sans-serif; width: 170px; cursor: pointer; outline: none; transition: border-color 0.2s; }
+        .punicao-select:focus { border-color: #444; }
+        .punicao-select option { background: #161616; color: var(--white); }
 
-        .profile-dropdown {
-            position: absolute;
-            top: calc(100% + 8px);
-            right: 0;
-            background: rgb(30, 30, 30);
-            border-radius: 8px;
-            padding: 8px 0;
-            min-width: 160px;
-            display: none;
-            z-index: 1000;
-        }
+        .comprovacao-link { color: var(--info); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; transition: opacity 0.15s; }
+        .comprovacao-link:hover { opacity: 0.75; }
 
-        .profile-dropdown.show {
-            display: block;
-        }
+        .btn-action { height: 26px; padding: 0 8px; background: transparent; border: 1px solid var(--border2); border-radius: 6px; font-size: 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: border-color 0.15s, color 0.15s; font-family: 'Inter', sans-serif; }
+        .aprovar-btn { color: var(--success); border-color: rgba(76,175,125,0.3); }
+        .aprovar-btn:hover { border-color: var(--success); background: rgba(76,175,125,0.07); }
+        .reprovar-btn { color: var(--danger); border-color: rgba(217,85,85,0.3); margin-left: 5px; }
+        .reprovar-btn:hover { border-color: var(--danger); background: rgba(217,85,85,0.07); }
 
-        .profile-dropdown-item {
-            padding: 10px 20px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 14px 18px; border-top: 1px solid var(--border); }
+        .pagination button { height: 32px; padding: 0 14px; background: transparent; border: 1px solid var(--border2); border-radius: 7px; color: var(--muted2); font-size: 12px; font-family: 'Inter', sans-serif; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: border-color 0.15s, color 0.15s; }
+        .pagination button:hover:not(:disabled) { border-color: #444; color: var(--white); }
+        .pagination button:disabled { opacity: 0.25; cursor: not-allowed; }
+        .pagination span { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
 
-        .profile-dropdown-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
+        .empty-message { text-align: center; padding: 48px; color: var(--muted); font-size: 13px; }
 
-        .profile-dropdown-item.logout {
-            color: var(--danger);
-        }
+        @keyframes fadeDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
 
-        .profile-dropdown-item.logout:hover {
-            background: rgba(220, 53, 69, 0.1);
+        @media (max-width: 1024px) {
+            .stats-bar { grid-template-columns: repeat(2, 1fr); }
         }
 
-        .btn-action {
-            padding: 6px 12px;
-            background: transparent;
-            border: 2px solid rgb(60, 60, 60);
-            border-radius: 6px;
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
+        @media (max-width: 768px) {
+            .nav { display: none; } .hamburger { display: flex; }
+            .clock-badge { display: none; } .header-version { display: none; }
+            .profile-nick { display: none; } .profile-button { padding: 4px; border-radius: 8px; }
+            .main-content { padding: 16px; }
+            .stats-bar { grid-template-columns: repeat(2, 1fr); }
+            .filter-group { min-width: 140px; }
         }
 
-        .btn-action:hover {
-            border-color: white;
-            color: white;
+        @media (max-width: 480px) {
+            .stats-bar { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="logo-area">
-                    <img src="https://i.imgur.com/iUwP1jk.png">
-                    <span class="logo">DRI System</span>
-                </div>
-                <nav class="nav">
-                    <div class="nav-item" id="geralBtn" onclick="toggleSubmenu('geral')">
-                        Geral <i class="ph ph-caret-down"></i>
-                    </div>
-                    <div class="nav-item" onclick="window.location.href='listagem.html'">
-                        Listagem
-                    </div>
-                    <div class="nav-item" id="requerimentosBtn" onclick="toggleSubmenu('requerimentos')">
-                        Requerimentos <i class="ph ph-caret-down"></i>
-                    </div>
-                    <div class="nav-item" id="escalasBtn" onclick="toggleSubmenu('escalas')">
-                        Escalas <i class="ph ph-caret-down"></i>
-                    </div>
-                    <div class="nav-item active" onclick="window.location.href='registros.html'">
-                        Registros
-                    </div>
 
-                    <div class="submenu" id="geralSubmenu">
-                        <div class="submenu-item" onclick="window.location.href='home.html'">
-                            <i class="ph ph-house"></i> Início
-                        </div>
-                        <div class="submenu-item" onclick="window.location.href='documentacoes.html'">
-                            <i class="ph ph-folder"></i> Documentações
-                        </div>
-                        <div class="submenu-item" onclick="window.location.href='memorial.html'">
-                            <i class="ph ph-image"></i> Memorial
-                        </div>
-                        <div class="submenu-item" onclick="window.location.href='reportar.html'">
-                            <i class="ph ph-flag"></i> Reportar falha
-                        </div>
-                    </div>
-
-                    <div class="submenu" id="requerimentosSubmenu">
-                        <div class="submenu-item" onclick="window.location.href='req_membros.html'">
-                            Req de membros
-                        </div>
-                        <div class="submenu-item" onclick="window.location.href='registro_funcao.html'">
-                            Registro de função
-                        </div>
-                    </div>
-
-                    <div class="submenu" id="escalasSubmenu">
-                        <div class="submenu-item" onclick="window.location.href='escala_fiscalizador.html'">
-                            Fiscalizador
-                        </div>
-                        <div class="submenu-item" onclick="window.location.href='escala_superintendente.html'">
-                            Superintendente
-                        </div>
-                    </div>
-                </nav>
+<div class="header">
+    <div class="header-content">
+        <div class="header-left">
+            <div class="logo-area">
+                <img src="https://i.imgur.com/iUwP1jk.png">
+                <span class="logo">DRI System</span>
             </div>
+            <nav class="nav">
+                <div class="nav-item" onclick="toggleSubmenu('geral')">Geral <i class="ph ph-caret-down"></i></div>
+                <div class="nav-item" onclick="window.location.href='listagem.html'">Listagem</div>
+                <div class="nav-item" onclick="toggleSubmenu('requerimentos')">Requerimentos <i class="ph ph-caret-down"></i></div>
+                <div class="nav-item" onclick="toggleSubmenu('escalas')">Escalas <i class="ph ph-caret-down"></i></div>
+                <div class="nav-item" onclick="window.location.href='registros.html'">Registros</div>
+                <div class="submenu" id="geralSubmenu">
+                    <div class="submenu-item" onclick="window.location.href='home.html'"><i class="ph ph-house"></i> Início</div>
+                    <div class="submenu-item" onclick="window.location.href='documentacoes.html'"><i class="ph ph-folder"></i> Documentações</div>
+                    <div class="submenu-item" onclick="window.location.href='memorial.html'"><i class="ph ph-image"></i> Memorial</div>
+                    <div class="submenu-item" onclick="window.location.href='reportar.html'"><i class="ph ph-flag"></i> Reportar falha</div>
+                </div>
+                <div class="submenu" id="requerimentosSubmenu">
+                    <div class="submenu-item" onclick="window.location.href='req_membros.html'">Req de membros</div>
+                    <div class="submenu-item" onclick="window.location.href='registro_funcao.html'">Registro de função</div>
+                </div>
+                <div class="submenu" id="escalasSubmenu">
+                    <div class="submenu-item" onclick="window.location.href='escala_fiscalizador.html'">Fiscalizador</div>
+                    <div class="submenu-item" onclick="window.location.href='escala_superintendente.html'">Superintendente</div>
+                </div>
+            </nav>
+        </div>
+        <div class="header-right">
+            <span class="clock-badge" id="clock">--:--:--</span>
+            <span class="header-version">v2.1.1</span>
+            <button class="hamburger" onclick="toggleMobileMenu()" id="hamburgerBtn"><i class="ph ph-list" id="hamburgerIcon"></i></button>
             <div class="profile">
-                <div class="profile-button" onclick="toggleProfileDropdown()" id="profileButton">
-                    <div class="profile-avatar">
-                        <img id="userAvatar" src="" alt="avatar">
-                    </div>
-                    <span class="profile-nick" id="userNick">carregando...</span>
+                <div class="profile-button" onclick="toggleProfileDropdown()">
+                    <div class="profile-avatar"><img id="userAvatar" src="" alt="avatar"></div>
+                    <span class="profile-nick" id="userNick">...</span>
                 </div>
                 <div class="profile-dropdown" id="profileDropdown">
-                    <a href="meu_perfil.html" class="profile-dropdown-item">
-                        <i class="ph ph-user-circle"></i> Meu perfil
-                    </a>
-                    <div class="profile-dropdown-item logout" onclick="Auth.logout()">
-                        <i class="ph ph-sign-out"></i> Sair
-                    </div>
+                    <a href="meu_perfil.html" class="profile-dropdown-item"><i class="ph ph-user-circle"></i> Meu perfil</a>
+                    <div class="profile-dropdown-item logout" onclick="Auth.logout()"><i class="ph ph-sign-out"></i> Sair</div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="main-content">
-        <div class="stats-bar">
-            <div class="stat-item">
-                <div class="stat-icon total">
-                    <i class="ph ph-clipboard-text"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 id="totalInfracoes">0</h3>
-                    <p>Total de infrações</p>
-                </div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon pendente">
-                    <i class="ph ph-hourglass"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 id="totalPendentes">0</h3>
-                    <p>Pendentes</p>
-                </div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon aprovado">
-                    <i class="ph ph-check-circle"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 id="totalAprovados">0</h3>
-                    <p>Aprovados</p>
-                </div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon reprovado">
-                    <i class="ph ph-x-circle"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 id="totalReprovados">0</h3>
-                    <p>Reprovados</p>
-                </div>
+<div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-section-title">Geral</div>
+    <div class="mobile-nav-item" onclick="window.location.href='home.html'"><i class="ph ph-house"></i> Início</div>
+    <div class="mobile-nav-item" onclick="window.location.href='documentacoes.html'"><i class="ph ph-folder"></i> Documentações</div>
+    <div class="mobile-nav-item" onclick="window.location.href='memorial.html'"><i class="ph ph-image"></i> Memorial</div>
+    <div class="mobile-nav-item" onclick="window.location.href='reportar.html'"><i class="ph ph-flag"></i> Reportar falha</div>
+    <div class="mobile-nav-item" onclick="window.location.href='listagem.html'"><i class="ph ph-users"></i> Listagem</div>
+    <div class="mobile-section-title">Requerimentos</div>
+    <div class="mobile-nav-item" onclick="window.location.href='req_membros.html'"><i class="ph ph-file-text"></i> Req de membros</div>
+    <div class="mobile-nav-item" onclick="window.location.href='registro_funcao.html'"><i class="ph ph-clipboard-text"></i> Registro de função</div>
+    <div class="mobile-section-title">Escalas</div>
+    <div class="mobile-nav-item" onclick="window.location.href='escala_fiscalizador.html'"><i class="ph ph-calendar"></i> Fiscalizador</div>
+    <div class="mobile-nav-item" onclick="window.location.href='escala_superintendente.html'"><i class="ph ph-calendar-check"></i> Superintendente</div>
+    <div class="mobile-section-title">Outros</div>
+    <div class="mobile-nav-item" onclick="window.location.href='registros.html'"><i class="ph ph-archive"></i> Registros</div>
+</div>
+
+<div class="main-content">
+
+    <div class="page-header">
+        <div class="page-title-icon"><i class="ph ph-archive"></i></div>
+        <span class="page-title">Registros de Infrações</span>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-icon total"><i class="ph ph-clipboard-text"></i></div>
+            <div class="stat-info">
+                <h3 id="totalInfracoes">0</h3>
+                <p>Total de infrações</p>
             </div>
         </div>
-
-        <div class="filters">
-            <div class="filter-group">
-                <label>FISCALIZADOR</label>
-                <input type="text" id="filtroFiscalizador" placeholder="Buscar por fiscalizador...">
+        <div class="stat-item">
+            <div class="stat-icon pendente"><i class="ph ph-hourglass"></i></div>
+            <div class="stat-info">
+                <h3 id="totalPendentes">0</h3>
+                <p>Pendentes</p>
             </div>
-            <div class="filter-group">
-                <label>INFRATOR</label>
-                <input type="text" id="filtroInfrator" placeholder="Buscar por infrator...">
-            </div>
-            <div class="filter-group">
-                <label>STATUS</label>
-                <select id="filtroStatus">
-                    <option value="">TODOS</option>
-                    <option value="PENDENTE">PENDENTE</option>
-                    <option value="APROVADO">APROVADO</option>
-                    <option value="REPROVADO">REPROVADO</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>DATA</label>
-                <input type="date" id="filtroData">
-            </div>
-            <button class="btn-filter" onclick="aplicarFiltros()">
-                <i class="ph ph-funnel"></i> FILTRAR
-            </button>
-            <button class="btn-clear" onclick="limparFiltros()">
-                <i class="ph ph-x"></i> LIMPAR
-            </button>
         </div>
-
-        <div class="card">
-            <div class="card-title">
-                REGISTRO DE INFRAÇÕES
+        <div class="stat-item">
+            <div class="stat-icon aprovado"><i class="ph ph-check-circle"></i></div>
+            <div class="stat-info">
+                <h3 id="totalAprovados">0</h3>
+                <p>Aprovados</p>
             </div>
-            
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>DATA</th>
-                            <th>FISCALIZADOR</th>
-                            <th>INFRATOR</th>
-                            <th>CRIME</th>
-                            <th>PUNIÇÃO</th>
-                            <th>COMPROVAÇÃO</th>
-                            <th>STATUS</th>
-                            <th>AÇÕES</th>
-                        </tr>
-                    </thead>
-                    <tbody id="infracoesTableBody">
-                        <tr>
-                            <td colspan="8" class="empty-message">Carregando infrações...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="pagination">
-                <button onclick="mudarPagina('anterior')" id="btnAnterior" disabled>
-                    <i class="ph ph-caret-left"></i> ANTERIOR
-                </button>
-                <span id="pageInfo">Página 1 de 1</span>
-                <button onclick="mudarPagina('proxima')" id="btnProxima" disabled>
-                    PRÓXIMA <i class="ph ph-caret-right"></i>
-                </button>
+        </div>
+        <div class="stat-item">
+            <div class="stat-icon reprovado"><i class="ph ph-x-circle"></i></div>
+            <div class="stat-info">
+                <h3 id="totalReprovados">0</h3>
+                <p>Reprovados</p>
             </div>
         </div>
     </div>
 
-    <script src="js/supabase.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/session.js"></script>
-    <script src="js/chat.js"></script>
-    <script src="js/version-checker.js"></script>
-    <script>
-        let currentUser = null;
-        let activeSubmenu = null;
-        let userCargo = null;
-        let todasInfracoes = [];
-        let infracoesFiltradas = [];
-        let paginaAtual = 1;
-        let itensPorPagina = 15;
+    <div class="filters">
+        <div class="filter-group">
+            <label>Fiscalizador</label>
+            <input type="text" id="filtroFiscalizador" placeholder="Buscar...">
+        </div>
+        <div class="filter-group">
+            <label>Infrator</label>
+            <input type="text" id="filtroInfrator" placeholder="Buscar...">
+        </div>
+        <div class="filter-group">
+            <label>Status</label>
+            <select id="filtroStatus">
+                <option value="">Todos</option>
+                <option value="PENDENTE">Pendente</option>
+                <option value="APROVADO">Aprovado</option>
+                <option value="REPROVADO">Reprovado</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Data</label>
+            <input type="date" id="filtroData">
+        </div>
+        <div class="filter-actions">
+            <button class="btn-filter" onclick="aplicarFiltros()"><i class="ph ph-funnel" style="font-size:13px;"></i> Filtrar</button>
+            <button class="btn-clear" onclick="limparFiltros()"><i class="ph ph-x" style="font-size:13px;"></i> Limpar</button>
+        </div>
+    </div>
 
-        const opcoesPunicao = [
-            'Advertencia Verbal',
-            'Advertencia Interna',
-            'Rebaixamento interno',
-            'Expulsão',
-            'Notificação por erros de postagem',
-            'Medalhas efetivas negativas',
-            'Exoneração'
-        ];
+    <div class="table-card">
+        <div class="table-card-header">
+            <div class="table-card-title"><i class="ph ph-gavel" style="font-size:13px;"></i> Infrações</div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Fiscalizador</th>
+                        <th>Infrator</th>
+                        <th>Crime</th>
+                        <th>Punição</th>
+                        <th>Comprovação</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="infracoesTableBody">
+                    <tr><td colspan="8" class="empty-message">Carregando infrações...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination">
+            <button onclick="mudarPagina('anterior')" id="btnAnterior" disabled>
+                <i class="ph ph-caret-left"></i> Anterior
+            </button>
+            <span id="pageInfo">Página 1 de 1</span>
+            <button onclick="mudarPagina('proxima')" id="btnProxima" disabled>
+                Próxima <i class="ph ph-caret-right"></i>
+            </button>
+        </div>
+    </div>
 
-        function getBrasiliaTime() {
-            const data = new Date();
-            const offsetBrasilia = -3;
-            const utc = data.getTime() + (data.getTimezoneOffset() * 60000);
-            return new Date(utc + (3600000 * offsetBrasilia));
+</div>
+
+<script src="js/supabase.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/session.js"></script>
+<script src="js/version-checker.js"></script>
+<script>
+    let currentUser = null;
+    let activeSubmenu = null;
+    let mobileMenuOpen = false;
+    let userCargo = null;
+    let todasInfracoes = [];
+    let infracoesFiltradas = [];
+    let paginaAtual = 1;
+    let itensPorPagina = 15;
+
+    const opcoesPunicao = [
+        'Advertencia Verbal',
+        'Advertencia Interna',
+        'Rebaixamento interno',
+        'Expulsão',
+        'Notificação por erros de postagem',
+        'Medalhas efetivas negativas',
+        'Exoneração'
+    ];
+
+    (function tick() {
+        const el = document.getElementById('clock');
+        if (el) el.textContent = new Date().toLocaleTimeString('pt-BR');
+        setTimeout(tick, 1000);
+    })();
+
+    function getBrasiliaTime() {
+        const data = new Date();
+        const offsetBrasilia = -3;
+        const utc = data.getTime() + (data.getTimezoneOffset() * 60000);
+        return new Date(utc + (3600000 * offsetBrasilia));
+    }
+
+    function toggleProfileDropdown() {
+        document.getElementById('profileDropdown').classList.toggle('show');
+    }
+
+    function toggleSubmenu(menu) {
+        const submenu = document.getElementById(menu + 'Submenu');
+        if (activeSubmenu && activeSubmenu !== submenu) {
+            activeSubmenu.classList.remove('show');
         }
+        submenu.classList.toggle('show');
+        activeSubmenu = submenu.classList.contains('show') ? submenu : null;
+    }
 
-        function toggleProfileDropdown() {
-            const dropdown = document.getElementById('profileDropdown');
-            dropdown.classList.toggle('show');
-        }
+    function toggleMobileMenu() {
+        mobileMenuOpen = !mobileMenuOpen;
+        document.getElementById('mobileMenu').classList.toggle('open', mobileMenuOpen);
+        document.getElementById('hamburgerIcon').className = mobileMenuOpen ? 'ph ph-x' : 'ph ph-list';
+    }
 
-        function toggleSubmenu(menu) {
-            const submenu = document.getElementById(menu + 'Submenu');
-            
-            if (activeSubmenu && activeSubmenu !== submenu) {
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.nav-item') && !event.target.closest('.submenu')) {
+            if (activeSubmenu) {
                 activeSubmenu.classList.remove('show');
-            }
-            
-            submenu.classList.toggle('show');
-            activeSubmenu = submenu.classList.contains('show') ? submenu : null;
-        }
-
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.nav-item') && !event.target.closest('.submenu')) {
-                if (activeSubmenu) {
-                    activeSubmenu.classList.remove('show');
-                    activeSubmenu = null;
-                }
-            }
-            
-            if (!event.target.closest('.profile-button') && !event.target.closest('.profile-dropdown')) {
-                document.getElementById('profileDropdown').classList.remove('show');
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            const autenticado = await Auth.isAuthenticated();
-            if (!autenticado) {
-                window.location.href = 'index.html';
-                return;
-            }
-
-            currentUser = await Auth.getCurrentUser();
-            userCargo = currentUser.cargo;
-
-            const podeAcessar = ['Fiscalizador', 'Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
-            if (!podeAcessar) {
-                window.location.href = 'home.html';
-                return;
-            }
-
-            const podeAcessarAdmin = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
-
-            const existingAdmin = document.querySelector('.nav-item[onclick*="admin.html"]');
-            if (existingAdmin) existingAdmin.remove();
-
-            if (podeAcessarAdmin) {
-                const nav = document.querySelector('.nav');
-                const adminItem = document.createElement('div');
-                adminItem.className = 'nav-item';
-                adminItem.onclick = () => window.location.href = 'admin.html';
-                adminItem.innerHTML = 'Painel';
-                nav.appendChild(adminItem);
-            }
-
-            document.getElementById('userNick').textContent = currentUser.nick;
-            const avatarUrl = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
-            document.getElementById('userAvatar').src = avatarUrl;
-
-            await carregarInfracoes();
-        });
-
-        async function carregarInfracoes() {
-            try {
-                const { data: infracoes } = await window.supabase
-                    .from('infracoes')
-                    .select('*')
-                    .order('data_criacao', { ascending: false });
-
-                todasInfracoes = infracoes || [];
-                infracoesFiltradas = [...todasInfracoes];
-                paginaAtual = 1;
-                
-                atualizarStats();
-                atualizarTabela();
-                atualizarPaginacao();
-
-            } catch (error) {
-                console.error('Erro ao carregar infrações:', error);
-                document.getElementById('infracoesTableBody').innerHTML = 
-                    '<tr><td colspan="8" class="empty-message">Erro ao carregar infrações</td></tr>';
+                activeSubmenu = null;
             }
         }
+        if (!event.target.closest('.profile-button') && !event.target.closest('.profile-dropdown')) {
+            document.getElementById('profileDropdown').classList.remove('show');
+        }
+    });
 
-        function atualizarStats() {
-            const total = todasInfracoes.length;
-            const pendentes = todasInfracoes.filter(i => i.status === 'PENDENTE').length;
-            const aprovados = todasInfracoes.filter(i => i.status === 'APROVADO').length;
-            const reprovados = todasInfracoes.filter(i => i.status === 'REPROVADO').length;
-
-            document.getElementById('totalInfracoes').textContent = total;
-            document.getElementById('totalPendentes').textContent = pendentes;
-            document.getElementById('totalAprovados').textContent = aprovados;
-            document.getElementById('totalReprovados').textContent = reprovados;
+    document.addEventListener('DOMContentLoaded', async () => {
+        const autenticado = await Auth.isAuthenticated();
+        if (!autenticado) {
+            window.location.href = 'index.html';
+            return;
         }
 
-        function aplicarFiltros() {
-            const fiscalizador = document.getElementById('filtroFiscalizador').value.toLowerCase().trim();
-            const infrator = document.getElementById('filtroInfrator').value.toLowerCase().trim();
-            const status = document.getElementById('filtroStatus').value;
-            const data = document.getElementById('filtroData').value;
+        currentUser = await Auth.getCurrentUser();
+        userCargo = currentUser.cargo;
 
-            infracoesFiltradas = todasInfracoes.filter(inf => {
-                let match = true;
-
-                if (fiscalizador) {
-                    match = match && inf.fiscalizador_nick.toLowerCase().includes(fiscalizador);
-                }
-
-                if (infrator) {
-                    match = match && inf.infrator_nick.toLowerCase().includes(infrator);
-                }
-
-                if (status) {
-                    match = match && inf.status === status;
-                }
-
-                if (data) {
-                    const dataInf = new Date(inf.data_criacao).toISOString().split('T')[0];
-                    match = match && dataInf === data;
-                }
-
-                return match;
-            });
-
-            paginaAtual = 1;
-            atualizarTabela();
-            atualizarPaginacao();
+        const podeAcessar = ['Fiscalizador', 'Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+        if (!podeAcessar) {
+            window.location.href = 'home.html';
+            return;
         }
 
-        function limparFiltros() {
-            document.getElementById('filtroFiscalizador').value = '';
-            document.getElementById('filtroInfrator').value = '';
-            document.getElementById('filtroStatus').value = '';
-            document.getElementById('filtroData').value = '';
-            
+        const podeAcessarAdmin = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+
+        const existingAdmin = document.querySelector('.nav-item[onclick*="admin.html"]');
+        if (existingAdmin) existingAdmin.remove();
+
+        if (podeAcessarAdmin) {
+            const nav = document.querySelector('.nav');
+            const adminItem = document.createElement('div');
+            adminItem.className = 'nav-item';
+            adminItem.onclick = () => window.location.href = 'admin.html';
+            adminItem.innerHTML = 'Painel';
+            nav.appendChild(adminItem);
+
+            const mobileMenu = document.getElementById('mobileMenu');
+            const sep = document.createElement('div');
+            sep.className = 'mobile-section-title';
+            sep.textContent = 'Admin';
+            const am = document.createElement('div');
+            am.className = 'mobile-nav-item';
+            am.innerHTML = '<i class="ph ph-shield"></i> Painel';
+            am.onclick = () => window.location.href = 'admin.html';
+            mobileMenu.appendChild(sep);
+            mobileMenu.appendChild(am);
+        }
+
+        document.getElementById('userNick').textContent = currentUser.nick;
+        document.getElementById('userAvatar').src = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
+
+        await carregarInfracoes();
+    });
+
+    async function carregarInfracoes() {
+        try {
+            const { data: infracoes } = await window.supabase
+                .from('infracoes')
+                .select('*')
+                .order('data_criacao', { ascending: false });
+
+            todasInfracoes = infracoes || [];
             infracoesFiltradas = [...todasInfracoes];
             paginaAtual = 1;
+
+            atualizarStats();
             atualizarTabela();
             atualizarPaginacao();
+        } catch (error) {
+            console.error('Erro ao carregar infrações:', error);
+            document.getElementById('infracoesTableBody').innerHTML =
+                '<tr><td colspan="8" class="empty-message">Erro ao carregar infrações</td></tr>';
         }
+    }
 
-        function atualizarTabela() {
-            const tbody = document.getElementById('infracoesTableBody');
+    function atualizarStats() {
+        const total = todasInfracoes.length;
+        const pendentes = todasInfracoes.filter(i => i.status === 'PENDENTE').length;
+        const aprovados = todasInfracoes.filter(i => i.status === 'APROVADO').length;
+        const reprovados = todasInfracoes.filter(i => i.status === 'REPROVADO').length;
 
-            if (infracoesFiltradas.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="empty-message">Nenhuma infração encontrada</td></tr>';
-                return;
+        document.getElementById('totalInfracoes').textContent = total;
+        document.getElementById('totalPendentes').textContent = pendentes;
+        document.getElementById('totalAprovados').textContent = aprovados;
+        document.getElementById('totalReprovados').textContent = reprovados;
+    }
+
+    function aplicarFiltros() {
+        const fiscalizador = document.getElementById('filtroFiscalizador').value.toLowerCase().trim();
+        const infrator = document.getElementById('filtroInfrator').value.toLowerCase().trim();
+        const status = document.getElementById('filtroStatus').value;
+        const data = document.getElementById('filtroData').value;
+
+        infracoesFiltradas = todasInfracoes.filter(inf => {
+            let match = true;
+
+            if (fiscalizador) {
+                match = match && inf.fiscalizador_nick.toLowerCase().includes(fiscalizador);
             }
 
-            const inicio = (paginaAtual - 1) * itensPorPagina;
-            const fim = inicio + itensPorPagina;
-            const infracoesPagina = infracoesFiltradas.slice(inicio, fim);
+            if (infrator) {
+                match = match && inf.infrator_nick.toLowerCase().includes(infrator);
+            }
 
-            const podeDefinirPunicao = ['Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+            if (status) {
+                match = match && inf.status === status;
+            }
 
-            tbody.innerHTML = infracoesPagina.map(inf => {
-                const dataUTC = new Date(inf.data_criacao);
-                const dataBrasilia = new Date(dataUTC.getTime() - (3 * 60 * 60 * 1000));
-                const dataFormatada = dataBrasilia.toLocaleDateString('pt-BR') + ' ' + 
-                                     dataBrasilia.toLocaleTimeString('pt-BR');
+            if (data) {
+                const dataInf = new Date(inf.data_criacao).toISOString().split('T')[0];
+                match = match && dataInf === data;
+            }
 
-                let statusClass = 'status-pendente';
-                if (inf.status === 'APROVADO') statusClass = 'status-aprovado';
-                if (inf.status === 'REPROVADO') statusClass = 'status-reprovado';
+            return match;
+        });
 
-                let punicaoDisplay = '';
-                if (podeDefinirPunicao && inf.status === 'PENDENTE') {
-                    punicaoDisplay = `
-                        <select class="punicao-select" data-id="${inf.id}" onchange="definirPunicao('${inf.id}', this.value)">
-                            <option value="">SELECIONE</option>
-                            ${opcoesPunicao.map(p => `<option value="${p}" ${inf.punicao === p ? 'selected' : ''}>${p}</option>`).join('')}
-                        </select>
-                    `;
-                } else {
-                    punicaoDisplay = inf.punicao && inf.punicao !== 'PENDENTE' ? inf.punicao : '<span style="color: var(--text-secondary);">—</span>';
-                }
+        paginaAtual = 1;
+        atualizarTabela();
+        atualizarPaginacao();
+    }
 
-                let botoesAcao = '';
-                if (podeDefinirPunicao && inf.status === 'PENDENTE') {
-                    botoesAcao = `
-                        <button class="btn-action aprovar-btn" data-id="${inf.id}" style="border-color: var(--success); color: var(--success); margin-right: 5px;">
-                            <i class="ph ph-check"></i>
-                        </button>
-                        <button class="btn-action reprovar-btn" data-id="${inf.id}" style="border-color: var(--danger); color: var(--danger);">
-                            <i class="ph ph-x"></i>
-                        </button>
-                    `;
-                } else {
-                    botoesAcao = '<span style="color: var(--text-secondary);">—</span>';
-                }
+    function limparFiltros() {
+        document.getElementById('filtroFiscalizador').value = '';
+        document.getElementById('filtroInfrator').value = '';
+        document.getElementById('filtroStatus').value = '';
+        document.getElementById('filtroData').value = '';
 
-                return `
-                    <tr>
-                        <td style="white-space: nowrap;">${dataFormatada}</td>
-                        <td><strong>${inf.fiscalizador_nick}</strong></td>
-                        <td><strong>${inf.infrator_nick}</strong></td>
-                        <td>${inf.crime || '-'}</td>
-                        <td>${punicaoDisplay}</td>
-                        <td>
-                            <a href="${inf.comprovacao}" target="_blank" class="comprovacao-link">
-                                <i class="ph ph-link"></i> Ver
-                            </a>
-                        </td>
-                        <td><span class="status-badge ${statusClass}">${inf.status}</span></td>
-                        <td>${botoesAcao}</td>
-                    </tr>
+        infracoesFiltradas = [...todasInfracoes];
+        paginaAtual = 1;
+        atualizarTabela();
+        atualizarPaginacao();
+    }
+
+    function atualizarTabela() {
+        const tbody = document.getElementById('infracoesTableBody');
+
+        if (infracoesFiltradas.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-message">Nenhuma infração encontrada</td></tr>';
+            return;
+        }
+
+        const inicio = (paginaAtual - 1) * itensPorPagina;
+        const fim = inicio + itensPorPagina;
+        const infracoesPagina = infracoesFiltradas.slice(inicio, fim);
+
+        const podeDefinirPunicao = ['Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+
+        tbody.innerHTML = infracoesPagina.map(inf => {
+            const dataUTC = new Date(inf.data_criacao);
+            const dataBrasilia = new Date(dataUTC.getTime() - (3 * 60 * 60 * 1000));
+            const dataFormatada = dataBrasilia.toLocaleDateString('pt-BR') + ' ' +
+                                 dataBrasilia.toLocaleTimeString('pt-BR');
+
+            let statusClass = 'status-pendente';
+            if (inf.status === 'APROVADO') statusClass = 'status-aprovado';
+            if (inf.status === 'REPROVADO') statusClass = 'status-reprovado';
+
+            let punicaoDisplay = '';
+            if (podeDefinirPunicao && inf.status === 'PENDENTE') {
+                punicaoDisplay = `
+                    <select class="punicao-select" data-id="${inf.id}" onchange="definirPunicao('${inf.id}', this.value)">
+                        <option value="">Selecione</option>
+                        ${opcoesPunicao.map(p => `<option value="${p}" ${inf.punicao === p ? 'selected' : ''}>${p}</option>`).join('')}
+                    </select>
                 `;
-            }).join('');
+            } else {
+                punicaoDisplay = inf.punicao && inf.punicao !== 'PENDENTE' ?
+                    inf.punicao :
+                    '<span style="color:var(--muted);">—</span>';
+            }
 
-            document.querySelectorAll('.aprovar-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const id = this.getAttribute('data-id');
-                    aprovarInfracao(id);
-                });
+            let botoesAcao = '';
+            if (podeDefinirPunicao && inf.status === 'PENDENTE') {
+                botoesAcao = `
+                    <button class="btn-action aprovar-btn" data-id="${inf.id}">
+                        <i class="ph ph-check" style="font-size:12px;"></i> Aprovar
+                    </button>
+                    <button class="btn-action reprovar-btn" data-id="${inf.id}">
+                        <i class="ph ph-x" style="font-size:12px;"></i> Reprovar
+                    </button>
+                `;
+            } else {
+                botoesAcao = '<span style="color:var(--muted);font-size:11px;">—</span>';
+            }
+
+            return `
+                <tr>
+                    <td class="td-date">${dataFormatada}</td>
+                    <td class="td-nick">${inf.fiscalizador_nick}</td>
+                    <td class="td-nick">${inf.infrator_nick}</td>
+                    <td class="td-crime">${inf.crime || '—'}</td>
+                    <td>${punicaoDisplay}</td>
+                    <td>
+                        <a href="${inf.comprovacao}" target="_blank" class="comprovacao-link">
+                            <i class="ph ph-link" style="font-size:12px;"></i> Ver
+                        </a>
+                    </td>
+                    <td><span class="status-badge ${statusClass}">${inf.status}</span></td>
+                    <td>${botoesAcao}</td>
+                </tr>
+            `;
+        }).join('');
+
+        document.querySelectorAll('.aprovar-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                aprovarInfracao(id);
             });
+        });
 
-            document.querySelectorAll('.reprovar-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const id = this.getAttribute('data-id');
-                    reprovarInfracao(id);
-                });
+        document.querySelectorAll('.reprovar-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                reprovarInfracao(id);
             });
-        }
+        });
+    }
 
-        function atualizarPaginacao() {
-            const totalPaginas = Math.ceil(infracoesFiltradas.length / itensPorPagina);
-            
-            document.getElementById('pageInfo').textContent = `Página ${paginaAtual} de ${totalPaginas || 1}`;
-            document.getElementById('btnAnterior').disabled = paginaAtual === 1;
-            document.getElementById('btnProxima').disabled = paginaAtual === totalPaginas || totalPaginas === 0;
-        }
+    function atualizarPaginacao() {
+        const totalPaginas = Math.ceil(infracoesFiltradas.length / itensPorPagina);
 
-        function mudarPagina(direcao) {
-            if (direcao === 'anterior' && paginaAtual > 1) {
-                paginaAtual--;
-            } else if (direcao === 'proxima' && paginaAtual < Math.ceil(infracoesFiltradas.length / itensPorPagina)) {
-                paginaAtual++;
+        document.getElementById('pageInfo').textContent = `Página ${paginaAtual} de ${totalPaginas || 1}`;
+        document.getElementById('btnAnterior').disabled = paginaAtual === 1;
+        document.getElementById('btnProxima').disabled = paginaAtual === totalPaginas || totalPaginas === 0;
+    }
+
+    function mudarPagina(direcao) {
+        if (direcao === 'anterior' && paginaAtual > 1) {
+            paginaAtual--;
+        } else if (direcao === 'proxima' && paginaAtual < Math.ceil(infracoesFiltradas.length / itensPorPagina)) {
+            paginaAtual++;
+        }
+        atualizarTabela();
+        atualizarPaginacao();
+    }
+
+    async function definirPunicao(id, punicao) {
+        if (!punicao) return;
+
+        try {
+            const { error } = await window.supabase
+                .from('infracoes')
+                .update({ punicao: punicao })
+                .eq('id', id);
+
+            if (error) throw error;
+
+            const index = todasInfracoes.findIndex(i => i.id === id);
+            if (index !== -1) {
+                todasInfracoes[index].punicao = punicao;
             }
-            atualizarTabela();
-            atualizarPaginacao();
+
+            aplicarFiltros();
+        } catch (error) {
+            console.error('Erro ao definir punição:', error);
+            alert('Erro ao definir punição');
         }
+    }
 
-        async function definirPunicao(id, punicao) {
-            if (!punicao) return;
-            
-            try {
-                const { error } = await window.supabase
-                    .from('infracoes')
-                    .update({ punicao: punicao })
-                    .eq('id', id);
+    async function aprovarInfracao(id) {
+        if (!confirm('Tem certeza que deseja APROVAR esta infração?')) return;
 
-                if (error) throw error;
+        try {
+            const { error } = await window.supabase
+                .from('infracoes')
+                .update({ status: 'APROVADO' })
+                .eq('id', id);
 
-                const index = todasInfracoes.findIndex(i => i.id === id);
-                if (index !== -1) {
-                    todasInfracoes[index].punicao = punicao;
-                }
+            if (error) throw error;
 
-                aplicarFiltros();
-
-            } catch (error) {
-                console.error('Erro ao definir punição:', error);
-                alert('Erro ao definir punição');
+            const index = todasInfracoes.findIndex(i => i.id === id);
+            if (index !== -1) {
+                todasInfracoes[index].status = 'APROVADO';
             }
+
+            aplicarFiltros();
+        } catch (error) {
+            console.error('Erro ao aprovar infração:', error);
+            alert('Erro ao aprovar infração');
         }
+    }
 
-        async function aprovarInfracao(id) {
-            if (!confirm('Tem certeza que deseja APROVAR esta infração?')) return;
-            
-            try {
-                const { error } = await window.supabase
-                    .from('infracoes')
-                    .update({ status: 'APROVADO' })
-                    .eq('id', id);
+    async function reprovarInfracao(id) {
+        if (!confirm('Tem certeza que deseja REPROVAR esta infração?')) return;
 
-                if (error) throw error;
+        try {
+            const { error } = await window.supabase
+                .from('infracoes')
+                .update({ status: 'REPROVADO' })
+                .eq('id', id);
 
-                const index = todasInfracoes.findIndex(i => i.id === id);
-                if (index !== -1) {
-                    todasInfracoes[index].status = 'APROVADO';
-                }
+            if (error) throw error;
 
-                aplicarFiltros();
-
-            } catch (error) {
-                console.error('Erro ao aprovar infração:', error);
-                alert('Erro ao aprovar infração');
+            const index = todasInfracoes.findIndex(i => i.id === id);
+            if (index !== -1) {
+                todasInfracoes[index].status = 'REPROVADO';
             }
+
+            aplicarFiltros();
+        } catch (error) {
+            console.error('Erro ao reprovar infração:', error);
+            alert('Erro ao reprovar infração');
         }
-
-        async function reprovarInfracao(id) {
-            if (!confirm('Tem certeza que deseja REPROVAR esta infração?')) return;
-            
-            try {
-                const { error } = await window.supabase
-                    .from('infracoes')
-                    .update({ status: 'REPROVADO' })
-                    .eq('id', id);
-
-                if (error) throw error;
-
-                const index = todasInfracoes.findIndex(i => i.id === id);
-                if (index !== -1) {
-                    todasInfracoes[index].status = 'REPROVADO';
-                }
-
-                aplicarFiltros();
-
-            } catch (error) {
-                console.error('Erro ao reprovar infração:', error);
-                alert('Erro ao reprovar infração');
-            }
-        }
-    </script>
+    }
+</script>
 </body>
 </html>

@@ -6,1639 +6,1031 @@
     <title>DRI System</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/iUwP1jk.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
-    <link rel="stylesheet" href="js/chat.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #161616;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #2b2b2b;
-        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --navy-dark: #161616;
-            --navy-medium: #0f2740;
-            --navy-light: #2b2b2b;
-            --text-primary: #e5e9f0;
-            --text-secondary: #afafaf;
-            --danger: #dc3545;
-            --success: #28a745;
-            --warning: #ffc107;
-            --info: #17a2b8;
+            --bg: #0c0c0c; --card: #131313; --border: #1f1f1f; --border2: #2a2a2a;
+            --input: #0c0c0c; --text: #efefef; --muted: #505050; --muted2: #787878;
+            --white: #fff; --danger: #d95555; --success: #4caf7d; --warning: #d4943a;
+            --info: #4a9eca; --purple: #8b6fd4;
         }
 
-        body {
-            background: url('https://i.imgur.com/8b3rI5q.png') repeat center center fixed;
-            background-size: contain;
-            background-size: 300px 300px;
-            font-family: 'Poppins', sans-serif;
-            color: #fff;
-            position: relative;
-            min-height: 100vh;
-        }
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border2); }
+
+        body { background: var(--bg); min-height: 100vh; font-family: 'Inter', sans-serif; color: var(--text); }
 
         body::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(4, 4, 4, 0.478);
-            z-index: -1;
-        }
-
-        .header {
-            background: rgb(26, 26, 26);
-            border-bottom: 2px solid rgb(17, 17, 17);
-            width: 100%;
-            padding: 0 30px;
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 40px;
-        }
-
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo-area img {
-            height: 40px;
-            width: auto;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: white;
-        }
-
-        .nav {
-            display: flex;
-            gap: 5px;
-            position: relative;
-        }
-
-        .nav-item {
-            padding: 8px 16px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.95rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .nav-item:hover {
-            color: white;
-        }
-
-        .submenu {
-            position: absolute;
-            top: 100%;
-            background: rgb(30, 30, 30);
-            border-radius: 8px;
-            padding: 8px 0;
-            min-width: 200px;
-            display: none;
-            z-index: 1000;
-        }
-
-        .submenu.show {
-            display: block;
-        }
-
-        .submenu-item {
-            padding: 10px 20px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .submenu-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-
-        #geralSubmenu {
-            left: 0;
-        }
-
-        #requerimentosSubmenu {
-            left: 85px;
-        }
-
-        #escalasSubmenu {
-            left: 260px;
-        }
-
-        .profile {
-            position: relative;
-        }
-
-        .profile-button {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 5px 10px 5px 5px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgb(40, 40, 40);
-            border-radius: 12px;
-            cursor: pointer;
-        }
-
-        .profile-avatar {
-            width: 36px;
-            height: 36px;
-            overflow: hidden;
-        }
-
-        .profile-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .profile-nick {
-            font-weight: 500;
-            color: white;
-            font-size: 0.9rem;
-        }
-
-        .profile-dropdown {
-            position: absolute;
-            top: calc(100% + 8px);
-            right: 0;
-            background: rgb(30, 30, 30);
-            border-radius: 8px;
-            padding: 8px 0;
-            min-width: 160px;
-            display: none;
-            z-index: 1000;
-        }
-
-        .profile-dropdown.show {
-            display: block;
-        }
-
-        .profile-dropdown-item {
-            padding: 10px 20px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .profile-dropdown-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-
-        .profile-dropdown-item.logout {
-            color: var(--danger);
-        }
-
-        .profile-dropdown-item.logout:hover {
-            background: rgba(220, 53, 69, 0.1);
-        }
-
-        .main-content {
-            padding: 40px 20px;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .admin-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid rgb(40, 40, 40);
-            padding-bottom: 10px;
-            flex-wrap: wrap;
-        }
-
-        .admin-tab {
-            padding: 10px 20px;
-            background: transparent;
-            border: 2px solid transparent;
-            border-radius: 8px;
-            color: var(--text-secondary);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .admin-tab:hover {
-            color: white;
-            border-color: rgb(60, 60, 60);
-        }
-
-        .admin-tab.active {
-            background: rgb(40, 40, 40);
-            color: white;
-            border-color: rgb(60, 60, 60);
-        }
-
-        .admin-panel {
-            display: none;
-        }
-
-        .admin-panel.active {
-            display: block;
-        }
-
-        .card {
-            background: rgb(26, 26, 26);
-            border: 2px solid rgb(17, 17, 17);
-            border-radius: 10px;
-            padding: 25px;
-            margin-bottom: 20px;
-        }
-
-        .card-title {
-            color: white;
-            font-weight: 600;
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid rgb(40, 40, 40);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .table-container {
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th {
-            text-align: left;
-            padding: 12px;
-            background: rgb(40, 40, 40);
-            color: white;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        td {
-            padding: 12px;
-            border-bottom: 1px solid rgb(40, 40, 40);
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 11px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 0.8rem;
-        }
-
-        .status-ativo {
-            background: rgba(40, 167, 69, 0.1);
-            color: var(--success);
-            border: 2px solid var(--success);
-        }
-
-        .status-bloqueado {
-            background: rgba(220, 53, 69, 0.1);
-            color: var(--danger);
-            border: 2px solid var(--danger);
-        }
-
-        .status-licenca {
-            background: rgba(255, 193, 7, 0.1);
-            color: var(--warning);
-            border: 2px solid var(--warning);
-        }
-        
-        .status-concluido {
-            background: rgba(40, 167, 69, 0.1);
-            color: var(--success);
-            border: 2px solid var(--success);
-        }
-        
-        .status-justificado {
-            background: rgba(102, 16, 242, 0.1);
-            color: #6610f2;
-            border: 2px solid #6610f2;
-        }
-
-        .btn-action {
-            padding: 6px 12px;
-            background: transparent;
-            border: 2px solid rgb(60, 60, 60);
-            border-radius: 6px;
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 0 2px;
-        }
-
-        .btn-action:hover {
-            border-color: white;
-            color: white;
-        }
-
-        .btn-action.edit:hover {
-            border-color: var(--info);
-            color: var(--info);
-        }
-
-        .btn-action.ban:hover {
-            border-color: var(--danger);
-            color: var(--danger);
-        }
-
-        .btn-action.unban:hover {
-            border-color: var(--success);
-            color: var(--success);
-        }
-
-        .btn-action.delete:hover {
-            border-color: #ff4444;
-            color: #ff4444;
-            background: rgba(255, 68, 68, 0.05);
-        }
-
-        .modal-confirm-danger .modal-title {
-            color: #ff4444;
-        }
-
-        .modal-confirm-danger .btn-modal.danger {
-            background: #dc3545;
-            color: white;
-            border: none;
-        }
-
-        .modal-confirm-danger .btn-modal.danger:hover {
-            background: #c82333;
-        }
-
-        .usuario-remover-info {
-            background: rgba(220, 53, 69, 0.08);
-            border: 2px solid rgba(220, 53, 69, 0.3);
-            border-radius: 8px;
-            padding: 14px 18px;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            line-height: 1.6;
-            margin-bottom: 10px;
-        }
-
-        .usuario-remover-info strong {
-            color: white;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.show {
-            display: flex;
-        }
-
-        .modal-content {
-            background: rgb(26, 26, 26);
-            border: 2px solid rgb(17, 17, 17);
-            border-radius: 10px;
-            padding: 30px;
-            max-width: 500px;
-            width: 90%;
-        }
-
-        .modal-title {
-            color: white;
-            font-weight: 600;
-            font-size: 1.3rem;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .input-wrapper input,
-        .input-wrapper select,
-        .input-wrapper textarea {
-            width: 100%;
-            padding: 10px 0;
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid rgb(80, 80, 80);
-            color: white;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-        }
-
-        .input-wrapper input:focus,
-        .input-wrapper select:focus,
-        .input-wrapper textarea:focus {
-            outline: none;
-            border-bottom-color: white;
-        }
-
-        .input-wrapper select option {
-            background: rgb(26, 26, 26);
-            color: white;
-        }
-
-        .modal-footer {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 20px;
-        }
-
-        .btn-modal {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-modal.primary {
-            background: white;
-            color: var(--navy-dark);
-        }
-
-        .btn-modal.primary:hover {
-            background: #f0f0f0;
-        }
-
-        .btn-modal.secondary {
-            background: transparent;
-            border: 2px solid rgb(80, 80, 80);
-            color: var(--text-secondary);
-        }
-
-        .btn-modal.secondary:hover {
-            border-color: white;
-            color: white;
-        }
-
-        .btn-modal.danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-modal.danger:hover {
-            background: #c82333;
-        }
-
-        .empty-message {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-secondary);
-        }
-
-        .loading {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        .comprovacao-link {
-            color: var(--info);
-            text-decoration: none;
-        }
-        
-        .comprovacao-link:hover {
-            text-decoration: underline;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+            content: ''; position: fixed; inset: 0;
+            background-image: radial-gradient(#ffffff05 1px, transparent 1px);
+            background-size: 24px 24px; pointer-events: none; z-index: 0;
+        }
+
+        .header { position: sticky; top: 0; z-index: 200; background: rgba(12,12,12,0.94); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); }
+        .header-content { max-width: 1400px; margin: 0 auto; height: 56px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+        .header-left { display: flex; align-items: center; gap: 24px; min-width: 0; }
+        .logo-area { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .logo-area img { height: 24px; }
+        .logo { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500; color: var(--white); }
+        .nav { display: flex; align-items: center; gap: 2px; position: relative; }
+        .nav-item { padding: 6px 11px; color: var(--muted2); font-size: 13px; border-radius: 7px; cursor: pointer; transition: color 0.15s, background 0.15s; display: flex; align-items: center; gap: 4px; white-space: nowrap; user-select: none; }
+        .nav-item:hover { color: var(--white); background: rgba(255,255,255,0.04); }
+        .nav-item i { font-size: 11px; }
+        .submenu { position: absolute; top: calc(100% + 8px); background: #161616; border: 1px solid var(--border2); border-radius: 10px; padding: 6px; min-width: 185px; display: none; z-index: 300; }
+        .submenu.show { display: block; animation: fadeDown 0.15s ease; }
+        #geralSubmenu { left: 0; } #requerimentosSubmenu { left: 70px; } #escalasSubmenu { left: 204px; }
+        .submenu-item { padding: 8px 11px; color: var(--muted2); font-size: 12.5px; border-radius: 7px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: color 0.15s, background 0.15s; }
+        .submenu-item:hover { background: rgba(255,255,255,0.05); color: var(--white); }
+        .submenu-item i { font-size: 14px; color: var(--muted); }
+        .header-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+        .clock-badge { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
+        .header-version { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
+        .hamburger { display: none; background: transparent; border: 1px solid var(--border2); border-radius: 8px; width: 36px; height: 36px; align-items: center; justify-content: center; cursor: pointer; color: var(--muted2); font-size: 18px; transition: border-color 0.15s, color 0.15s; flex-shrink: 0; }
+        .hamburger:hover { border-color: #444; color: var(--white); }
+        .profile { position: relative; }
+        .profile-button { display: flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; background: rgba(255,255,255,0.04); border: 1px solid var(--border2); border-radius: 10px; cursor: pointer; transition: border-color 0.15s; }
+        .profile-button:hover { border-color: #444; }
+        .profile-avatar { width: 28px; height: 28px; border-radius: 7px; overflow: hidden; background: var(--card); flex-shrink: 0; }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-nick { font-size: 12.5px; font-weight: 500; color: var(--white); }
+        .profile-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: #161616; border: 1px solid var(--border2); border-radius: 10px; padding: 6px; min-width: 150px; display: none; z-index: 300; }
+        .profile-dropdown.show { display: block; animation: fadeDown 0.15s ease; }
+        .profile-dropdown-item { padding: 8px 11px; color: var(--muted2); font-size: 12.5px; border-radius: 7px; display: flex; align-items: center; gap: 8px; cursor: pointer; text-decoration: none; transition: color 0.15s, background 0.15s; }
+        .profile-dropdown-item:hover { background: rgba(255,255,255,0.05); color: var(--white); }
+        .profile-dropdown-item.logout { color: var(--danger); }
+        .profile-dropdown-item.logout:hover { background: rgba(217,85,85,0.08); }
+
+        .mobile-menu { display: none; flex-direction: column; background: #111; border-bottom: 1px solid var(--border); padding: 8px 16px 12px; }
+        .mobile-menu.open { display: flex; }
+        .mobile-nav-item { padding: 10px 4px; color: var(--muted2); font-size: 13px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .mobile-nav-item:last-child { border-bottom: none; }
+        .mobile-nav-item:hover { color: var(--white); }
+        .mobile-nav-item i { font-size: 15px; color: var(--muted); }
+        .mobile-section-title { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; padding: 12px 4px 6px; }
+
+        .main-content { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 28px 20px; }
+
+        .page-header { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+        .page-title-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,0.04); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--muted2); flex-shrink: 0; }
+        .page-title { font-size: 18px; font-weight: 600; color: var(--white); letter-spacing: -0.4px; }
+
+        .admin-tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+
+        .admin-tab { height: 34px; padding: 0 16px; background: transparent; border: 1px solid var(--border2); border-radius: 8px; color: var(--muted2); font-size: 12.5px; font-family: 'Inter', sans-serif; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 7px; }
+        .admin-tab:hover { color: var(--white); border-color: #444; }
+        .admin-tab.active { background: rgba(255,255,255,0.06); color: var(--white); border-color: #444; }
+        .admin-tab i { font-size: 14px; }
+
+        .admin-panel { display: none; }
+        .admin-panel.active { display: block; }
+
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-bottom: 16px; position: relative; overflow: hidden; }
+        .card::after { content: ''; position: absolute; top: 0; left: 15%; right: 15%; height: 1px; background: linear-gradient(90deg, transparent, #ffffff0d, transparent); }
+        .card:last-child { margin-bottom: 0; }
+
+        .card-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 500; color: var(--muted2); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+
+        .table-container { overflow-x: auto; }
+
+        table { width: 100%; border-collapse: collapse; min-width: 540px; }
+        th { padding: 10px 12px; background: rgba(255,255,255,0.02); color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; white-space: nowrap; text-align: left; border-bottom: 1px solid var(--border); }
+        td { padding: 11px 12px; border-bottom: 1px solid var(--border); font-size: 12.5px; color: var(--muted2); }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,0.013); }
+
+        .status-badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 500; letter-spacing: 0.5px; }
+        .status-ativo { background: rgba(76,175,125,0.1); border: 1px solid rgba(76,175,125,0.3); color: var(--success); }
+        .status-bloqueado { background: rgba(217,85,85,0.1); border: 1px solid rgba(217,85,85,0.3); color: var(--danger); }
+        .status-licenca { background: rgba(212,148,58,0.1); border: 1px solid rgba(212,148,58,0.3); color: var(--warning); }
+        .status-concluido { background: rgba(76,175,125,0.1); border: 1px solid rgba(76,175,125,0.3); color: var(--success); }
+        .status-justificado { background: rgba(139,111,212,0.1); border: 1px solid rgba(139,111,212,0.3); color: var(--purple); }
+
+        .btn-action { height: 27px; padding: 0 10px; background: transparent; border: 1px solid var(--border2); border-radius: 6px; color: var(--muted2); font-size: 11px; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 4px; font-family: 'Inter', sans-serif; margin: 0 2px; }
+        .btn-action:hover { border-color: #444; color: var(--white); }
+        .btn-action.edit:hover { border-color: var(--info); color: var(--info); }
+        .btn-action.ban:hover { border-color: var(--danger); color: var(--danger); }
+        .btn-action.unban:hover { border-color: var(--success); color: var(--success); }
+        .btn-action.delete:hover { border-color: #ff4444; color: #ff4444; background: rgba(255,68,68,0.05); }
+
+        .comprovacao-link { color: var(--info); text-decoration: none; font-size: 12px; }
+        .comprovacao-link:hover { text-decoration: underline; }
+
+        .empty-message { text-align: center; padding: 40px; color: var(--muted); font-size: 13px; }
+
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 500; align-items: center; justify-content: center; padding: 16px; }
+        .modal.show { display: flex; }
+        .modal-content { background: #161616; border: 1px solid var(--border2); border-radius: 16px; padding: 24px; max-width: 500px; width: 100%; animation: fadeDown 0.2s ease; position: relative; overflow: hidden; }
+        .modal-content::after { content: ''; position: absolute; top: 0; left: 15%; right: 15%; height: 1px; background: linear-gradient(90deg, transparent, #ffffff12, transparent); }
+        .modal-content.wide { max-width: 700px; }
+        .modal-title { font-size: 15px; font-weight: 600; color: var(--white); margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+        .modal-title.danger { color: var(--danger); }
+
+        .form-group { margin-bottom: 14px; }
+        .field-label { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; display: block; }
+
+        .modal-input, .modal-select, .modal-textarea {
+            width: 100%; background: var(--input); border: 1px solid var(--border2);
+            border-radius: 10px; color: var(--white); font-size: 13px;
+            font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s;
+        }
+        .modal-input, .modal-select { height: 42px; padding: 0 13px; }
+        .modal-input[readonly] { color: var(--muted2); }
+        .modal-input:focus, .modal-select:focus, .modal-textarea:focus { border-color: #444; }
+        .modal-textarea { padding: 11px 13px; min-height: 90px; resize: vertical; line-height: 1.55; }
+        .modal-input::placeholder, .modal-textarea::placeholder { color: #2e2e2e; }
+        .modal-select { cursor: pointer; appearance: none; -webkit-appearance: none; }
+        .modal-select option { background: #161616; color: var(--white); }
+
+        .modal-body { color: var(--text); line-height: 1.6; white-space: pre-wrap; font-size: 13px; }
+
+        .remove-info { background: rgba(217,85,85,0.07); border: 1px solid rgba(217,85,85,0.2); border-radius: 8px; padding: 12px 14px; color: var(--muted2); font-size: 12.5px; line-height: 1.7; margin-bottom: 12px; }
+        .remove-info strong { color: var(--white); }
+
+        .remove-error { color: var(--danger); font-size: 12px; margin-top: 6px; display: none; }
+
+        .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+        .btn-modal { height: 38px; padding: 0 18px; border: none; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.15s, transform 0.1s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-modal:active { transform: scale(0.98); }
+        .btn-modal.primary { background: var(--white); color: #0c0c0c; }
+        .btn-modal.primary:hover { background: #e8e8e8; }
+        .btn-modal.secondary { background: transparent; border: 1px solid var(--border2); color: var(--muted2); }
+        .btn-modal.secondary:hover { border-color: #444; color: var(--white); }
+        .btn-modal.danger { background: var(--danger); color: var(--white); }
+        .btn-modal.danger:hover { background: #c82333; }
+
+        .filter-select { height: 36px; padding: 0 10px; background: var(--input); border: 1px solid var(--border2); border-radius: 8px; color: var(--white); font-size: 12.5px; font-family: 'Inter', sans-serif; outline: none; cursor: pointer; transition: border-color 0.2s; margin-bottom: 14px; }
+        .filter-select:focus { border-color: #444; }
+        .filter-select option { background: #161616; }
+
+        .btn-new { height: 34px; padding: 0 14px; background: transparent; border: 1px solid var(--border2); border-radius: 8px; color: var(--muted2); font-size: 12.5px; font-family: 'Inter', sans-serif; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: border-color 0.15s, color 0.15s; margin-bottom: 14px; }
+        .btn-new:hover { border-color: #444; color: var(--white); }
+
+        @keyframes fadeDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 768px) {
+            .nav { display: none; } .hamburger { display: flex; }
+            .clock-badge { display: none; } .header-version { display: none; }
+            .profile-nick { display: none; } .profile-button { padding: 4px; border-radius: 8px; }
+            .main-content { padding: 16px; }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="logo-area">
-                    <img src="https://i.imgur.com/iUwP1jk.png">
-                    <span class="logo">DRI System</span>
-                </div>
-                <nav class="nav">
-                    <div class="nav-item" id="geralBtn" onclick="toggleSubmenu('geral')">
-                        Geral <i class="ph ph-caret-down"></i>
-                    </div>
-                    <div class="nav-item" onclick="window.location.href='listagem.html'">
-                        Listagem
-                    </div>
-                    <div class="nav-item" id="requerimentosBtn" onclick="toggleSubmenu('requerimentos')">
-                        Requerimentos <i class="ph ph-caret-down"></i>
-                    </div>
-                    <div class="nav-item" id="escalasBtn" onclick="toggleSubmenu('escalas')">
-                        Escalas <i class="ph ph-caret-down"></i>
-                    </div>
-                    <div class="nav-item" onclick="window.location.href='registros.html'">
-                        Registros
-                    </div>
-                    <div class="nav-item active" onclick="window.location.href='admin.html'">
-                        Painel
-                    </div>
 
-                    <div class="submenu" id="geralSubmenu">
-                        <div class="submenu-item" onclick="window.location.href='home.html'">
-                            <i class="ph ph-house"></i> Início
-                        </div>
-                        <div class="submenu-item" onclick="window.location.href='documentacoes.html'">
-                            <i class="ph ph-folder"></i> Documentações
-                        </div>
-                        <div class="submenu-item active" onclick="window.location.href='memorial.html'">
-                            <i class="ph ph-image"></i> Memorial
-                        </div>
-                        <div class="submenu-item" onclick="window.location.href='reportar.html'">
-                            <i class="ph ph-flag"></i> Reportar falha
-                        </div>
-                    </div>
-
-                    <div class="submenu" id="requerimentosSubmenu">
-                        <div class="submenu-item" onclick="window.location.href='req_membros.html'">
-                            Req de membros
-                        </div>
-                        <div class="submenu-item" onclick="window.location.href='registro_funcao.html'">
-                            Registro de função
-                        </div>
-                    </div>
-
-                    <div class="submenu" id="escalasSubmenu">
-                        <div class="submenu-item" onclick="window.location.href='escala_fiscalizador.html'">
-                            Fiscalizador
-                        </div>
-                        <div class="submenu-item" onclick="window.location.href='escala_superintendente.html'">
-                            Superintendente
-                        </div>
-                    </div>
-                </nav>
+<div class="header">
+    <div class="header-content">
+        <div class="header-left">
+            <div class="logo-area">
+                <img src="https://i.imgur.com/iUwP1jk.png">
+                <span class="logo">DRI System</span>
             </div>
+            <nav class="nav">
+                <div class="nav-item" id="geralBtn" onclick="toggleSubmenu('geral')">Geral <i class="ph ph-caret-down"></i></div>
+                <div class="nav-item" onclick="window.location.href='listagem.html'">Listagem</div>
+                <div class="nav-item" id="requerimentosBtn" onclick="toggleSubmenu('requerimentos')">Requerimentos <i class="ph ph-caret-down"></i></div>
+                <div class="nav-item" id="escalasBtn" onclick="toggleSubmenu('escalas')">Escalas <i class="ph ph-caret-down"></i></div>
+                <div class="nav-item" onclick="window.location.href='registros.html'">Registros</div>
+                <div class="nav-item" onclick="window.location.href='admin.html'">Painel</div>
+                <div class="submenu" id="geralSubmenu">
+                    <div class="submenu-item" onclick="window.location.href='home.html'"><i class="ph ph-house"></i> Início</div>
+                    <div class="submenu-item" onclick="window.location.href='documentacoes.html'"><i class="ph ph-folder"></i> Documentações</div>
+                    <div class="submenu-item" onclick="window.location.href='memorial.html'"><i class="ph ph-image"></i> Memorial</div>
+                    <div class="submenu-item" onclick="window.location.href='reportar.html'"><i class="ph ph-flag"></i> Reportar falha</div>
+                </div>
+                <div class="submenu" id="requerimentosSubmenu">
+                    <div class="submenu-item" onclick="window.location.href='req_membros.html'">Req de membros</div>
+                    <div class="submenu-item" onclick="window.location.href='registro_funcao.html'">Registro de função</div>
+                </div>
+                <div class="submenu" id="escalasSubmenu">
+                    <div class="submenu-item" onclick="window.location.href='escala_fiscalizador.html'">Fiscalizador</div>
+                    <div class="submenu-item" onclick="window.location.href='escala_superintendente.html'">Superintendente</div>
+                </div>
+            </nav>
+        </div>
+        <div class="header-right">
+            <span class="clock-badge" id="clock">--:--:--</span>
+            <span class="header-version">v2.1.1</span>
+            <button class="hamburger" onclick="toggleMobileMenu()" id="hamburgerBtn"><i class="ph ph-list" id="hamburgerIcon"></i></button>
             <div class="profile">
                 <div class="profile-button" onclick="toggleProfileDropdown()" id="profileButton">
-                    <div class="profile-avatar">
-                        <img id="userAvatar" src="" alt="avatar">
-                    </div>
+                    <div class="profile-avatar"><img id="userAvatar" src="" alt="avatar"></div>
                     <span class="profile-nick" id="userNick">carregando...</span>
                 </div>
                 <div class="profile-dropdown" id="profileDropdown">
-                    <a href="meu_perfil.html" class="profile-dropdown-item">
-                        <i class="ph ph-user-circle"></i> Meu perfil
-                    </a>
-                    <div class="profile-dropdown-item logout" onclick="Auth.logout()">
-                        <i class="ph ph-sign-out"></i> Sair
-                    </div>
+                    <a href="meu_perfil.html" class="profile-dropdown-item"><i class="ph ph-user-circle"></i> Meu perfil</a>
+                    <div class="profile-dropdown-item logout" onclick="Auth.logout()"><i class="ph ph-sign-out"></i> Sair</div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="main-content">
-        <div class="admin-tabs">
-            <div class="admin-tab active" onclick="mudarAba('usuarios')">
-                Usuários
-            </div>
-            <div class="admin-tab" onclick="mudarAba('documentos')">
-                Documentos
-            </div>
-            <div class="admin-tab" onclick="mudarAba('medalhas')">
-                Medalhas
-            </div>
-            <div class="admin-tab" onclick="mudarAba('registrosfuncao')">
-                Registros de Função
-            </div>
-        </div>
+<div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-section-title">Geral</div>
+    <div class="mobile-nav-item" onclick="window.location.href='home.html'"><i class="ph ph-house"></i> Início</div>
+    <div class="mobile-nav-item" onclick="window.location.href='documentacoes.html'"><i class="ph ph-folder"></i> Documentações</div>
+    <div class="mobile-nav-item" onclick="window.location.href='memorial.html'"><i class="ph ph-image"></i> Memorial</div>
+    <div class="mobile-nav-item" onclick="window.location.href='reportar.html'"><i class="ph ph-flag"></i> Reportar falha</div>
+    <div class="mobile-nav-item" onclick="window.location.href='listagem.html'"><i class="ph ph-users"></i> Listagem</div>
+    <div class="mobile-section-title">Requerimentos</div>
+    <div class="mobile-nav-item" onclick="window.location.href='req_membros.html'"><i class="ph ph-file-text"></i> Req de membros</div>
+    <div class="mobile-nav-item" onclick="window.location.href='registro_funcao.html'"><i class="ph ph-clipboard-text"></i> Registro de função</div>
+    <div class="mobile-section-title">Escalas</div>
+    <div class="mobile-nav-item" onclick="window.location.href='escala_fiscalizador.html'"><i class="ph ph-calendar"></i> Fiscalizador</div>
+    <div class="mobile-nav-item" onclick="window.location.href='escala_superintendente.html'"><i class="ph ph-calendar-check"></i> Superintendente</div>
+    <div class="mobile-section-title">Outros</div>
+    <div class="mobile-nav-item" onclick="window.location.href='registros.html'"><i class="ph ph-archive"></i> Registros</div>
+    <div class="mobile-nav-item" onclick="window.location.href='admin.html'"><i class="ph ph-shield"></i> Painel Admin</div>
+</div>
 
-        <div id="abaUsuarios" class="admin-panel active">
-            <div class="card">
-                <div class="card-title">
-                    Gerenciar usuários
-                </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>NICK</th>
-                                <th>CARGO</th>
-                                <th>STATUS</th>
-                                <th>DATA</th>
-                                <th>AÇÕES</th>
-                            </tr>
-                        </thead>
-                        <tbody id="usuariosTableBody">
-                            <tr>
-                                <td colspan="5" class="empty-message">Carregando usuários...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+<div class="main-content">
+    <div class="page-header">
+        <div class="page-title-icon"><i class="ph ph-shield"></i></div>
+        <span class="page-title">Painel Admin</span>
+    </div>
 
-        <div id="abaDocumentos" class="admin-panel">
-            <div class="card">
-                <div class="card-title">
-                    Gerenciar pastas
-                </div>
-                <button class="btn-action" onclick="abrirModalNovaPasta()" style="margin-bottom: 20px;">
-                    NOVA PASTA
-                </button>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>PASTA</th>
-                                <th>DESCRIÇÃO</th>
-                                <th>DOCUMENTOS</th>
-                                <th>CRIADO POR</th>
-                                <th>DATA</th>
-                                <th>AÇÕES</th>
-                            </tr>
-                        </thead>
-                        <tbody id="pastasTableBody">
-                            <tr>
-                                <td colspan="6" class="empty-message">Carregando pastas...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+    <div class="admin-tabs">
+        <div class="admin-tab active" onclick="mudarAba('usuarios')"><i class="ph ph-users"></i> Usuários</div>
+        <div class="admin-tab" onclick="mudarAba('documentos')"><i class="ph ph-folder"></i> Documentos</div>
+        <div class="admin-tab" onclick="mudarAba('medalhas')"><i class="ph ph-medal"></i> Medalhas</div>
+        <div class="admin-tab" onclick="mudarAba('registrosfuncao')"><i class="ph ph-clipboard-text"></i> Registros de Função</div>
+    </div>
 
-            <div class="card">
-                <div class="card-title">
-                    Gerenciar documentos
-                </div>
-                <div class="form-group" style="max-width: 300px;">
-                    <div class="input-wrapper">
-                        <select id="filtroPasta" onchange="carregarDocumentosAdmin()">
-                            <option value="">TODAS AS PASTAS</option>
-                        </select>
-                    </div>
-                </div>
-                <button class="btn-action" onclick="abrirModalNovoDocumento()" style="margin-bottom: 20px;">
-                    NOVO DOCUMENTO
-                </button>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>TÍTULO</th>
-                                <th>PASTA</th>
-                                <th>CRIADO POR</th>
-                                <th>DATA</th>
-                                <th>AÇÕES</th>
-                            </tr>
-                        </thead>
-                        <tbody id="documentosTableBody">
-                            <tr>
-                                <td colspan="5" class="empty-message">Carregando documentos...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="abaMedalhas" class="admin-panel">
-            <div class="card">
-                <div class="card-title">
-                    Medalhas (Em breve)
-                </div>
-                <div class="empty-message">
-                    Sistema de medalhas será implementado em breve.
-                </div>
-            </div>
-        </div>
-        
-        <div id="abaRegistrosFuncao" class="admin-panel">
-            <div class="card">
-                <div class="card-title">
-                    Registros de função
-                </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>DATA</th>
-                                <th>TIPO</th>
-                                <th>ORDEM</th>
-                                <th>RESPONSÁVEL</th>
-                                <th>AUTOR</th>
-                                <th>AÇÃO</th>
-                                <th>COMPROVAÇÃO/MOTIVO</th>
-                            </tr>
-                        </thead>
-                        <tbody id="registrosFuncaoTableBody">
-                            <tr>
-                                <td colspan="7" class="empty-message">Carregando registros...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+    <div id="abaUsuarios" class="admin-panel active">
+        <div class="card">
+            <div class="card-title"><i class="ph ph-users" style="font-size:13px;"></i> Gerenciar usuários</div>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>NICK</th><th>CARGO</th><th>STATUS</th><th>DATA</th><th>AÇÕES</th></tr></thead>
+                    <tbody id="usuariosTableBody"><tr><td colspan="5" class="empty-message">Carregando usuários...</td></tr></tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <div class="modal" id="modalVerDocumento">
-        <div class="modal-content" style="max-width: 700px;">
-            <div class="modal-title" id="modalDocumentoTitulo">
-                -
+    <div id="abaDocumentos" class="admin-panel">
+        <div class="card">
+            <div class="card-title"><i class="ph ph-folders" style="font-size:13px;"></i> Gerenciar pastas</div>
+            <button class="btn-new" onclick="abrirModalNovaPasta()"><i class="ph ph-plus" style="font-size:13px;"></i> Nova pasta</button>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>PASTA</th><th>DESCRIÇÃO</th><th>DOCUMENTOS</th><th>CRIADO POR</th><th>DATA</th><th>AÇÕES</th></tr></thead>
+                    <tbody id="pastasTableBody"><tr><td colspan="6" class="empty-message">Carregando pastas...</td></tr></tbody>
+                </table>
             </div>
-            <div class="modal-body" id="modalDocumentoConteudo" style="color: var(--text-secondary); line-height: 1.6; white-space: pre-wrap;"></div>
-            <div class="modal-footer">
-                <button class="btn-modal primary" onclick="fecharModalVerDocumento()">FECHAR</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title"><i class="ph ph-file-text" style="font-size:13px;"></i> Gerenciar documentos</div>
+            <select class="filter-select" id="filtroPasta" onchange="carregarDocumentosAdmin()">
+                <option value="">TODAS AS PASTAS</option>
+            </select>
+            <button class="btn-new" onclick="abrirModalNovoDocumento()"><i class="ph ph-plus" style="font-size:13px;"></i> Novo documento</button>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>TÍTULO</th><th>PASTA</th><th>CRIADO POR</th><th>DATA</th><th>AÇÕES</th></tr></thead>
+                    <tbody id="documentosTableBody"><tr><td colspan="5" class="empty-message">Carregando documentos...</td></tr></tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <div class="modal" id="modalEditarUsuario">
-        <div class="modal-content">
-            <div class="modal-title">
-                Editar usuário
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <input type="text" id="editNick" placeholder="NICK" readonly>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <select id="editCargo">
-                            <option value="Fiscalizador">Fiscalizador</option>
-                            <option value="Superintendente">Superintendente</option>
-                            <option value="Vice-Líder">Vice-Líder</option>
-                            <option value="Líder">Líder</option>
-                            <option value="DEV">DEV</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <select id="editStatus">
-                            <option value="ATIVO">ATIVO</option>
-                            <option value="BLOQUEADO">BLOQUEADO</option>
-                            <option value="LICENCA">LICENÇA</option>
-                            <option value="RESERVA">RESERVA</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-modal secondary" onclick="fecharModalEditarUsuario()">CANCELAR</button>
-                <button class="btn-modal primary" onclick="salvarEdicaoUsuario()">SALVAR</button>
-            </div>
+    <div id="abaMedalhas" class="admin-panel">
+        <div class="card">
+            <div class="card-title"><i class="ph ph-medal" style="font-size:13px;"></i> Medalhas (Em breve)</div>
+            <div class="empty-message">Sistema de medalhas será implementado em breve.</div>
         </div>
     </div>
 
-    <div class="modal" id="modalNovaPasta">
-        <div class="modal-content">
-            <div class="modal-title">
-                Nova pasta
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <input type="text" id="novaPastaNome" placeholder="Nome da pasta">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <textarea id="novaPastaDescricao" placeholder="Descrição" rows="3"></textarea>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-modal secondary" onclick="fecharModalNovaPasta()">CANCELAR</button>
-                <button class="btn-modal primary" onclick="criarPasta()">CRIAR</button>
+    <div id="abaRegistrosFuncao" class="admin-panel">
+        <div class="card">
+            <div class="card-title"><i class="ph ph-clipboard-text" style="font-size:13px;"></i> Registros de função</div>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>DATA</th><th>TIPO</th><th>ORDEM</th><th>RESPONSÁVEL</th><th>AUTOR</th><th>AÇÃO</th><th>COMPROVAÇÃO/MOTIVO</th></tr></thead>
+                    <tbody id="registrosFuncaoTableBody"><tr><td colspan="7" class="empty-message">Carregando registros...</td></tr></tbody>
+                </table>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="modal" id="modalNovoDocumento">
-        <div class="modal-content">
-            <div class="modal-title">
-                Novo documento
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <select id="novoDocumentoPasta">
-                            <option value="" disabled selected>Selecione a pasta</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <input type="text" id="novoDocumentoTitulo" placeholder="Título">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <textarea id="novoDocumentoConteudo" placeholder="Conteúdo" rows="5"></textarea>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-modal secondary" onclick="fecharModalNovoDocumento()">CANCELAR</button>
-                <button class="btn-modal primary" onclick="criarDocumento()">CRIAR</button>
-            </div>
+<div class="modal" id="modalVerDocumento">
+    <div class="modal-content wide">
+        <div class="modal-title" id="modalDocumentoTitulo">-</div>
+        <div class="modal-body" id="modalDocumentoConteudo"></div>
+        <div class="modal-footer">
+            <button class="btn-modal primary" onclick="fecharModalVerDocumento()">Fechar</button>
         </div>
     </div>
+</div>
 
-    <div class="modal modal-confirm-danger" id="modalRemoverUsuario">
-        <div class="modal-content">
-            <div class="modal-title">
-                <i class="ph ph-warning"></i> Remover conta
-            </div>
-            <div class="modal-body">
-                <div class="usuario-remover-info">
-                    Você está prestes a remover permanentemente a conta de <strong id="removerNickDisplay">-</strong>.<br><br>
-                    Isso irá apagar o usuário do sistema. <strong>Esta ação não pode ser desfeita.</strong>
-                </div>
-                <p style="color: var(--text-secondary); font-size: 0.88rem; margin-top: 10px;">
-                    Digite o nick abaixo para confirmar:
-                </p>
-                <div class="form-group" style="margin-top: 10px;">
-                    <div class="input-wrapper">
-                        <input type="text" id="removerNickConfirm" placeholder="Digite o nick para confirmar">
-                    </div>
-                </div>
-                <div id="removerErro" style="color: var(--danger); font-size: 0.85rem; margin-top: 8px; display: none;"></div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-modal secondary" onclick="fecharModalRemoverUsuario()">CANCELAR</button>
-                <button class="btn-modal danger" onclick="confirmarRemocaoUsuario()">
-                    <i class="ph ph-trash"></i> REMOVER CONTA
-                </button>
-            </div>
+<div class="modal" id="modalEditarUsuario">
+    <div class="modal-content">
+        <div class="modal-title"><i class="ph ph-pencil" style="font-size:15px;color:var(--muted2);"></i> Editar usuário</div>
+        <div class="form-group">
+            <span class="field-label">Nick</span>
+            <input type="text" class="modal-input" id="editNick" readonly>
+        </div>
+        <div class="form-group">
+            <span class="field-label">Cargo</span>
+            <select class="modal-select" id="editCargo">
+                <option value="Fiscalizador">Fiscalizador</option>
+                <option value="Superintendente">Superintendente</option>
+                <option value="Vice-Líder">Vice-Líder</option>
+                <option value="Líder">Líder</option>
+                <option value="DEV">DEV</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <span class="field-label">Status</span>
+            <select class="modal-select" id="editStatus">
+                <option value="ATIVO">ATIVO</option>
+                <option value="BLOQUEADO">BLOQUEADO</option>
+                <option value="LICENCA">LICENÇA</option>
+                <option value="RESERVA">RESERVA</option>
+            </select>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal secondary" onclick="fecharModalEditarUsuario()">Cancelar</button>
+            <button class="btn-modal primary" onclick="salvarEdicaoUsuario()">Salvar</button>
         </div>
     </div>
+</div>
 
-    <script src="js/supabase.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/session.js"></script>
-    <script src="js/chat.js"></script>
-    <script src="js/version-checker.js"></script>
-    <script>
-        let currentUser = null;
-        let activeSubmenu = null;
-        let userCargo = null;
-        let usuarios = [];
-        let pastas = [];
-        let documentos = [];
-        let usuarioEditando = null;
+<div class="modal" id="modalNovaPasta">
+    <div class="modal-content">
+        <div class="modal-title"><i class="ph ph-folder-plus" style="font-size:15px;color:var(--muted2);"></i> Nova pasta</div>
+        <div class="form-group">
+            <span class="field-label">Nome</span>
+            <input type="text" class="modal-input" id="novaPastaNome" placeholder="Nome da pasta">
+        </div>
+        <div class="form-group">
+            <span class="field-label">Descrição</span>
+            <textarea class="modal-textarea" id="novaPastaDescricao" placeholder="Descrição"></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal secondary" onclick="fecharModalNovaPasta()">Cancelar</button>
+            <button class="btn-modal primary" onclick="criarPasta()">Criar</button>
+        </div>
+    </div>
+</div>
 
-        function getBrasiliaTime() {
-            const data = new Date();
-            const offsetBrasilia = -3;
-            const utc = data.getTime() + (data.getTimezoneOffset() * 60000);
-            return new Date(utc + (3600000 * offsetBrasilia));
+<div class="modal" id="modalNovoDocumento">
+    <div class="modal-content">
+        <div class="modal-title"><i class="ph ph-file-plus" style="font-size:15px;color:var(--muted2);"></i> Novo documento</div>
+        <div class="form-group">
+            <span class="field-label">Pasta</span>
+            <select class="modal-select" id="novoDocumentoPasta">
+                <option value="" disabled selected>Selecione a pasta</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <span class="field-label">Título</span>
+            <input type="text" class="modal-input" id="novoDocumentoTitulo" placeholder="Título do documento">
+        </div>
+        <div class="form-group">
+            <span class="field-label">Conteúdo</span>
+            <textarea class="modal-textarea" id="novoDocumentoConteudo" placeholder="Conteúdo" style="min-height:130px;"></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal secondary" onclick="fecharModalNovoDocumento()">Cancelar</button>
+            <button class="btn-modal primary" onclick="criarDocumento()">Criar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modalRemoverUsuario">
+    <div class="modal-content">
+        <div class="modal-title danger"><i class="ph ph-warning"></i> Remover conta</div>
+        <div class="remove-info">
+            Você está prestes a remover permanentemente a conta de <strong id="removerNickDisplay">-</strong>.<br><br>
+            Isso irá apagar o usuário do sistema. <strong>Esta ação não pode ser desfeita.</strong>
+        </div>
+        <p style="color:var(--muted2);font-size:12px;">Digite o nick abaixo para confirmar:</p>
+        <div class="form-group" style="margin-top:10px;">
+            <input type="text" class="modal-input" id="removerNickConfirm" placeholder="Digite o nick para confirmar">
+        </div>
+        <div id="removerErro" class="remove-error"></div>
+        <div class="modal-footer">
+            <button class="btn-modal secondary" onclick="fecharModalRemoverUsuario()">Cancelar</button>
+            <button class="btn-modal danger" onclick="confirmarRemocaoUsuario()"><i class="ph ph-trash" style="font-size:13px;"></i> Remover conta</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/supabase.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/session.js"></script>
+<script src="js/version-checker.js"></script>
+<script>
+    let currentUser = null;
+    let activeSubmenu = null;
+    let mobileMenuOpen = false;
+    let userCargo = null;
+    let usuarios = [];
+    let pastas = [];
+    let documentos = [];
+    let usuarioEditando = null;
+
+    (function tick() {
+        const el = document.getElementById('clock');
+        if (el) el.textContent = new Date().toLocaleTimeString('pt-BR');
+        setTimeout(tick, 1000);
+    })();
+
+    function getBrasiliaTime() {
+        const data = new Date();
+        const offsetBrasilia = -3;
+        const utc = data.getTime() + (data.getTimezoneOffset() * 60000);
+        return new Date(utc + (3600000 * offsetBrasilia));
+    }
+
+    function toggleProfileDropdown() {
+        document.getElementById('profileDropdown').classList.toggle('show');
+    }
+
+    function toggleSubmenu(menu) {
+        const submenu = document.getElementById(menu + 'Submenu');
+        if (activeSubmenu && activeSubmenu !== submenu) {
+            activeSubmenu.classList.remove('show');
+        }
+        submenu.classList.toggle('show');
+        activeSubmenu = submenu.classList.contains('show') ? submenu : null;
+    }
+
+    function toggleMobileMenu() {
+        mobileMenuOpen = !mobileMenuOpen;
+        document.getElementById('mobileMenu').classList.toggle('open', mobileMenuOpen);
+        document.getElementById('hamburgerIcon').className = mobileMenuOpen ? 'ph ph-x' : 'ph ph-list';
+    }
+
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.nav-item') && !event.target.closest('.submenu')) {
+            if (activeSubmenu) { activeSubmenu.classList.remove('show'); activeSubmenu = null; }
+        }
+        if (!event.target.closest('.profile-button') && !event.target.closest('.profile-dropdown')) {
+            document.getElementById('profileDropdown').classList.remove('show');
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const autenticado = await Auth.isAuthenticated();
+        if (!autenticado) { window.location.href = 'index.html'; return; }
+
+        currentUser = await Auth.getCurrentUser();
+        userCargo = currentUser.cargo;
+
+        const podeAcessar = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+        if (!podeAcessar) { window.location.href = 'home.html'; return; }
+
+        document.getElementById('userNick').textContent = currentUser.nick;
+        document.getElementById('userAvatar').src = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
+
+        await carregarUsuarios();
+        await carregarPastasAdmin();
+        await carregarDocumentosAdmin();
+        await carregarRegistrosFuncao();
+    });
+
+    function mudarAba(aba) {
+        console.log('Mudando para aba:', aba);
+
+        document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+
+        const tab = document.querySelector(`.admin-tab[onclick="mudarAba('${aba}')"]`);
+        if (tab) tab.classList.add('active');
+
+        let panelId;
+        if (aba === 'registrosfuncao') {
+            panelId = 'abaRegistrosFuncao';
+        } else {
+            panelId = `aba${aba.charAt(0).toUpperCase() + aba.slice(1)}`;
         }
 
-        function toggleProfileDropdown() {
-            const dropdown = document.getElementById('profileDropdown');
-            dropdown.classList.toggle('show');
+        const panel = document.getElementById(panelId);
+
+        if (panel) {
+            console.log('Ativando painel:', panelId);
+            panel.classList.add('active');
+
+            if (aba === 'registrosfuncao') {
+                console.log('CARREGANDO REGISTROS DE FUNÇÃO...');
+                setTimeout(() => { carregarRegistrosFuncao(); }, 100);
+            }
+        } else {
+            console.error('Painel não encontrado:', panelId);
         }
+    }
 
-        function toggleSubmenu(menu) {
-            const submenu = document.getElementById(menu + 'Submenu');
-            
-            if (activeSubmenu && activeSubmenu !== submenu) {
-                activeSubmenu.classList.remove('show');
-            }
-            
-            submenu.classList.toggle('show');
-            activeSubmenu = submenu.classList.contains('show') ? submenu : null;
-        }
+    async function carregarUsuarios() {
+        try {
+            const { data: usuariosData } = await window.supabase
+                .from('usuarios')
+                .select('*')
+                .order('nick');
 
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.nav-item') && !event.target.closest('.submenu')) {
-                if (activeSubmenu) {
-                    activeSubmenu.classList.remove('show');
-                    activeSubmenu = null;
-                }
-            }
-            
-            if (!event.target.closest('.profile-button') && !event.target.closest('.profile-dropdown')) {
-                document.getElementById('profileDropdown').classList.remove('show');
-            }
-        });
+            usuarios = usuariosData || [];
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            const autenticado = await Auth.isAuthenticated();
-            if (!autenticado) {
-                window.location.href = 'index.html';
+            const tbody = document.getElementById('usuariosTableBody');
+
+            if (usuarios.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-message">Nenhum usuário encontrado</td></tr>';
                 return;
             }
 
-            currentUser = await Auth.getCurrentUser();
-            userCargo = currentUser.cargo;
+            tbody.innerHTML = usuarios.map(user => {
+                const data = user.data_criacao ? new Date(user.data_criacao).toLocaleDateString('pt-BR') : '-';
 
-            const podeAcessar = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
-            if (!podeAcessar) {
-                window.location.href = 'home.html';
-                return;
-            }
+                let statusClass = 'status-ativo';
+                if (user.status === 'BLOQUEADO') statusClass = 'status-bloqueado';
+                if (user.status === 'LICENCA' || user.status === 'RESERVA') statusClass = 'status-licenca';
 
-            document.getElementById('userNick').textContent = currentUser.nick;
-            const avatarUrl = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
-            document.getElementById('userAvatar').src = avatarUrl;
+                return `
+                    <tr>
+                        <td><strong>${user.nick}</strong></td>
+                        <td>${user.cargo || 'Fiscalizador'}</td>
+                        <td><span class="status-badge ${statusClass}">${user.status || 'ATIVO'}</span></td>
+                        <td>${data}</td>
+                        <td>
+                            <button class="btn-action edit" onclick="abrirModalEditarUsuario('${user.nick}')">
+                                <i class="ph ph-pencil" style="font-size:12px;"></i> Editar
+                            </button>
+                            ${user.status === 'BLOQUEADO' ?
+                                `<button class="btn-action unban" onclick="desbanirUsuario('${user.nick}')">
+                                    <i class="ph ph-check" style="font-size:12px;"></i> Desbanir
+                                </button>` :
+                                `<button class="btn-action ban" onclick="banirUsuario('${user.nick}')">
+                                    <i class="ph ph-x" style="font-size:12px;"></i> Banir
+                                </button>`
+                            }
+                            <button class="btn-action delete" onclick="abrirModalRemoverUsuario('${user.nick}')">
+                                <i class="ph ph-trash" style="font-size:12px;"></i> Remover
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+        } catch (error) {
+            console.error('Erro ao carregar usuários:', error);
+        }
+    }
+
+    function abrirModalEditarUsuario(nick) {
+        usuarioEditando = usuarios.find(u => u.nick === nick);
+        document.getElementById('editNick').value = usuarioEditando.nick;
+        document.getElementById('editCargo').value = usuarioEditando.cargo || 'Fiscalizador';
+        document.getElementById('editStatus').value = usuarioEditando.status || 'ATIVO';
+        document.getElementById('modalEditarUsuario').classList.add('show');
+    }
+
+    function fecharModalEditarUsuario() {
+        document.getElementById('modalEditarUsuario').classList.remove('show');
+        usuarioEditando = null;
+    }
+
+    async function salvarEdicaoUsuario() {
+        const cargo = document.getElementById('editCargo').value;
+        const status = document.getElementById('editStatus').value;
+
+        try {
+            const { error } = await window.supabase
+                .from('usuarios')
+                .update({ cargo: cargo, status: status })
+                .eq('nick', usuarioEditando.nick);
+
+            if (error) throw error;
+
+            fecharModalEditarUsuario();
+            await carregarUsuarios();
+        } catch (error) {
+            console.error('Erro ao salvar:', error);
+            alert('Erro ao salvar alterações');
+        }
+    }
+
+    async function banirUsuario(nick) {
+        if (!confirm(`Tem certeza que deseja banir ${nick}?`)) return;
+
+        try {
+            const { error } = await window.supabase
+                .from('usuarios')
+                .update({ status: 'BLOQUEADO' })
+                .eq('nick', nick);
+
+            if (error) throw error;
 
             await carregarUsuarios();
+        } catch (error) {
+            console.error('Erro ao banir:', error);
+            alert('Erro ao banir usuário');
+        }
+    }
+
+    async function desbanirUsuario(nick) {
+        if (!confirm(`Tem certeza que deseja desbanir ${nick}?`)) return;
+
+        try {
+            const { error } = await window.supabase
+                .from('usuarios')
+                .update({ status: 'ATIVO' })
+                .eq('nick', nick);
+
+            if (error) throw error;
+
+            await carregarUsuarios();
+        } catch (error) {
+            console.error('Erro ao desbanir:', error);
+            alert('Erro ao desbanir usuário');
+        }
+    }
+
+    let nickParaRemover = null;
+
+    function abrirModalRemoverUsuario(nick) {
+        if (nick === currentUser.nick) {
+            alert('Você não pode remover sua própria conta.');
+            return;
+        }
+        nickParaRemover = nick;
+        document.getElementById('removerNickDisplay').textContent = nick;
+        document.getElementById('removerNickConfirm').value = '';
+        document.getElementById('removerErro').style.display = 'none';
+        document.getElementById('modalRemoverUsuario').classList.add('show');
+    }
+
+    function fecharModalRemoverUsuario() {
+        document.getElementById('modalRemoverUsuario').classList.remove('show');
+        nickParaRemover = null;
+        document.getElementById('removerNickConfirm').value = '';
+        document.getElementById('removerErro').style.display = 'none';
+    }
+
+    async function confirmarRemocaoUsuario() {
+        const nickDigitado = document.getElementById('removerNickConfirm').value.trim();
+        const erroDiv = document.getElementById('removerErro');
+
+        if (!nickDigitado) {
+            erroDiv.textContent = 'Digite o nick para confirmar.';
+            erroDiv.style.display = 'block';
+            return;
+        }
+
+        if (nickDigitado !== nickParaRemover) {
+            erroDiv.textContent = 'O nick digitado não confere. Tente novamente.';
+            erroDiv.style.display = 'block';
+            return;
+        }
+
+        erroDiv.style.display = 'none';
+
+        try {
+            await window.supabase
+                .from('sessoes')
+                .delete()
+                .eq('usuario_nick', nickParaRemover);
+
+            await window.supabase
+                .from('codigos_verificacao')
+                .delete()
+                .eq('usuario_nick', nickParaRemover);
+
+            const { error } = await window.supabase
+                .from('usuarios')
+                .delete()
+                .eq('nick', nickParaRemover);
+
+            if (error) throw error;
+
+            fecharModalRemoverUsuario();
+            await carregarUsuarios();
+        } catch (error) {
+            console.error('Erro ao remover usuário:', error);
+            erroDiv.textContent = 'Erro ao remover: ' + error.message;
+            erroDiv.style.display = 'block';
+        }
+    }
+
+    async function carregarPastasAdmin() {
+        try {
+            const { data: pastasData } = await window.supabase
+                .from('pastas')
+                .select('*')
+                .order('nome');
+
+            pastas = pastasData || [];
+
+            const tbody = document.getElementById('pastasTableBody');
+            const selectPasta = document.getElementById('novoDocumentoPasta');
+            const filtroPasta = document.getElementById('filtroPasta');
+
+            if (pastas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-message">Nenhuma pasta encontrada</td></tr>';
+                if (selectPasta) selectPasta.innerHTML = '<option value="" disabled selected>Nenhuma pasta disponível</option>';
+                if (filtroPasta) filtroPasta.innerHTML = '<option value="">TODAS AS PASTAS</option>';
+                return;
+            }
+
+            tbody.innerHTML = pastas.map(pasta => {
+                const docsCount = documentos.filter(d => d.pasta_id === pasta.id).length;
+                const data = new Date(pasta.data_criacao).toLocaleDateString('pt-BR');
+                const autor = pasta.autor_nick || 'Sistema';
+
+                return `
+                    <tr>
+                        <td><strong>${pasta.nome}</strong></td>
+                        <td>${pasta.descricao || '-'}</td>
+                        <td>${docsCount}</td>
+                        <td>${autor}</td>
+                        <td>${data}</td>
+                        <td>
+                            <button class="btn-action edit" onclick="editarPasta('${pasta.id}')"><i class="ph ph-pencil" style="font-size:12px;"></i></button>
+                            <button class="btn-action ban" onclick="excluirPasta('${pasta.id}')"><i class="ph ph-trash" style="font-size:12px;"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            if (selectPasta) {
+                selectPasta.innerHTML = '<option value="" disabled selected>Selecione a pasta</option>' +
+                    pastas.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+            }
+
+            if (filtroPasta) {
+                filtroPasta.innerHTML = '<option value="">TODAS AS PASTAS</option>' +
+                    pastas.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+            }
+
+        } catch (error) {
+            console.error('Erro ao carregar pastas:', error);
+        }
+    }
+
+    async function carregarDocumentosAdmin() {
+        try {
+            const pastaId = document.getElementById('filtroPasta')?.value || '';
+
+            let query = window.supabase
+                .from('documentos')
+                .select('*')
+                .order('data_criacao', { ascending: false });
+
+            if (pastaId) query = query.eq('pasta_id', pastaId);
+
+            const { data: docsData } = await query;
+
+            documentos = docsData || [];
+
+            const tbody = document.getElementById('documentosTableBody');
+
+            if (documentos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-message">Nenhum documento encontrado</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = documentos.map(doc => {
+                const pasta = pastas.find(p => p.id === doc.pasta_id);
+                const data = new Date(doc.data_criacao).toLocaleDateString('pt-BR');
+                const autor = doc.autor_nick || 'Sistema';
+
+                return `
+                    <tr>
+                        <td><strong>${doc.titulo}</strong></td>
+                        <td>${pasta ? pasta.nome : '-'}</td>
+                        <td>${autor}</td>
+                        <td>${data}</td>
+                        <td>
+                            <button class="btn-action edit" onclick="verDocumento(${doc.id})"><i class="ph ph-eye" style="font-size:12px;"></i> Ver</button>
+                            <button class="btn-action ban" onclick="excluirDocumento(${doc.id})"><i class="ph ph-trash" style="font-size:12px;"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+        } catch (error) {
+            console.error('Erro ao carregar documentos:', error);
+        }
+    }
+
+    async function carregarRegistrosFuncao() {
+        console.log('EXECUTANDO carregarRegistrosFuncao()');
+
+        const tbody = document.getElementById('registrosFuncaoTableBody');
+        if (!tbody) { console.error('Tbody não encontrado!'); return; }
+
+        try {
+            console.log('Buscando dados do Supabase...');
+
+            const { data: conclusoes, error } = await window.supabase
+                .from('conclusoes')
+                .select('*')
+                .order('data_criacao', { ascending: false });
+
+            if (error) { console.error('Erro na query:', error); throw error; }
+
+            console.log('Dados recebidos:', conclusoes);
+
+            if (!conclusoes || conclusoes.length === 0) {
+                console.log('Nenhum registro encontrado');
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-message">Nenhum registro encontrado</td></tr>';
+                return;
+            }
+
+            console.log('Encontrados', conclusoes.length, 'registros');
+
+            let html = '';
+
+            for (const reg of conclusoes) {
+                const data = new Date(reg.data_criacao).toLocaleString('pt-BR');
+
+                let tipo = 'FISCALIZADOR';
+                if (reg.ordem) {
+                    if (reg.ordem.startsWith('S')) tipo = 'SUPERINTENDENTE';
+                    else if (reg.ordem.startsWith('A')) tipo = 'ALPHA';
+                    else if (reg.ordem.startsWith('B')) tipo = 'BRAVO';
+                }
+
+                const comprovacao = reg.comprovacao ?
+                    `<a href="${reg.comprovacao}" target="_blank" class="comprovacao-link">VER</a>` :
+                    (reg.motivo || '-');
+
+                const statusClass = reg.acao === 'CONCLUSÃO' ? 'status-concluido' : 'status-justificado';
+
+                html += `<tr>
+                    <td>${data}</td>
+                    <td>${tipo}</td>
+                    <td>${reg.ordem || '-'}</td>
+                    <td><strong>${reg.nick || '-'}</strong></td>
+                    <td>${reg.autor_nick || '-'}</td>
+                    <td><span class="status-badge ${statusClass}">${reg.acao || 'REGISTRO'}</span></td>
+                    <td>${comprovacao}</td>
+                </tr>`;
+            }
+
+            tbody.innerHTML = html;
+            console.log('Tabela atualizada com sucesso!');
+
+        } catch (error) {
+            console.error('Erro fatal:', error);
+            tbody.innerHTML = `<tr><td colspan="7" class="empty-message">Erro: ${error.message}</td></tr>`;
+        }
+    }
+
+    async function editarPasta(pastaId) {
+        const id = typeof pastaId === 'string' ? parseInt(pastaId) : pastaId;
+        const pasta = pastas.find(p => p.id === id);
+        if (!pasta) { console.error('Pasta não encontrada:', id); return; }
+
+        const novoNome = prompt('Digite o novo nome da pasta:', pasta.nome);
+        if (novoNome === null) return;
+        if (!novoNome.trim()) { alert('O nome não pode estar vazio'); return; }
+
+        const novaDescricao = prompt('Digite a nova descrição:', pasta.descricao || '');
+        if (novaDescricao === null) return;
+
+        try {
+            const { error } = await window.supabase
+                .from('pastas')
+                .update({ nome: novoNome.trim(), descricao: novaDescricao.trim() || null })
+                .eq('id', id);
+
+            if (error) throw error;
+
+            await carregarPastasAdmin();
+            alert('Pasta atualizada com sucesso!');
+        } catch (error) {
+            console.error('Erro ao editar pasta:', error);
+            alert('Erro ao editar pasta: ' + error.message);
+        }
+    }
+
+    async function excluirPasta(pastaId) {
+        if (!confirm('Tem certeza que deseja excluir esta pasta? Todos os documentos serão excluídos.')) return;
+
+        try {
+            const { error } = await window.supabase
+                .from('pastas')
+                .delete()
+                .eq('id', pastaId);
+
+            if (error) throw error;
+
             await carregarPastasAdmin();
             await carregarDocumentosAdmin();
-            await carregarRegistrosFuncao();
-        });
+        } catch (error) {
+            console.error('Erro ao excluir pasta:', error);
+            alert('Erro ao excluir pasta');
+        }
+    }
 
-        function mudarAba(aba) {
-            console.log('Mudando para aba:', aba);
+    async function excluirDocumento(docId) {
+        if (!confirm('Tem certeza que deseja excluir este documento?')) return;
 
-            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+        try {
+            const { error } = await window.supabase
+                .from('documentos')
+                .delete()
+                .eq('id', docId);
 
-            const tab = document.querySelector(`.admin-tab[onclick="mudarAba('${aba}')"]`);
-            if (tab) tab.classList.add('active');
+            if (error) throw error;
 
-            let panelId;
-            if (aba === 'registrosfuncao') {
-                panelId = 'abaRegistrosFuncao';
-            } else {
-                panelId = `aba${aba.charAt(0).toUpperCase() + aba.slice(1)}`;
-            }
-            
-            const panel = document.getElementById(panelId);
-            
-            if (panel) {
-                console.log('Ativando painel:', panelId);
-                panel.classList.add('active');
+            await carregarDocumentosAdmin();
+        } catch (error) {
+            console.error('Erro ao excluir documento:', error);
+            alert('Erro ao excluir documento');
+        }
+    }
 
-                if (aba === 'registrosfuncao') {
-                    console.log('CARREGANDO REGISTROS DE FUNÇÃO...');
-                    setTimeout(() => {
-                        carregarRegistrosFuncao();
-                    }, 100);
-                }
-            } else {
-                console.error('Painel não encontrado:', panelId);
-            }
+    function verDocumento(docId) {
+        const id = typeof docId === 'string' ? parseInt(docId) : docId;
+        const doc = documentos.find(d => d.id === id);
+
+        if (!doc) {
+            console.error('Documento não encontrado:', id, 'Documentos disponíveis:', documentos);
+            alert('Erro ao carregar documento');
+            return;
         }
 
-        async function carregarUsuarios() {
-            try {
-                const { data: usuariosData } = await window.supabase
-                    .from('usuarios')
-                    .select('*')
-                    .order('nick');
+        document.getElementById('modalDocumentoTitulo').innerHTML = `<i class="ph ph-file-text" style="color:var(--muted2);"></i> ${doc.titulo}`;
+        document.getElementById('modalDocumentoConteudo').textContent = doc.conteudo;
+        document.getElementById('modalVerDocumento').classList.add('show');
+    }
 
-                usuarios = usuariosData || [];
+    function fecharModalVerDocumento() {
+        document.getElementById('modalVerDocumento').classList.remove('show');
+    }
 
-                const tbody = document.getElementById('usuariosTableBody');
+    function abrirModalNovaPasta() {
+        document.getElementById('modalNovaPasta').classList.add('show');
+    }
 
-                if (usuarios.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="empty-message">Nenhum usuário encontrado</td></tr>';
-                    return;
-                }
+    function fecharModalNovaPasta() {
+        document.getElementById('modalNovaPasta').classList.remove('show');
+        document.getElementById('novaPastaNome').value = '';
+        document.getElementById('novaPastaDescricao').value = '';
+    }
 
-                tbody.innerHTML = usuarios.map(user => {
-                    const data = user.data_criacao ? new Date(user.data_criacao).toLocaleDateString('pt-BR') : '-';
-                    
-                    let statusClass = 'status-ativo';
-                    if (user.status === 'BLOQUEADO') statusClass = 'status-bloqueado';
-                    if (user.status === 'LICENCA' || user.status === 'RESERVA') statusClass = 'status-licenca';
+    async function criarPasta() {
+        const nome = document.getElementById('novaPastaNome').value.trim();
+        const descricao = document.getElementById('novaPastaDescricao').value.trim();
 
-                    return `
-                        <tr>
-                            <td><strong>${user.nick}</strong></td>
-                            <td>${user.cargo || 'Fiscalizador'}</td>
-                            <td><span class="status-badge ${statusClass}">${user.status || 'ATIVO'}</span></td>
-                            <td>${data}</td>
-                            <td>
-                                <button class="btn-action edit" onclick="abrirModalEditarUsuario('${user.nick}')">
-                                    <i class="ph ph-pencil"></i> Editar
-                                </button>
-                                ${user.status === 'BLOQUEADO' ? 
-                                    `<button class="btn-action unban" onclick="desbanirUsuario('${user.nick}')">
-                                        <i class="ph ph-check"></i> Desbanir
-                                    </button>` : 
-                                    `<button class="btn-action ban" onclick="banirUsuario('${user.nick}')">
-                                        <i class="ph ph-x"></i> Banir
-                                    </button>`
-                                }
-                                <button class="btn-action delete" onclick="abrirModalRemoverUsuario('${user.nick}')">
-                                    <i class="ph ph-trash"></i> Remover
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
+        if (!nome) { alert('Digite um nome para a pasta'); return; }
 
-            } catch (error) {
-                console.error('Erro ao carregar usuários:', error);
-            }
+        try {
+            const { error } = await window.supabase
+                .from('pastas')
+                .insert([{ nome: nome, descricao: descricao, autor_nick: currentUser.nick, data_criacao: getBrasiliaTime() }]);
+
+            if (error) throw error;
+
+            fecharModalNovaPasta();
+            await carregarPastasAdmin();
+        } catch (error) {
+            console.error('Erro ao criar pasta:', error);
+            alert('Erro ao criar pasta');
         }
+    }
 
-        function abrirModalEditarUsuario(nick) {
-            usuarioEditando = usuarios.find(u => u.nick === nick);
-            
-            document.getElementById('editNick').value = usuarioEditando.nick;
-            document.getElementById('editCargo').value = usuarioEditando.cargo || 'Fiscalizador';
-            document.getElementById('editStatus').value = usuarioEditando.status || 'ATIVO';
-            
-            document.getElementById('modalEditarUsuario').classList.add('show');
+    function abrirModalNovoDocumento() {
+        if (pastas.length === 0) { alert('Crie uma pasta primeiro'); return; }
+        document.getElementById('modalNovoDocumento').classList.add('show');
+    }
+
+    function fecharModalNovoDocumento() {
+        document.getElementById('modalNovoDocumento').classList.remove('show');
+        document.getElementById('novoDocumentoPasta').value = '';
+        document.getElementById('novoDocumentoTitulo').value = '';
+        document.getElementById('novoDocumentoConteudo').value = '';
+    }
+
+    async function criarDocumento() {
+        const pastaId = document.getElementById('novoDocumentoPasta').value;
+        const titulo = document.getElementById('novoDocumentoTitulo').value.trim();
+        const conteudo = document.getElementById('novoDocumentoConteudo').value.trim();
+
+        if (!pastaId || !titulo || !conteudo) { alert('Preencha todos os campos'); return; }
+
+        try {
+            const { error } = await window.supabase
+                .from('documentos')
+                .insert([{ pasta_id: pastaId, titulo: titulo, conteudo: conteudo, autor_nick: currentUser.nick, data_criacao: getBrasiliaTime() }]);
+
+            if (error) throw error;
+
+            fecharModalNovoDocumento();
+            await carregarDocumentosAdmin();
+        } catch (error) {
+            console.error('Erro ao criar documento:', error);
+            alert('Erro ao criar documento');
         }
-
-        function fecharModalEditarUsuario() {
-            document.getElementById('modalEditarUsuario').classList.remove('show');
-            usuarioEditando = null;
-        }
-
-        async function salvarEdicaoUsuario() {
-            const cargo = document.getElementById('editCargo').value;
-            const status = document.getElementById('editStatus').value;
-
-            try {
-                const { error } = await window.supabase
-                    .from('usuarios')
-                    .update({ 
-                        cargo: cargo,
-                        status: status 
-                    })
-                    .eq('nick', usuarioEditando.nick);
-
-                if (error) throw error;
-
-                fecharModalEditarUsuario();
-                await carregarUsuarios();
-
-            } catch (error) {
-                console.error('Erro ao salvar:', error);
-                alert('Erro ao salvar alterações');
-            }
-        }
-
-        async function banirUsuario(nick) {
-            if (!confirm(`Tem certeza que deseja banir ${nick}?`)) return;
-
-            try {
-                const { error } = await window.supabase
-                    .from('usuarios')
-                    .update({ status: 'BLOQUEADO' })
-                    .eq('nick', nick);
-
-                if (error) throw error;
-
-                await carregarUsuarios();
-
-            } catch (error) {
-                console.error('Erro ao banir:', error);
-                alert('Erro ao banir usuário');
-            }
-        }
-
-        async function desbanirUsuario(nick) {
-            if (!confirm(`Tem certeza que deseja desbanir ${nick}?`)) return;
-
-            try {
-                const { error } = await window.supabase
-                    .from('usuarios')
-                    .update({ status: 'ATIVO' })
-                    .eq('nick', nick);
-
-                if (error) throw error;
-
-                await carregarUsuarios();
-
-            } catch (error) {
-                console.error('Erro ao desbanir:', error);
-                alert('Erro ao desbanir usuário');
-            }
-        }
-
-        let nickParaRemover = null;
-
-        function abrirModalRemoverUsuario(nick) {
-            // Impede remover a si mesmo
-            if (nick === currentUser.nick) {
-                alert('Você não pode remover sua própria conta.');
-                return;
-            }
-            nickParaRemover = nick;
-            document.getElementById('removerNickDisplay').textContent = nick;
-            document.getElementById('removerNickConfirm').value = '';
-            document.getElementById('removerErro').style.display = 'none';
-            document.getElementById('modalRemoverUsuario').classList.add('show');
-        }
-
-        function fecharModalRemoverUsuario() {
-            document.getElementById('modalRemoverUsuario').classList.remove('show');
-            nickParaRemover = null;
-            document.getElementById('removerNickConfirm').value = '';
-            document.getElementById('removerErro').style.display = 'none';
-        }
-
-        async function confirmarRemocaoUsuario() {
-            const nickDigitado = document.getElementById('removerNickConfirm').value.trim();
-            const erroDiv = document.getElementById('removerErro');
-
-            if (!nickDigitado) {
-                erroDiv.textContent = 'Digite o nick para confirmar.';
-                erroDiv.style.display = 'block';
-                return;
-            }
-
-            if (nickDigitado !== nickParaRemover) {
-                erroDiv.textContent = 'O nick digitado não confere. Tente novamente.';
-                erroDiv.style.display = 'block';
-                return;
-            }
-
-            erroDiv.style.display = 'none';
-
-            try {
-                // 1. Apaga sessões ativas do usuário
-                await window.supabase
-                    .from('sessoes')
-                    .delete()
-                    .eq('usuario_nick', nickParaRemover);
-
-                // 2. Apaga códigos de verificação
-                await window.supabase
-                    .from('codigos_verificacao')
-                    .delete()
-                    .eq('usuario_nick', nickParaRemover);
-
-                // 3. Apaga o usuário
-                const { error } = await window.supabase
-                    .from('usuarios')
-                    .delete()
-                    .eq('nick', nickParaRemover);
-
-                if (error) throw error;
-
-                fecharModalRemoverUsuario();
-                await carregarUsuarios();
-
-            } catch (error) {
-                console.error('Erro ao remover usuário:', error);
-                erroDiv.textContent = 'Erro ao remover: ' + error.message;
-                erroDiv.style.display = 'block';
-            }
-        }
-
-        async function carregarPastasAdmin() {
-            try {
-                const { data: pastasData } = await window.supabase
-                    .from('pastas')
-                    .select('*')
-                    .order('nome');
-
-                pastas = pastasData || [];
-
-                const tbody = document.getElementById('pastasTableBody');
-                const selectPasta = document.getElementById('novoDocumentoPasta');
-                const filtroPasta = document.getElementById('filtroPasta');
-
-                if (pastas.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="empty-message">Nenhuma pasta encontrada</td></tr>';
-                    if (selectPasta) {
-                        selectPasta.innerHTML = '<option value="" disabled selected>Nenhuma pasta disponível</option>';
-                    }
-                    if (filtroPasta) {
-                        filtroPasta.innerHTML = '<option value="">TODAS AS PASTAS</option>';
-                    }
-                    return;
-                }
-
-                tbody.innerHTML = pastas.map(pasta => {
-                    const docsCount = documentos.filter(d => d.pasta_id === pasta.id).length;
-                    const data = new Date(pasta.data_criacao).toLocaleDateString('pt-BR');
-                    const autor = pasta.autor_nick || 'Sistema';
-
-                    return `
-                        <tr>
-                            <td><strong>${pasta.nome}</strong></td>
-                            <td>${pasta.descricao || '-'}</td>
-                            <td>${docsCount}</td>
-                            <td>${autor}</td>
-                            <td>${data}</td>
-                            <td>
-                                <button class="btn-action edit" onclick="editarPasta('${pasta.id}')">
-                                    <i class="ph ph-pencil"></i>
-                                </button>
-                                <button class="btn-action ban" onclick="excluirPasta('${pasta.id}')">
-                                    <i class="ph ph-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-
-                if (selectPasta) {
-                    selectPasta.innerHTML = '<option value="" disabled selected>Selecione a pasta</option>' +
-                        pastas.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
-                }
-
-                if (filtroPasta) {
-                    filtroPasta.innerHTML = '<option value="">TODAS AS PASTAS</option>' +
-                        pastas.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
-                }
-
-            } catch (error) {
-                console.error('Erro ao carregar pastas:', error);
-            }
-        }
-
-        async function carregarDocumentosAdmin() {
-            try {
-                const pastaId = document.getElementById('filtroPasta')?.value || '';
-
-                let query = window.supabase
-                    .from('documentos')
-                    .select('*')
-                    .order('data_criacao', { ascending: false });
-
-                if (pastaId) {
-                    query = query.eq('pasta_id', pastaId);
-                }
-
-                const { data: docsData } = await query;
-
-                documentos = docsData || [];
-
-                const tbody = document.getElementById('documentosTableBody');
-
-                if (documentos.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="empty-message">Nenhum documento encontrado</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = documentos.map(doc => {
-                    const pasta = pastas.find(p => p.id === doc.pasta_id);
-                    const data = new Date(doc.data_criacao).toLocaleDateString('pt-BR');
-                    const autor = doc.autor_nick || 'Sistema';
-
-                    return `
-                        <tr>
-                            <td><strong>${doc.titulo}</strong></td>
-                            <td>${pasta ? pasta.nome : '-'}</td>
-                            <td>${autor}</td>
-                            <td>${data}</td>
-                            <td>
-                                <button class="btn-action edit" onclick="verDocumento(${doc.id})">
-                                    <i class="ph ph-eye"></i> Ver
-                                </button>
-                                <button class="btn-action ban" onclick="excluirDocumento(${doc.id})">
-                                    <i class="ph ph-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-
-            } catch (error) {
-                console.error('Erro ao carregar documentos:', error);
-            }
-        }
-
-        async function carregarRegistrosFuncao() {
-            console.log('EXECUTANDO carregarRegistrosFuncao()');
-            
-            const tbody = document.getElementById('registrosFuncaoTableBody');
-            if (!tbody) {
-                console.error('Tbody não encontrado!');
-                return;
-            }
-
-            try {
-                console.log('Buscando dados do Supabase...');
-                
-                const { data: conclusoes, error } = await window.supabase
-                    .from('conclusoes')
-                    .select('*')
-                    .order('data_criacao', { ascending: false });
-
-                if (error) {
-                    console.error('Erro na query:', error);
-                    throw error;
-                }
-
-                console.log('Dados recebidos:', conclusoes);
-
-                if (!conclusoes || conclusoes.length === 0) {
-                    console.log('Nenhum registro encontrado');
-                    tbody.innerHTML = '<tr><td colspan="7" class="empty-message">Nenhum registro encontrado</td></tr>';
-                    return;
-                }
-
-                console.log('Encontrados', conclusoes.length, 'registros');
-                
-                let html = '';
-                
-                for (const reg of conclusoes) {
-                    const data = new Date(reg.data_criacao).toLocaleString('pt-BR');
-                    
-                    let tipo = 'FISCALIZADOR';
-                    if (reg.ordem) {
-                        if (reg.ordem.startsWith('S')) tipo = 'SUPERINTENDENTE';
-                        else if (reg.ordem.startsWith('A')) tipo = 'ALPHA';
-                        else if (reg.ordem.startsWith('B')) tipo = 'BRAVO';
-                    }
-                    
-                    const comprovacao = reg.comprovacao ? 
-                        `<a href="${reg.comprovacao}" target="_blank" class="comprovacao-link">VER</a>` : 
-                        (reg.motivo || '-');
-                    
-                    const statusClass = reg.acao === 'CONCLUSÃO' ? 'status-concluido' : 'status-justificado';
-
-                    html += `<tr>
-                        <td>${data}</td>
-                        <td>${tipo}</td>
-                        <td>${reg.ordem || '-'}</td>
-                        <td><strong>${reg.nick || '-'}</strong></td>
-                        <td>${reg.autor_nick || '-'}</td>
-                        <td><span class="status-badge ${statusClass}">${reg.acao || 'REGISTRO'}</span></td>
-                        <td>${comprovacao}</td>
-                    </tr>`;
-                }
-
-                tbody.innerHTML = html;
-                console.log('Tabela atualizada com sucesso!');
-                
-            } catch (error) {
-                console.error('Erro fatal:', error);
-                tbody.innerHTML = `<tr><td colspan="7" class="empty-message">Erro: ${error.message}</td></tr>`;
-            }
-        }
-
-        async function editarPasta(pastaId) {
-            const id = typeof pastaId === 'string' ? parseInt(pastaId) : pastaId;
-            
-            const pasta = pastas.find(p => p.id === id);
-            if (!pasta) {
-                console.error('Pasta não encontrada:', id);
-                return;
-            }
-            
-            const novoNome = prompt('Digite o novo nome da pasta:', pasta.nome);
-            if (novoNome === null) return;
-            if (!novoNome.trim()) {
-                alert('O nome não pode estar vazio');
-                return;
-            }
-            
-            const novaDescricao = prompt('Digite a nova descrição:', pasta.descricao || '');
-            if (novaDescricao === null) return;
-            
-            try {
-                const { error } = await window.supabase
-                    .from('pastas')
-                    .update({ 
-                        nome: novoNome.trim(),
-                        descricao: novaDescricao.trim() || null
-                    })
-                    .eq('id', id);
-
-                if (error) throw error;
-
-                await carregarPastasAdmin();
-                alert('Pasta atualizada com sucesso!');
-
-            } catch (error) {
-                console.error('Erro ao editar pasta:', error);
-                alert('Erro ao editar pasta: ' + error.message);
-            }
-        }
-
-        async function excluirPasta(pastaId) {
-            if (!confirm('Tem certeza que deseja excluir esta pasta? Todos os documentos serão excluídos.')) return;
-
-            try {
-                const { error } = await window.supabase
-                    .from('pastas')
-                    .delete()
-                    .eq('id', pastaId);
-
-                if (error) throw error;
-
-                await carregarPastasAdmin();
-                await carregarDocumentosAdmin();
-
-            } catch (error) {
-                console.error('Erro ao excluir pasta:', error);
-                alert('Erro ao excluir pasta');
-            }
-        }
-
-        async function excluirDocumento(docId) {
-            if (!confirm('Tem certeza que deseja excluir este documento?')) return;
-
-            try {
-                const { error } = await window.supabase
-                    .from('documentos')
-                    .delete()
-                    .eq('id', docId);
-
-                if (error) throw error;
-
-                await carregarDocumentosAdmin();
-
-            } catch (error) {
-                console.error('Erro ao excluir documento:', error);
-                alert('Erro ao excluir documento');
-            }
-        }
-
-        function verDocumento(docId) {
-            const id = typeof docId === 'string' ? parseInt(docId) : docId;
-            
-            const doc = documentos.find(d => d.id === id);
-            
-            if (!doc) {
-                console.error('Documento não encontrado:', id, 'Documentos disponíveis:', documentos);
-                alert('Erro ao carregar documento');
-                return;
-            }
-            
-            document.getElementById('modalDocumentoTitulo').innerHTML = `<i class="ph ph-file-text"></i> ${doc.titulo}`;
-            document.getElementById('modalDocumentoConteudo').textContent = doc.conteudo;
-            
-            document.getElementById('modalVerDocumento').classList.add('show');
-        }
-
-        function fecharModalVerDocumento() {
-            document.getElementById('modalVerDocumento').classList.remove('show');
-        }
-
-        function abrirModalNovaPasta() {
-            document.getElementById('modalNovaPasta').classList.add('show');
-        }
-
-        function fecharModalNovaPasta() {
-            document.getElementById('modalNovaPasta').classList.remove('show');
-            document.getElementById('novaPastaNome').value = '';
-            document.getElementById('novaPastaDescricao').value = '';
-        }
-
-        async function criarPasta() {
-            const nome = document.getElementById('novaPastaNome').value.trim();
-            const descricao = document.getElementById('novaPastaDescricao').value.trim();
-
-            if (!nome) {
-                alert('Digite um nome para a pasta');
-                return;
-            }
-
-            try {
-                const { error } = await window.supabase
-                    .from('pastas')
-                    .insert([{
-                        nome: nome,
-                        descricao: descricao,
-                        autor_nick: currentUser.nick,
-                        data_criacao: getBrasiliaTime()
-                    }]);
-
-                if (error) throw error;
-
-                fecharModalNovaPasta();
-                await carregarPastasAdmin();
-
-            } catch (error) {
-                console.error('Erro ao criar pasta:', error);
-                alert('Erro ao criar pasta');
-            }
-        }
-
-        function abrirModalNovoDocumento() {
-            if (pastas.length === 0) {
-                alert('Crie uma pasta primeiro');
-                return;
-            }
-            document.getElementById('modalNovoDocumento').classList.add('show');
-        }
-
-        function fecharModalNovoDocumento() {
-            document.getElementById('modalNovoDocumento').classList.remove('show');
-            document.getElementById('novoDocumentoPasta').value = '';
-            document.getElementById('novoDocumentoTitulo').value = '';
-            document.getElementById('novoDocumentoConteudo').value = '';
-        }
-
-        async function criarDocumento() {
-            const pastaId = document.getElementById('novoDocumentoPasta').value;
-            const titulo = document.getElementById('novoDocumentoTitulo').value.trim();
-            const conteudo = document.getElementById('novoDocumentoConteudo').value.trim();
-
-            if (!pastaId || !titulo || !conteudo) {
-                alert('Preencha todos os campos');
-                return;
-            }
-
-            try {
-                const { error } = await window.supabase
-                    .from('documentos')
-                    .insert([{
-                        pasta_id: pastaId,
-                        titulo: titulo,
-                        conteudo: conteudo,
-                        autor_nick: currentUser.nick,
-                        data_criacao: getBrasiliaTime()
-                    }]);
-
-                if (error) throw error;
-
-                fecharModalNovoDocumento();
-                await carregarDocumentosAdmin();
-
-            } catch (error) {
-                console.error('Erro ao criar documento:', error);
-                alert('Erro ao criar documento');
-            }
-        }
-    </script>
+    }
+</script>
 </body>
 </html>
