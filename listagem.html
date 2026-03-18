@@ -3,667 +3,647 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DRI System</title>
+    <title>Listagem - DRI System</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/iUwP1jk.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
     <link rel="stylesheet" href="js/chat.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #161616;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #2b2b2b;
-        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --navy-dark: #161616;
-            --navy-medium: #0f2740;
-            --navy-light: #2b2b2b;
-            --text-primary: #e5e9f0;
-            --text-secondary: #afafaf;
-            --danger: #dc3545;
-            --success: #28a745;
-            --warning: #ffc107;
-            --info: #17a2b8;
+            --bg: #0c0c0c;
+            --card: #131313;
+            --border: #1f1f1f;
+            --border2: #2a2a2a;
+            --text: #efefef;
+            --muted: #505050;
+            --muted2: #787878;
+            --white: #fff;
+            --danger: #d95555;
+            --warning: #d4943a;
         }
 
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border2); }
+
         body {
-            background: url('https://i.imgur.com/8b3rI5q.png') repeat center center fixed;
-            background-size: contain;
-            background-size: 300px 300px;
-            font-family: 'Poppins', sans-serif;
-            color: #fff;
-            position: relative;
+            background: var(--bg);
             min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
         }
 
         body::before {
-            content: "";
+            content: '';
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(4, 4, 4, 0.478);
-            z-index: -1;
+            inset: 0;
+            background-image: radial-gradient(#ffffff05 1px, transparent 1px);
+            background-size: 24px 24px;
+            pointer-events: none;
+            z-index: 0;
         }
 
         .header {
-            background: rgb(26, 26, 26);
-            border-bottom: 2px solid rgb(17, 17, 17);
-            width: 100%;
-            padding: 0 30px;
+            position: sticky;
+            top: 0;
+            z-index: 200;
+            background: rgba(12,12,12,0.94);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border);
         }
 
         .header-content {
             max-width: 1400px;
             margin: 0 auto;
-            height: 70px;
+            height: 56px;
+            padding: 0 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 16px;
         }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 40px;
-        }
+        .header-left { display: flex; align-items: center; gap: 24px; min-width: 0; }
+        .logo-area { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .logo-area img { height: 24px; }
+        .logo { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500; color: var(--white); }
 
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo-area img {
-            height: 40px;
-            width: auto;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: white;
-        }
-
-        .nav {
-            display: flex;
-            gap: 5px;
-            position: relative;
-        }
+        .nav { display: flex; align-items: center; gap: 2px; position: relative; }
 
         .nav-item {
-            padding: 8px 16px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.95rem;
-            border-radius: 6px;
+            padding: 6px 11px;
+            color: var(--muted2);
+            font-size: 13px;
+            border-radius: 7px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: color 0.15s, background 0.15s;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
+            white-space: nowrap;
+            user-select: none;
         }
 
-        .nav-item:hover {
-            color: white;
-        }
+        .nav-item:hover { color: var(--white); background: rgba(255,255,255,0.04); }
+        .nav-item i { font-size: 11px; }
 
         .submenu {
             position: absolute;
-            top: 100%;
-            background: rgb(30, 30, 30);
-            border-radius: 8px;
-            padding: 8px 0;
-            min-width: 200px;
+            top: calc(100% + 8px);
+            background: #161616;
+            border: 1px solid var(--border2);
+            border-radius: 10px;
+            padding: 6px;
+            min-width: 185px;
             display: none;
-            z-index: 1000;
+            z-index: 300;
         }
 
-        .submenu.show {
-            display: block;
-        }
+        .submenu.show { display: block; animation: fadeDown 0.15s ease; }
+        #geralSubmenu { left: 0; }
+        #requerimentosSubmenu { left: 70px; }
+        #escalasSubmenu { left: 204px; }
 
         .submenu-item {
-            padding: 10px 20px;
-            color: var(--text-secondary);
-            text-decoration: none;
+            padding: 8px 11px;
+            color: var(--muted2);
+            font-size: 12.5px;
+            border-radius: 7px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
+            gap: 8px;
             cursor: pointer;
-            font-size: 0.9rem;
+            transition: color 0.15s, background 0.15s;
         }
 
-        .submenu-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
+        .submenu-item:hover { background: rgba(255,255,255,0.05); color: var(--white); }
+        .submenu-item i { font-size: 14px; color: var(--muted); }
+
+        .header-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+        .clock-badge { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
+        .header-version { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
+
+        .hamburger {
+            display: none;
+            background: transparent;
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            width: 36px; height: 36px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--muted2);
+            font-size: 18px;
+            transition: border-color 0.15s, color 0.15s;
+            flex-shrink: 0;
         }
 
-        #geralSubmenu {
-            left: 0;
-        }
+        .hamburger:hover { border-color: #444; color: var(--white); }
 
-        #requerimentosSubmenu {
-            left: 85px;
-        }
-
-        #escalasSubmenu {
-            left: 260px;
-        }
-
-        .profile {
-            position: relative;
-        }
+        .profile { position: relative; }
 
         .profile-button {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 5px 10px 5px 5px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgb(40, 40, 40);
-            border-radius: 12px;
-            cursor: pointer;
-        }
-
-        .profile-avatar {
-            width: 36px;
-            height: 36px;
-            overflow: hidden;
-        }
-
-        .profile-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .profile-nick {
-            font-weight: 500;
-            color: white;
-            font-size: 0.9rem;
-        }
-
-        .main-content {
-            padding: 40px 20px;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .container {
-            background: rgb(26, 26, 26);
-            border: 2px solid rgb(17, 17, 17);
-            border-radius: 10px;
-            padding: 30px;
-        }
-
-        .cargo-section {
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .cargo-section:last-child {
-            margin-bottom: 0;
-        }
-
-        .cargo-title {
-            color: white;
-            font-weight: 600;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             gap: 8px;
+            padding: 4px 10px 4px 4px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border2);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: border-color 0.15s;
         }
 
-        .cargo-title i {
-            color: var(--text-secondary);
-        }
-
-        .avatar-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .avatar-item {
-            text-align: center;
-            width: 100px;
-        }
-
-        .avatar-image {
-            width: auto;
-            height: auto;
-            margin: 0 auto 5px;
-        }
-
-        .avatar-image img {
-            width: 70%;
-            height: 70%;
-            object-fit: cover;
-        }
-
-        .avatar-nick {
-            color: white;
-            font-weight: 500;
-            font-size: 0.85rem;
-        }
-
-        .nick-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .nick-item {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        .status-badge {
-            display: inline-block;
-            width: 35px;
-            height: 35px;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 0.6rem;
-            margin-left: 8px;
-            text-align: center;
-            line-height: 35px;
-        }
-
-        .status-badge.licenca {
-            background: #dc3545;
-            color: white;
-        }
-
-        .status-badge.reserva {
-            background: #ffc107;
-            color: black;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        .empty-message {
-            color: var(--text-secondary);
-            text-align: center;
-            padding: 20px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        .profile-button:hover { border-color: #444; }
+        .profile-avatar { width: 28px; height: 28px; border-radius: 7px; overflow: hidden; background: var(--card); flex-shrink: 0; }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-nick { font-size: 12.5px; font-weight: 500; color: var(--white); }
 
         .profile-dropdown {
             position: absolute;
             top: calc(100% + 8px);
             right: 0;
-            background: rgb(30, 30, 30);
-            border-radius: 8px;
-            padding: 8px 0;
-            min-width: 160px;
+            background: #161616;
+            border: 1px solid var(--border2);
+            border-radius: 10px;
+            padding: 6px;
+            min-width: 150px;
             display: none;
-            z-index: 1000;
+            z-index: 300;
         }
 
-        .profile-dropdown.show {
-            display: block;
-        }
+        .profile-dropdown.show { display: block; animation: fadeDown 0.15s ease; }
 
         .profile-dropdown-item {
-            padding: 10px 20px;
-            color: var(--text-secondary);
+            padding: 8px 11px;
+            color: var(--muted2);
+            font-size: 12.5px;
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
             text-decoration: none;
+            transition: color 0.15s, background 0.15s;
+        }
+
+        .profile-dropdown-item:hover { background: rgba(255,255,255,0.05); color: var(--white); }
+        .profile-dropdown-item.logout { color: var(--danger); }
+        .profile-dropdown-item.logout:hover { background: rgba(217,85,85,0.08); }
+
+        .mobile-menu {
+            display: none;
+            flex-direction: column;
+            background: #111;
+            border-bottom: 1px solid var(--border);
+            padding: 8px 16px 12px;
+        }
+
+        .mobile-menu.open { display: flex; }
+
+        .mobile-nav-item {
+            padding: 10px 4px;
+            color: var(--muted2);
+            font-size: 13px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mobile-nav-item:last-child { border-bottom: none; }
+        .mobile-nav-item:hover { color: var(--white); }
+        .mobile-nav-item i { font-size: 15px; color: var(--muted); }
+
+        .mobile-section-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            color: var(--muted);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 12px 4px 6px;
+        }
+
+        /* ── MAIN ── */
+        .main-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 28px 20px;
+        }
+
+        .page-header {
             display: flex;
             align-items: center;
             gap: 10px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            font-size: 0.9rem;
+            margin-bottom: 24px;
         }
 
-        .profile-dropdown-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
+        .page-title-icon {
+            width: 34px; height: 34px;
+            border-radius: 9px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: var(--muted2);
+            flex-shrink: 0;
         }
 
-        .profile-dropdown-item.logout {
-            color: var(--danger);
+        .page-title { font-size: 18px; font-weight: 600; color: var(--white); letter-spacing: -0.4px; }
+
+        .listagem-wrap {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
         }
 
-        .profile-dropdown-item.logout:hover {
-            background: rgba(220, 53, 69, 0.1);
+        .listagem-wrap::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 15%; right: 15%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #ffffff0d, transparent);
+            pointer-events: none;
+        }
+
+        .cargo-section {
+            padding: 28px 32px 26px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .cargo-section:last-child { border-bottom: none; }
+
+        .cargo-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .cargo-line {
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+            max-width: 80px;
+        }
+
+        .cargo-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--muted2);
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+        }
+
+        .cargo-count {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            color: var(--muted);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border2);
+            border-radius: 4px;
+            padding: 1px 6px;
+        }
+
+        /* ── AVATARES ── */
+        .avatar-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 20px 16px;
+        }
+
+        .avatar-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            width: 72px;
+        }
+
+        .avatar-body {
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            width: 72px;
+            height: 108px;
+        }
+
+        .avatar-body img {
+            display: block;
+            image-rendering: pixelated;
+            max-width: 100%;
+        }
+
+        .status-pill {
+            position: absolute;
+            top: 0;
+            right: -4px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            padding: 2px 5px;
+            border-radius: 5px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 7.5px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            line-height: 1;
+        }
+
+        .status-pill i { font-size: 8px; }
+
+        .status-pill.licenca {
+            background: rgba(217,85,85,0.15);
+            border: 1px solid rgba(217,85,85,0.35);
+            color: #e88888;
+        }
+
+        .status-pill.reserva {
+            background: rgba(212,148,58,0.15);
+            border: 1px solid rgba(212,148,58,0.35);
+            color: #e8b870;
+        }
+
+        .avatar-nick {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text);
+            text-align: center;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 48px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .nav { display: none; }
+            .hamburger { display: flex; }
+            .clock-badge { display: none; }
+            .header-version { display: none; }
+            .profile-nick { display: none; }
+            .profile-button { padding: 4px; border-radius: 8px; }
+            .main-content { padding: 16px; }
+            .cargo-section { padding: 22px 16px 20px; }
+            .avatar-grid { gap: 16px 12px; }
+            .avatar-item { width: 62px; }
+            .avatar-body { width: 62px; height: 94px; }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="logo-area">
-                    <img src="https://i.imgur.com/iUwP1jk.png">
-                    <span class="logo">DRI System</span>
-                </div>
-                <nav class="nav">
-                    <div class="nav-item" id="geralBtn" onclick="toggleSubmenu('geral')">
-                        Geral <i class="ph ph-caret-down"></i>
-                    </div>
-                    <div class="nav-item active" onclick="window.location.href='listagem.html'">
-                        Listagem
-                    </div>
-                    <div class="nav-item" id="requerimentosBtn" onclick="toggleSubmenu('requerimentos')">
-                        Requerimentos <i class="ph ph-caret-down"></i>
-                    </div>
-                    <div class="nav-item" id="escalasBtn" onclick="toggleSubmenu('escalas')">
-                        Escalas <i class="ph ph-caret-down"></i>
-                    </div>
-                    <div class="nav-item" onclick="window.location.href='registros.html'">
-                        Registros
-                    </div>
 
-                    <div class="submenu" id="geralSubmenu">
-                        <div class="submenu-item" onclick="window.location.href='home.html'">
-                            <i class="ph ph-house"></i> Início
-                        </div>
-                        <div class="submenu-item" onclick="window.location.href='documentacoes.html'">
-                            <i class="ph ph-folder"></i> Documentações
-                        </div>
-                        <div class="submenu-item active" onclick="window.location.href='memorial.html'">
-                            <i class="ph ph-image"></i> Memorial
-                        </div>
-                        <div class="submenu-item" onclick="window.location.href='reportar.html'">
-                            <i class="ph ph-flag"></i> Reportar falha
-                        </div>
-                    </div>
-
-                    <div class="submenu" id="requerimentosSubmenu">
-                        <div class="submenu-item" onclick="window.location.href='req_membros.html'">
-                            Req de membros
-                        </div>
-                        <div class="submenu-item" onclick="window.location.href='registro_funcao.html'">
-                            Registro de função
-                        </div>
-                    </div>
-
-                    <div class="submenu" id="escalasSubmenu">
-                        <div class="submenu-item" onclick="window.location.href='escala_fiscalizador.html'">
-                            Fiscalizador
-                        </div>
-                        <div class="submenu-item" onclick="window.location.href='escala_superintendente.html'">
-                            Superintendente
-                        </div>
-                    </div>
-                </nav>
+<div class="header">
+    <div class="header-content">
+        <div class="header-left">
+            <div class="logo-area">
+                <img src="https://i.imgur.com/iUwP1jk.png">
+                <span class="logo">DRI System</span>
             </div>
+            <nav class="nav">
+                <div class="nav-item" onclick="toggleSubmenu('geral')">Geral <i class="ph ph-caret-down"></i></div>
+                <div class="nav-item" onclick="window.location.href='listagem.html'">Listagem</div>
+                <div class="nav-item" onclick="toggleSubmenu('requerimentos')">Requerimentos <i class="ph ph-caret-down"></i></div>
+                <div class="nav-item" onclick="toggleSubmenu('escalas')">Escalas <i class="ph ph-caret-down"></i></div>
+                <div class="nav-item" onclick="window.location.href='registros.html'">Registros</div>
+
+                <div class="submenu" id="geralSubmenu">
+                    <div class="submenu-item" onclick="window.location.href='home.html'"><i class="ph ph-house"></i> Início</div>
+                    <div class="submenu-item" onclick="window.location.href='documentacoes.html'"><i class="ph ph-folder"></i> Documentações</div>
+                    <div class="submenu-item" onclick="window.location.href='memorial.html'"><i class="ph ph-image"></i> Memorial</div>
+                    <div class="submenu-item" onclick="window.location.href='reportar.html'"><i class="ph ph-flag"></i> Reportar falha</div>
+                </div>
+                <div class="submenu" id="requerimentosSubmenu">
+                    <div class="submenu-item" onclick="window.location.href='req_membros.html'">Req de membros</div>
+                    <div class="submenu-item" onclick="window.location.href='registro_funcao.html'">Registro de função</div>
+                </div>
+                <div class="submenu" id="escalasSubmenu">
+                    <div class="submenu-item" onclick="window.location.href='escala_fiscalizador.html'">Fiscalizador</div>
+                    <div class="submenu-item" onclick="window.location.href='escala_superintendente.html'">Superintendente</div>
+                </div>
+            </nav>
+        </div>
+
+        <div class="header-right">
+            <span class="clock-badge" id="clock">--:--:--</span>
+            <span class="header-version">v2.1.1</span>
+            <button class="hamburger" onclick="toggleMobileMenu()" id="hamburgerBtn">
+                <i class="ph ph-list" id="hamburgerIcon"></i>
+            </button>
             <div class="profile">
-                <div class="profile-button" onclick="toggleDropdown()" id="profileButton">
-                    <div class="profile-avatar">
-                        <img id="userAvatar" src="" alt="avatar">
-                    </div>
-                    <span class="profile-nick" id="userNick">carregando...</span>
+                <div class="profile-button" onclick="toggleProfileDropdown()">
+                    <div class="profile-avatar"><img id="userAvatar" src="" alt="avatar"></div>
+                    <span class="profile-nick" id="userNick">...</span>
+                </div>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="meu_perfil.html" class="profile-dropdown-item"><i class="ph ph-user-circle"></i> Meu perfil</a>
+                    <div class="profile-dropdown-item logout" onclick="Auth.logout()"><i class="ph ph-sign-out"></i> Sair</div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="main-content">
-        <div class="container">
-            <div id="listagemContent">
-                <div class="empty-message">Carregando listagem...</div>
-            </div>
-        </div>
+<div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-section-title">Geral</div>
+    <div class="mobile-nav-item" onclick="window.location.href='home.html'"><i class="ph ph-house"></i> Início</div>
+    <div class="mobile-nav-item" onclick="window.location.href='documentacoes.html'"><i class="ph ph-folder"></i> Documentações</div>
+    <div class="mobile-nav-item" onclick="window.location.href='memorial.html'"><i class="ph ph-image"></i> Memorial</div>
+    <div class="mobile-nav-item" onclick="window.location.href='reportar.html'"><i class="ph ph-flag"></i> Reportar falha</div>
+    <div class="mobile-nav-item" onclick="window.location.href='listagem.html'"><i class="ph ph-users"></i> Listagem</div>
+    <div class="mobile-section-title">Requerimentos</div>
+    <div class="mobile-nav-item" onclick="window.location.href='req_membros.html'"><i class="ph ph-file-text"></i> Req de membros</div>
+    <div class="mobile-nav-item" onclick="window.location.href='registro_funcao.html'"><i class="ph ph-clipboard-text"></i> Registro de função</div>
+    <div class="mobile-section-title">Escalas</div>
+    <div class="mobile-nav-item" onclick="window.location.href='escala_fiscalizador.html'"><i class="ph ph-calendar"></i> Fiscalizador</div>
+    <div class="mobile-nav-item" onclick="window.location.href='escala_superintendente.html'"><i class="ph ph-calendar-check"></i> Superintendente</div>
+    <div class="mobile-section-title">Outros</div>
+    <div class="mobile-nav-item" onclick="window.location.href='registros.html'"><i class="ph ph-archive"></i> Registros</div>
+</div>
+
+<div class="main-content">
+    <div class="page-header">
+        <div class="page-title-icon"><i class="ph ph-users"></i></div>
+        <span class="page-title">Listagem</span>
     </div>
 
-    <script src="js/supabase.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/session.js"></script>
-    <script src="js/chat.js"></script>
-    <script src="js/version-checker.js"></script>
-    <script>
-        let currentUser = null;
-        let activeSubmenu = null;
+    <div class="listagem-wrap">
+        <div id="listagemContent">
+            <div class="empty-message">Carregando listagem...</div>
+        </div>
+    </div>
+</div>
 
-        function toggleProfileDropdown() {
-            const dropdown = document.getElementById('profileDropdown');
-            dropdown.classList.toggle('show');
+<script src="js/supabase.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/session.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/version-checker.js"></script>
+<script>
+    let currentUser = null;
+    let activeSubmenu = null;
+    let mobileMenuOpen = false;
+
+    (function tick() {
+        const el = document.getElementById('clock');
+        if (el) el.textContent = new Date().toLocaleTimeString('pt-BR');
+        setTimeout(tick, 1000);
+    })();
+
+    function toggleProfileDropdown() {
+        document.getElementById('profileDropdown').classList.toggle('show');
+    }
+
+    function toggleSubmenu(menu) {
+        const submenu = document.getElementById(menu + 'Submenu');
+        if (activeSubmenu && activeSubmenu !== submenu) activeSubmenu.classList.remove('show');
+        submenu.classList.toggle('show');
+        activeSubmenu = submenu.classList.contains('show') ? submenu : null;
+    }
+
+    function toggleMobileMenu() {
+        mobileMenuOpen = !mobileMenuOpen;
+        document.getElementById('mobileMenu').classList.toggle('open', mobileMenuOpen);
+        document.getElementById('hamburgerIcon').className = mobileMenuOpen ? 'ph ph-x' : 'ph ph-list';
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.nav-item') && !e.target.closest('.submenu')) {
+            if (activeSubmenu) { activeSubmenu.classList.remove('show'); activeSubmenu = null; }
+        }
+        if (!e.target.closest('.profile-button') && !e.target.closest('.profile-dropdown')) {
+            document.getElementById('profileDropdown').classList.remove('show');
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const autenticado = await Auth.isAuthenticated();
+        if (!autenticado) { window.location.href = 'index.html'; return; }
+
+        currentUser = await Auth.getCurrentUser();
+        const userCargo = currentUser.cargo;
+
+        const podeAcessar = ['Fiscalizador', 'Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+        if (!podeAcessar) { window.location.href = 'home.html'; return; }
+
+        const podeAdmin = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+        if (podeAdmin) {
+            const nav = document.querySelector('.nav');
+            const adminItem = document.createElement('div');
+            adminItem.className = 'nav-item';
+            adminItem.onclick = () => window.location.href = 'admin.html';
+            adminItem.textContent = 'Painel';
+            nav.appendChild(adminItem);
+
+            const mobileMenu = document.getElementById('mobileMenu');
+            const sep = document.createElement('div');
+            sep.className = 'mobile-section-title';
+            sep.textContent = 'Admin';
+            const am = document.createElement('div');
+            am.className = 'mobile-nav-item';
+            am.innerHTML = '<i class="ph ph-shield"></i> Painel';
+            am.onclick = () => window.location.href = 'admin.html';
+            mobileMenu.appendChild(sep);
+            mobileMenu.appendChild(am);
         }
 
-        function toggleSubmenu(menu) {
-            const submenu = document.getElementById(menu + 'Submenu');
-            
-            if (activeSubmenu && activeSubmenu !== submenu) {
-                activeSubmenu.classList.remove('show');
-            }
-            
-            submenu.classList.toggle('show');
-            activeSubmenu = submenu.classList.contains('show') ? submenu : null;
-        }
+        document.getElementById('userNick').textContent = currentUser.nick;
+        document.getElementById('userAvatar').src = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
 
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.nav-item') && !event.target.closest('.submenu')) {
-                if (activeSubmenu) {
-                    activeSubmenu.classList.remove('show');
-                    activeSubmenu = null;
-                }
-            }
-            
-            if (!event.target.closest('.profile-button') && !event.target.closest('.profile-dropdown')) {
-                document.getElementById('profileDropdown').classList.remove('show');
-            }
-        });
+        await carregarListagem();
+    });
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            const autenticado = await Auth.isAuthenticated();
-            if (!autenticado) {
-                window.location.href = 'index.html';
+    function buildAvatares(lista) {
+        return lista.map(item => {
+            const url = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${item.nick}&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=0&size=b`;
+            const fb  = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=Padrao&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=0&size=b`;
+
+            let badge = '';
+            if (item.status === 'licenca') {
+                badge = `<span class="status-pill licenca"><i class="ph ph-moon-stars"></i>LIC</span>`;
+            } else if (item.status === 'reserva') {
+                badge = `<span class="status-pill reserva"><i class="ph ph-clock"></i>RES</span>`;
+            }
+
+            return `<div class="avatar-item">
+                <div class="avatar-body">
+                    <img src="${url}" alt="${item.nick}" onerror="this.src='${fb}'">
+                    ${badge}
+                </div>
+                <div class="avatar-nick">${item.nick}</div>
+            </div>`;
+        }).join('');
+    }
+
+    function buildSection(titulo, lista) {
+        if (!lista.length) return '';
+        return `<div class="cargo-section">
+            <div class="cargo-header">
+                <div class="cargo-line"></div>
+                <span class="cargo-title">${titulo}</span>
+                <span class="cargo-count">${lista.length}</span>
+                <div class="cargo-line"></div>
+            </div>
+            <div class="avatar-grid">${buildAvatares(lista)}</div>
+        </div>`;
+    }
+
+    async function carregarListagem() {
+        try {
+            const { data: usuarios } = await window.supabase
+                .from('usuarios')
+                .select('nick, cargo, status')
+                .eq('verificado', true);
+
+            if (!usuarios || !usuarios.length) {
+                document.getElementById('listagemContent').innerHTML = '<div class="empty-message">Nenhum usuário encontrado</div>';
                 return;
             }
 
-            currentUser = await Auth.getCurrentUser();
-            const userCargo = currentUser.cargo;
+            const ordem = ['DEV', 'Líder', 'Vice-Líder', 'Superintendente', 'Fiscalizador'];
+            const cargos = { DEV: [], Líder: [], 'Vice-Líder': [], Superintendente: [], Fiscalizador: [] };
 
-            const podeAcessar = ['Fiscalizador', 'Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
-            if (!podeAcessar) {
-                window.location.href = 'home.html';
-                return;
-            }
-
-            const podeAcessarAdmin = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
-
-            const existingAdmin = document.querySelector('.nav-item[onclick*="admin.html"]');
-            if (existingAdmin) existingAdmin.remove();
-
-            if (podeAcessarAdmin) {
-                const nav = document.querySelector('.nav');
-                const adminItem = document.createElement('div');
-                adminItem.className = 'nav-item';
-                adminItem.onclick = () => window.location.href = 'admin.html';
-                adminItem.innerHTML = 'Painel';
-                nav.appendChild(adminItem);
-            }
-
-            document.getElementById('userNick').textContent = currentUser.nick;
-            const avatarUrl = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
-            document.getElementById('userAvatar').src = avatarUrl;
-
-            await carregarListagem();
-        });
-
-        async function carregarListagem() {
-            try {
-                const { data: usuarios } = await window.supabase
-                    .from('usuarios')
-                    .select('nick, cargo, status')
-                    .eq('verificado', true);
-
-                if (!usuarios || usuarios.length === 0) {
-                    document.getElementById('listagemContent').innerHTML = '<div class="empty-message">Nenhum usuário encontrado</div>';
-                    return;
-                }
-
-                const cargos = {
-                    DEV: [],
-                    Líder: [],
-                    'Vice-Líder': [],
-                    Superintendente: [],
-                    Fiscalizador: []
-                };
-
-                usuarios.forEach(usuario => {
-                    const statusIcon = usuario.status === 'LICENCA' ? 'L' : (usuario.status === 'RESERVA' ? 'R' : null);
-                    const statusClass = usuario.status === 'LICENCA' ? 'licenca' : (usuario.status === 'RESERVA' ? 'reserva' : '');
-                    
-                    if (cargos[usuario.cargo]) {
-                        cargos[usuario.cargo].push({
-                            nick: usuario.nick,
-                            statusIcon: statusIcon,
-                            statusClass: statusClass
-                        });
-                    }
+            usuarios.forEach(u => {
+                if (!cargos[u.cargo]) return;
+                cargos[u.cargo].push({
+                    nick: u.nick,
+                    status: u.status === 'LICENCA' ? 'licenca' : u.status === 'RESERVA' ? 'reserva' : ''
                 });
+            });
 
-                const container = document.getElementById('listagemContent');
-                let html = '';
-
-                if (cargos.DEV.length > 0) {
-                    html += `
-                        <div class="cargo-section">
-                            <div class="cargo-title">DEV</div>
-                            <div class="avatar-grid">
-                                ${cargos.DEV.map(item => `
-                                    <div class="avatar-item">
-                                        <div class="avatar-image">
-                                            <img src="https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${item.nick}&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=0&size=b" 
-                                                alt="${item.nick}"
-                                                onerror="this.src='https://www.habbo.com.br/habbo-imaging/avatarimage?&user=Padrao&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=0&size=b'">
-                                        </div>
-                                        <div class="avatar-nick">
-                                            ${item.nick}
-                                            ${item.statusIcon ? `<span class="status-badge ${item.statusClass}">${item.statusIcon}</span>` : ''}
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `;
-                }
-
-                if (cargos.Líder.length > 0) {
-                    html += `
-                        <div class="cargo-section">
-                            <div class="cargo-title">Líder</div>
-                            <div class="avatar-grid">
-                                ${cargos.Líder.map(item => `
-                                    <div class="avatar-item">
-                                        <div class="avatar-image">
-                                            <img src="https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${item.nick}&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=0&size=b" 
-                                                alt="${item.nick}"
-                                                onerror="this.src='https://www.habbo.com.br/habbo-imaging/avatarimage?&user=Padrao&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=0&size=b'">
-                                        </div>
-                                        <div class="avatar-nick">
-                                            ${item.nick}
-                                            ${item.statusIcon ? `<span class="status-badge ${item.statusClass}">${item.statusIcon}</span>` : ''}
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `;
-                }
-
-                if (cargos['Vice-Líder'].length > 0) {
-                    html += `
-                        <div class="cargo-section">
-                            <div class="cargo-title">Vice-Líder</div>
-                            <div class="avatar-grid">
-                                ${cargos['Vice-Líder'].map(item => `
-                                    <div class="avatar-item">
-                                        <div class="avatar-image">
-                                            <img src="https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${item.nick}&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=0&size=b" 
-                                                alt="${item.nick}"
-                                                onerror="this.src='https://www.habbo.com.br/habbo-imaging/avatarimage?&user=Padrao&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=0&size=b'">
-                                        </div>
-                                        <div class="avatar-nick">
-                                            ${item.nick}
-                                            ${item.statusIcon ? `<span class="status-badge ${item.statusClass}">${item.statusIcon}</span>` : ''}
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `;
-                }
-
-                if (cargos.Superintendente.length > 0) {
-                    html += `
-                        <div class="cargo-section">
-                            <div class="cargo-title">Superintendente</div>
-                            <div class="nick-grid">
-                                ${cargos.Superintendente.map(item => `
-                                    <span class="nick-item">
-                                        ${item.nick}
-                                        ${item.statusIcon ? `<span class="status-badge ${item.statusClass}" style="margin-left: 5px;">${item.statusIcon}</span>` : ''}
-                                    </span>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `;
-                }
-
-                if (cargos.Fiscalizador.length > 0) {
-                    html += `
-                        <div class="cargo-section">
-                            <div class="cargo-title">Fiscalizador</div>
-                            <div class="nick-grid">
-                                ${cargos.Fiscalizador.map(item => `
-                                    <span class="nick-item">
-                                        ${item.nick}
-                                        ${item.statusIcon ? `<span class="status-badge ${item.statusClass}" style="margin-left: 5px;">${item.statusIcon}</span>` : ''}
-                                    </span>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `;
-                }
-
-                container.innerHTML = html;
-
-            } catch (error) {
-                console.error('Erro ao carregar listagem:', error);
-                document.getElementById('listagemContent').innerHTML = '<div class="empty-message">Erro ao carregar listagem</div>';
-            }
+            const html = ordem.map(c => buildSection(c, cargos[c])).join('');
+            document.getElementById('listagemContent').innerHTML = html || '<div class="empty-message">Nenhum usuário encontrado</div>';
+        } catch(e) {
+            console.error(e);
+            document.getElementById('listagemContent').innerHTML = '<div class="empty-message">Erro ao carregar listagem</div>';
         }
-    </script>
+    }
+</script>
 </body>
 </html>
