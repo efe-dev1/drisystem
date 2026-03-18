@@ -6,1239 +6,805 @@
     <title>DRI System</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/iUwP1jk.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
     <link rel="stylesheet" href="js/chat.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #161616;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #2b2b2b;
-        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --navy-dark: #161616;
-            --navy-medium: #0f2740;
-            --navy-light: #2b2b2b;
-            --text-primary: #e5e9f0;
-            --text-secondary: #afafaf;
-            --danger: #dc3545;
-            --success: #28a745;
-            --warning: #ffc107;
-            --info: #17a2b8;
+            --bg: #0c0c0c;
+            --card: #131313;
+            --border: #1f1f1f;
+            --border2: #2a2a2a;
+            --input: #0c0c0c;
+            --text: #efefef;
+            --muted: #505050;
+            --muted2: #787878;
+            --white: #fff;
+            --danger: #d95555;
+            --success: #4caf7d;
+            --warning: #d4943a;
+            --info: #4a9eca;
         }
 
-        body {
-            background: url('https://i.imgur.com/8b3rI5q.png') repeat center center fixed;
-            background-size: contain;
-            background-size: 300px 300px;
-            font-family: 'Poppins', sans-serif;
-            color: #fff;
-            position: relative;
-            min-height: 100vh;
-        }
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border2); }
+
+        body { background: var(--bg); min-height: 100vh; font-family: 'Inter', sans-serif; color: var(--text); }
 
         body::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(4, 4, 4, 0.478);
-            z-index: -1;
+            content: ''; position: fixed; inset: 0;
+            background-image: radial-gradient(#ffffff05 1px, transparent 1px);
+            background-size: 24px 24px; pointer-events: none; z-index: 0;
         }
 
         .header {
-            background: rgb(26, 26, 26);
-            border-bottom: 2px solid rgb(17, 17, 17);
-            width: 100%;
-            padding: 0 30px;
+            position: sticky; top: 0; z-index: 200;
+            background: rgba(12,12,12,0.94); backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border);
         }
 
         .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            max-width: 1400px; margin: 0 auto; height: 56px; padding: 0 20px;
+            display: flex; align-items: center; justify-content: space-between; gap: 16px;
         }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 40px;
-        }
+        .header-left { display: flex; align-items: center; gap: 24px; min-width: 0; }
+        .logo-area { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .logo-area img { height: 24px; }
+        .logo { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500; color: var(--white); }
 
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo-area img {
-            height: 40px;
-            width: auto;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: white;
-        }
-
-        .nav {
-            display: flex;
-            gap: 5px;
-            position: relative;
-        }
+        .nav { display: flex; align-items: center; gap: 2px; position: relative; }
 
         .nav-item {
-            padding: 8px 16px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.95rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            padding: 6px 11px; color: var(--muted2); font-size: 13px; border-radius: 7px;
+            cursor: pointer; transition: color 0.15s, background 0.15s;
+            display: flex; align-items: center; gap: 4px; white-space: nowrap; user-select: none;
         }
-
-        .nav-item:hover {
-            color: white;
-        }
+        .nav-item:hover { color: var(--white); background: rgba(255,255,255,0.04); }
+        .nav-item i { font-size: 11px; }
 
         .submenu {
-            position: absolute;
-            top: 100%;
-            background: rgb(30, 30, 30);
-            border-radius: 8px;
-            padding: 8px 0;
-            min-width: 200px;
-            display: none;
-            z-index: 1000;
+            position: absolute; top: calc(100% + 8px); background: #161616;
+            border: 1px solid var(--border2); border-radius: 10px;
+            padding: 6px; min-width: 185px; display: none; z-index: 300;
         }
-
-        .submenu.show {
-            display: block;
-        }
+        .submenu.show { display: block; animation: fadeDown 0.15s ease; }
+        #geralSubmenu { left: 0; }
+        #requerimentosSubmenu { left: 70px; }
+        #escalasSubmenu { left: 204px; }
 
         .submenu-item {
-            padding: 10px 20px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            font-size: 0.9rem;
+            padding: 8px 11px; color: var(--muted2); font-size: 12.5px; border-radius: 7px;
+            display: flex; align-items: center; gap: 8px; cursor: pointer;
+            transition: color 0.15s, background 0.15s;
         }
+        .submenu-item:hover { background: rgba(255,255,255,0.05); color: var(--white); }
+        .submenu-item i { font-size: 14px; color: var(--muted); }
 
-        .submenu-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
+        .header-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+        .clock-badge { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
+        .header-version { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
+
+        .hamburger {
+            display: none; background: transparent; border: 1px solid var(--border2);
+            border-radius: 8px; width: 36px; height: 36px; align-items: center;
+            justify-content: center; cursor: pointer; color: var(--muted2); font-size: 18px;
+            transition: border-color 0.15s, color 0.15s; flex-shrink: 0;
         }
+        .hamburger:hover { border-color: #444; color: var(--white); }
 
-        #geralSubmenu {
-            left: 0;
-        }
-
-        #requerimentosSubmenu {
-            left: 85px;
-        }
-
-        #escalasSubmenu {
-            left: 260px;
-        }
-
-        .profile {
-            position: relative;
-        }
-
+        .profile { position: relative; }
         .profile-button {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 5px 10px 5px 5px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgb(40, 40, 40);
-            border-radius: 12px;
-            cursor: pointer;
+            display: flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px;
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border2);
+            border-radius: 10px; cursor: pointer; transition: border-color 0.15s;
         }
-
-        .profile-avatar {
-            width: 36px;
-            height: 36px;
-            overflow: hidden;
-        }
-
-        .profile-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .profile-nick {
-            font-weight: 500;
-            color: white;
-            font-size: 0.9rem;
-        }
+        .profile-button:hover { border-color: #444; }
+        .profile-avatar { width: 28px; height: 28px; border-radius: 7px; overflow: hidden; background: var(--card); flex-shrink: 0; }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-nick { font-size: 12.5px; font-weight: 500; color: var(--white); }
 
         .profile-dropdown {
-            position: absolute;
-            top: calc(100% + 8px);
-            right: 0;
-            background: rgb(30, 30, 30);
-            border-radius: 8px;
-            padding: 8px 0;
-            min-width: 160px;
-            display: none;
-            z-index: 1000;
+            position: absolute; top: calc(100% + 8px); right: 0; background: #161616;
+            border: 1px solid var(--border2); border-radius: 10px;
+            padding: 6px; min-width: 150px; display: none; z-index: 300;
         }
-
-        .profile-dropdown.show {
-            display: block;
-        }
+        .profile-dropdown.show { display: block; animation: fadeDown 0.15s ease; }
 
         .profile-dropdown-item {
-            padding: 10px 20px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            font-size: 0.9rem;
+            padding: 8px 11px; color: var(--muted2); font-size: 12.5px; border-radius: 7px;
+            display: flex; align-items: center; gap: 8px; cursor: pointer;
+            text-decoration: none; transition: color 0.15s, background 0.15s;
         }
+        .profile-dropdown-item:hover { background: rgba(255,255,255,0.05); color: var(--white); }
+        .profile-dropdown-item.logout { color: var(--danger); }
+        .profile-dropdown-item.logout:hover { background: rgba(217,85,85,0.08); }
 
-        .profile-dropdown-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
+        .mobile-menu {
+            display: none; flex-direction: column; background: #111;
+            border-bottom: 1px solid var(--border); padding: 8px 16px 12px;
         }
+        .mobile-menu.open { display: flex; }
 
-        .profile-dropdown-item.logout {
-            color: var(--danger);
+        .mobile-nav-item {
+            padding: 10px 4px; color: var(--muted2); font-size: 13px;
+            border-bottom: 1px solid var(--border); cursor: pointer;
+            display: flex; align-items: center; gap: 8px;
         }
+        .mobile-nav-item:last-child { border-bottom: none; }
+        .mobile-nav-item:hover { color: var(--white); }
+        .mobile-nav-item i { font-size: 15px; color: var(--muted); }
 
-        .profile-dropdown-item.logout:hover {
-            background: rgba(220, 53, 69, 0.1);
+        .mobile-section-title {
+            font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted);
+            letter-spacing: 1.5px; text-transform: uppercase; padding: 12px 4px 6px;
         }
 
         .main-content {
-            padding: 40px 20px;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
+            position: relative; z-index: 1; max-width: 1200px; margin: 0 auto;
+            padding: 28px 20px; display: flex; flex-direction: column; align-items: center; gap: 20px;
         }
+
+        .section-wrap { width: 100%; max-width: 680px; }
+
+        .page-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+
+        .page-title-icon {
+            width: 34px; height: 34px; border-radius: 9px;
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; color: var(--muted2); flex-shrink: 0;
+        }
+
+        .page-title { font-size: 18px; font-weight: 600; color: var(--white); letter-spacing: -0.4px; }
 
         .card {
-            background: rgb(26, 26, 26);
-            border: 2px solid rgb(17, 17, 17);
-            border-radius: 10px;
-            padding: 25px;
-            width: 100%;
+            background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+            padding: 24px; position: relative; overflow: hidden; width: 100%;
         }
 
-        .card-title {
-            color: white;
-            font-weight: 600;
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .card::after {
+            content: ''; position: absolute; top: 0; left: 15%; right: 15%;
+            height: 1px; background: linear-gradient(90deg, transparent, #ffffff0d, transparent);
         }
 
-        .form-group {
-            margin-bottom: 20px;
+        .card-section-title {
+            font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted2);
+            letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px;
+            padding-bottom: 12px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 8px;
         }
 
-        .input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
+        .error-box {
+            background: rgba(217,85,85,0.07); border: 1px solid rgba(217,85,85,0.2);
+            border-radius: 8px; padding: 9px 12px; margin-bottom: 14px;
+            color: var(--danger); font-size: 12px; display: none; align-items: center; gap: 7px;
+        }
+        .error-box.show { display: flex; animation: glitch 0.18s ease; }
+
+        .success-box {
+            background: rgba(76,175,125,0.07); border: 1px solid rgba(76,175,125,0.2);
+            border-radius: 8px; padding: 9px 12px; margin-bottom: 14px;
+            color: var(--success); font-size: 12px; display: none; align-items: center; gap: 7px;
+        }
+        .success-box.show { display: flex; animation: fadeDown 0.2s ease; }
+
+        .warning-box {
+            background: rgba(212,148,58,0.07); border: 1px solid rgba(212,148,58,0.2);
+            border-radius: 8px; padding: 9px 12px; margin-bottom: 14px;
+            color: var(--warning); font-size: 12px; display: none; align-items: center; gap: 7px;
+        }
+        .warning-box.show { display: flex; animation: fadeDown 0.2s ease; }
+
+        .field-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+
+        .field { position: relative; }
+
+        .field-label {
+            font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: var(--muted);
+            letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; display: block;
         }
 
-        .input-wrapper input,
-        .input-wrapper select,
-        .input-wrapper textarea {
-            width: 100%;
-            padding: 10px 0;
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid rgb(80, 80, 80);
-            color: white;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
+        .field i {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            font-size: 15px; color: var(--muted); pointer-events: none; transition: color 0.2s;
         }
 
-        .input-wrapper input:focus,
-        .input-wrapper select:focus,
-        .input-wrapper textarea:focus {
-            outline: none;
-            border-bottom-color: white;
+        .field input, .field select {
+            width: 100%; height: 42px; padding: 0 13px 0 36px;
+            background: var(--input); border: 1px solid var(--border2); border-radius: 10px;
+            color: var(--white); font-size: 13px; font-family: 'Inter', sans-serif;
+            outline: none; transition: border-color 0.2s;
         }
 
-        .input-wrapper input::placeholder {
-            color: rgba(255, 255, 255, 0.4);
+        .field input::placeholder { color: #2e2e2e; }
+        .field input:focus, .field select:focus { border-color: #444; }
+        .field:has(input:focus) i, .field:has(select:focus) i { color: var(--muted2); }
+        .field select { cursor: pointer; appearance: none; -webkit-appearance: none; }
+        .field select option { background: #161616; color: var(--white); }
+
+        .select-arrow {
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            font-size: 13px; color: var(--muted); pointer-events: none;
         }
 
-        .input-wrapper select {
-            cursor: pointer;
+        .tipo-form { display: none; flex-direction: column; gap: 10px; }
+        .tipo-form.active { display: flex; }
+
+        .btn-submit {
+            width: 100%; height: 44px; background: var(--white); border: none;
+            border-radius: 10px; color: #0c0c0c; font-size: 13px; font-weight: 600;
+            font-family: 'Inter', sans-serif; cursor: pointer; display: flex;
+            align-items: center; justify-content: center; gap: 8px;
+            transition: background 0.15s, transform 0.1s, opacity 0.15s;
+        }
+        .btn-submit:hover { background: #e8e8e8; }
+        .btn-submit:active { transform: scale(0.99); }
+        .btn-submit:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        .req-list { display: flex; flex-direction: column; }
+
+        .req-item {
+            display: flex; align-items: flex-start; gap: 14px;
+            padding: 14px 0; border-bottom: 1px solid var(--border);
+        }
+        .req-item:last-child { border-bottom: none; }
+
+        .req-avatar { flex-shrink: 0; text-align: center; width: 48px; }
+
+        .req-avatar img {
+            width: 40px; height: 40px; border-radius: 9px; object-fit: cover;
+            border: 1px solid var(--border2); display: block; margin-bottom: 4px;
+            image-rendering: pixelated;
         }
 
-        .input-wrapper select option {
-            background: rgb(26, 26, 26);
-            color: white;
+        .req-author-nick {
+            font-size: 10px; font-weight: 500; color: var(--text);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 48px;
         }
 
-        .btn-primary {
-            width: 100%;
-            padding: 12px;
-            background: white;
-            border: none;
-            border-radius: 8px;
-            color: var(--navy-dark);
-            font-weight: 600;
-            font-size: 0.95rem;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 10px;
+        .req-author-cargo {
+            font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 48px;
         }
 
-        .btn-primary:hover {
-            background: #f0f0f0;
+        .req-content { flex: 1; min-width: 0; }
+
+        .req-tipo {
+            font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 4px;
         }
 
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .req-info { font-size: 12px; color: var(--muted2); line-height: 1.5; }
+
+        .req-date {
+            font-family: 'JetBrains Mono', monospace; font-size: 10px;
+            color: var(--muted); margin-top: 4px;
         }
 
-        .requerimentos-list {
-            background: rgb(26, 26, 26);
-            border: 2px solid rgb(17, 17, 17);
-            border-radius: 10px;
-            padding: 25px;
-            width: 100%;
-        }
+        .empty-message { text-align: center; padding: 32px; color: var(--muted); font-size: 13px; }
 
-        .requerimento-item {
-            display: flex;
-            gap: 15px;
-            padding: 15px 0;
-            border-bottom: 1px solid rgb(40, 40, 40);
-        }
+        @keyframes fadeDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes glitch { 0% { transform: translateX(-3px); } 50% { transform: translateX(2px); } 100% { transform: translateX(0); } }
 
-        .requerimento-item:last-child {
-            border-bottom: none;
-        }
-
-        .requerimento-avatar {
-            width: 60px;
-            text-align: center;
-        }
-
-        .requerimento-avatar img {
-            width: 50px;
-            height: 50px;
-            border-radius: 8px;
-            margin-bottom: 5px;
-        }
-
-        .requerimento-avatar .avatar-nick {
-            font-size: 0.8rem;
-            color: white;
-        }
-
-        .requerimento-avatar .avatar-cargo {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-        }
-
-        .requerimento-content {
-            flex: 1;
-        }
-
-        .requerimento-titulo {
-            color: white;
-            font-weight: 600;
-            font-size: 1rem;
-            margin-bottom: 8px;
-        }
-
-        .requerimento-info {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .requerimento-info strong {
-            color: white;
-        }
-
-        .error-message {
-            background: rgba(220, 53, 69, 0.1);
-            border: 2px solid var(--danger);
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 20px;
-            color: var(--danger);
-            text-align: center;
-            display: none;
-            font-size: 0.9rem;
-        }
-
-        .success-message {
-            background: rgba(40, 167, 69, 0.1);
-            border: 2px solid var(--success);
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 20px;
-            color: var(--success);
-            text-align: center;
-            display: none;
-            font-size: 0.9rem;
-        }
-
-        .warning-message {
-            background: rgba(255, 193, 7, 0.1);
-            border: 2px solid var(--warning);
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 20px;
-            color: var(--warning);
-            text-align: center;
-            display: none;
-            font-size: 0.9rem;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .novo-requerimento {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .profile-dropdown {
-            position: absolute;
-            top: calc(100% + 8px);
-            right: 0;
-            background: rgb(30, 30, 30);
-            border-radius: 8px;
-            padding: 8px 0;
-            min-width: 160px;
-            display: none;
-            z-index: 1000;
-        }
-
-        .profile-dropdown.show {
-            display: block;
-        }
-
-        .profile-dropdown-item {
-            padding: 10px 20px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .profile-dropdown-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-
-        .profile-dropdown-item.logout {
-            color: var(--danger);
-        }
-
-        .profile-dropdown-item.logout:hover {
-            background: rgba(220, 53, 69, 0.1);
+        @media (max-width: 768px) {
+            .nav { display: none; }
+            .hamburger { display: flex; }
+            .clock-badge { display: none; }
+            .header-version { display: none; }
+            .profile-nick { display: none; }
+            .profile-button { padding: 4px; border-radius: 8px; }
+            .main-content { padding: 16px; }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="logo-area">
-                    <img src="https://i.imgur.com/iUwP1jk.png">
-                    <span class="logo">DRI System</span>
-                </div>
-                <nav class="nav">
-                    <div class="nav-item" id="geralBtn" onclick="toggleSubmenu('geral')">
-                        Geral <i class="ph ph-caret-down"></i>
-                    </div>
-                    <div class="nav-item" onclick="window.location.href='listagem.html'">
-                        Listagem
-                    </div>
-                    <div class="nav-item active" id="requerimentosBtn" onclick="toggleSubmenu('requerimentos')">
-                        Requerimentos <i class="ph ph-caret-down"></i>
-                    </div>
-                    <div class="nav-item" id="escalasBtn" onclick="toggleSubmenu('escalas')">
-                        Escalas <i class="ph ph-caret-down"></i>
-                    </div>
-                    <div class="nav-item" onclick="window.location.href='registros.html'">
-                        Registros
-                    </div>
-                    <div class="nav-item" id="adminBtn" onclick="toggleSubmenu('admin')" style="display: none;">
-                        Admin <i class="ph ph-caret-down"></i>
-                    </div>
 
-                    <div class="submenu" id="geralSubmenu">
-                        <div class="submenu-item" onclick="window.location.href='home.html'">
-                            <i class="ph ph-house"></i> Início
-                        </div>
-                        <div class="submenu-item" onclick="window.location.href='documentacoes.html'">
-                            <i class="ph ph-folder"></i> Documentações
-                        </div>
-                        <div class="submenu-item active" onclick="window.location.href='memorial.html'">
-                            <i class="ph ph-image"></i> Memorial
-                        </div>
-                        <div class="submenu-item" onclick="window.location.href='reportar.html'">
-                            <i class="ph ph-flag"></i> Reportar falha
-                        </div>
-                    </div>
-
-                    <div class="submenu" id="requerimentosSubmenu">
-                        <div class="submenu-item" onclick="window.location.href='req_membros.html'">
-                            Req de membros
-                        </div>
-                        <div class="submenu-item" onclick="window.location.href='registro_funcao.html'">
-                            Registro de função
-                        </div>
-                    </div>
-
-                    <div class="submenu" id="escalasSubmenu">
-                        <div class="submenu-item" onclick="window.location.href='escala_fiscalizador.html'">
-                            Fiscalizador
-                        </div>
-                        <div class="submenu-item" onclick="window.location.href='escala_superintendente.html'">
-                            Superintendente
-                        </div>
-                    </div>
-                </nav>
+<div class="header">
+    <div class="header-content">
+        <div class="header-left">
+            <div class="logo-area">
+                <img src="https://i.imgur.com/iUwP1jk.png">
+                <span class="logo">DRI System</span>
             </div>
+            <nav class="nav">
+                <div class="nav-item" onclick="toggleSubmenu('geral')">Geral <i class="ph ph-caret-down"></i></div>
+                <div class="nav-item" onclick="window.location.href='listagem.html'">Listagem</div>
+                <div class="nav-item" onclick="toggleSubmenu('requerimentos')">Requerimentos <i class="ph ph-caret-down"></i></div>
+                <div class="nav-item" onclick="toggleSubmenu('escalas')">Escalas <i class="ph ph-caret-down"></i></div>
+                <div class="nav-item" onclick="window.location.href='registros.html'">Registros</div>
+                <div class="submenu" id="geralSubmenu">
+                    <div class="submenu-item" onclick="window.location.href='home.html'"><i class="ph ph-house"></i> Início</div>
+                    <div class="submenu-item" onclick="window.location.href='documentacoes.html'"><i class="ph ph-folder"></i> Documentações</div>
+                    <div class="submenu-item" onclick="window.location.href='memorial.html'"><i class="ph ph-image"></i> Memorial</div>
+                    <div class="submenu-item" onclick="window.location.href='reportar.html'"><i class="ph ph-flag"></i> Reportar falha</div>
+                </div>
+                <div class="submenu" id="requerimentosSubmenu">
+                    <div class="submenu-item" onclick="window.location.href='req_membros.html'">Req de membros</div>
+                    <div class="submenu-item" onclick="window.location.href='registro_funcao.html'">Registro de função</div>
+                </div>
+                <div class="submenu" id="escalasSubmenu">
+                    <div class="submenu-item" onclick="window.location.href='escala_fiscalizador.html'">Fiscalizador</div>
+                    <div class="submenu-item" onclick="window.location.href='escala_superintendente.html'">Superintendente</div>
+                </div>
+            </nav>
+        </div>
+        <div class="header-right">
+            <span class="clock-badge" id="clock">--:--:--</span>
+            <span class="header-version">v2.1.1</span>
+            <button class="hamburger" onclick="toggleMobileMenu()" id="hamburgerBtn"><i class="ph ph-list" id="hamburgerIcon"></i></button>
             <div class="profile">
-                <div class="profile-button" onclick="toggleProfileDropdown()" id="profileButton">
-                    <div class="profile-avatar">
-                        <img id="userAvatar" src="" alt="avatar">
-                    </div>
-                    <span class="profile-nick" id="userNick">carregando...</span>
+                <div class="profile-button" onclick="toggleProfileDropdown()">
+                    <div class="profile-avatar"><img id="userAvatar" src="" alt="avatar"></div>
+                    <span class="profile-nick" id="userNick">...</span>
                 </div>
                 <div class="profile-dropdown" id="profileDropdown">
-                    <a href="meu_perfil.html" class="profile-dropdown-item">
-                        <i class="ph ph-user-circle"></i> Meu perfil
-                    </a>
-                    <div class="profile-dropdown-item logout" onclick="Auth.logout()">
-                        <i class="ph ph-sign-out"></i> Sair
-                    </div>
+                    <a href="meu_perfil.html" class="profile-dropdown-item"><i class="ph ph-user-circle"></i> Meu perfil</a>
+                    <div class="profile-dropdown-item logout" onclick="Auth.logout()"><i class="ph ph-sign-out"></i> Sair</div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="main-content">
-        <div class="card novo-requerimento">
-            <div class="card-title">
-                NOVO REQUERIMENTO
+<div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-section-title">Geral</div>
+    <div class="mobile-nav-item" onclick="window.location.href='home.html'"><i class="ph ph-house"></i> Início</div>
+    <div class="mobile-nav-item" onclick="window.location.href='documentacoes.html'"><i class="ph ph-folder"></i> Documentações</div>
+    <div class="mobile-nav-item" onclick="window.location.href='memorial.html'"><i class="ph ph-image"></i> Memorial</div>
+    <div class="mobile-nav-item" onclick="window.location.href='reportar.html'"><i class="ph ph-flag"></i> Reportar falha</div>
+    <div class="mobile-nav-item" onclick="window.location.href='listagem.html'"><i class="ph ph-users"></i> Listagem</div>
+    <div class="mobile-section-title">Requerimentos</div>
+    <div class="mobile-nav-item" onclick="window.location.href='req_membros.html'"><i class="ph ph-file-text"></i> Req de membros</div>
+    <div class="mobile-nav-item" onclick="window.location.href='registro_funcao.html'"><i class="ph ph-clipboard-text"></i> Registro de função</div>
+    <div class="mobile-section-title">Escalas</div>
+    <div class="mobile-nav-item" onclick="window.location.href='escala_fiscalizador.html'"><i class="ph ph-calendar"></i> Fiscalizador</div>
+    <div class="mobile-nav-item" onclick="window.location.href='escala_superintendente.html'"><i class="ph ph-calendar-check"></i> Superintendente</div>
+    <div class="mobile-section-title">Outros</div>
+    <div class="mobile-nav-item" onclick="window.location.href='registros.html'"><i class="ph ph-archive"></i> Registros</div>
+</div>
+
+<div class="main-content">
+    <div class="section-wrap">
+        <div class="page-header">
+            <div class="page-title-icon"><i class="ph ph-file-plus"></i></div>
+            <span class="page-title">Novo Requerimento</span>
+        </div>
+
+        <div class="card">
+            <div class="error-box" id="errorMessage">
+                <i class="ph ph-warning" style="font-size:13px;flex-shrink:0;"></i>
+                <span id="errorText"></span>
             </div>
-            
-            <div id="errorMessage" class="error-message"></div>
-            <div id="successMessage" class="success-message"></div>
-            <div id="warningMessage" class="warning-message"></div>
-            
-            <div class="form-group">
-                <div class="input-wrapper">
+            <div class="success-box" id="successMessage">
+                <i class="ph ph-check-circle" style="font-size:13px;flex-shrink:0;"></i>
+                Requerimento enviado com sucesso!
+            </div>
+            <div class="warning-box" id="warningMessage">
+                <i class="ph ph-warning" style="font-size:13px;flex-shrink:0;"></i>
+                <span id="warningText"></span>
+            </div>
+
+            <div class="field-group">
+                <div class="field">
+                    <span class="field-label">Tipo</span>
+                    <i class="ph ph-list-bullets"></i>
                     <select id="tipoRequerimento" onchange="mudarTipo()">
-                        <option value="" disabled selected>TIPO</option>
-                        <option value="ENTRADA">ENTRADA</option>
-                        <option value="PROMOCAO">PROMOÇÃO/REBAIXAMENTO</option>
-                        <option value="SAIDA">SAÍDA</option>
-                        <option value="EXPULSAO">EXPULSÃO</option>
-                        <option value="REINTEGRACAO">REINTEGRAÇÃO</option>
-                        <option value="LICENCA">LICENÇA/RESERVA</option>
-                        <option value="RETORNO">RETORNO DE LICENÇA/RESERVA</option>
-                        <option value="ALTERACAO">ALTERAÇÃO DE NICKNAME</option>
+                        <option value="" disabled selected>Selecione o tipo</option>
+                        <option value="ENTRADA">Entrada</option>
+                        <option value="PROMOCAO">Promoção / Rebaixamento</option>
+                        <option value="SAIDA">Saída</option>
+                        <option value="EXPULSAO">Expulsão</option>
+                        <option value="REINTEGRACAO">Reintegração</option>
+                        <option value="LICENCA">Licença / Reserva</option>
+                        <option value="RETORNO">Retorno de Licença/Reserva</option>
+                        <option value="ALTERACAO">Alteração de Nickname</option>
                     </select>
+                    <i class="ph ph-caret-down select-arrow"></i>
                 </div>
             </div>
 
-            <div id="formEntrada" class="tipo-form" style="display: none;">
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <input type="text" id="entradaNick" placeholder="NICK">
-                    </div>
+            <div id="formEntrada" class="tipo-form" style="margin-bottom:14px;">
+                <div class="field">
+                    <span class="field-label">Nick</span>
+                    <i class="ph ph-user-plus"></i>
+                    <input type="text" id="entradaNick" placeholder="Nick do novo membro">
                 </div>
             </div>
 
-            <div id="formPromocao" class="tipo-form" style="display: none;">
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <input type="text" id="promocaoNick" placeholder="NICK">
-                    </div>
+            <div id="formPromocao" class="tipo-form" style="margin-bottom:14px;">
+                <div class="field">
+                    <span class="field-label">Nick</span>
+                    <i class="ph ph-user"></i>
+                    <input type="text" id="promocaoNick" placeholder="Nick do membro">
                 </div>
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <select id="cargoAntigo">
-                            <option value="" disabled selected>ANTIGO CARGO</option>
-                            <option value="Fiscalizador">Fiscalizador</option>
-                            <option value="Superintendente">Superintendente</option>
-                            <option value="Vice-Líder">Vice-Líder</option>
-                            <option value="Líder">Líder</option>
-                        </select>
-                    </div>
+                <div class="field">
+                    <span class="field-label">Cargo antigo</span>
+                    <i class="ph ph-arrow-down"></i>
+                    <select id="cargoAntigo">
+                        <option value="" disabled selected>Cargo atual</option>
+                        <option value="Fiscalizador">Fiscalizador</option>
+                        <option value="Superintendente">Superintendente</option>
+                        <option value="Vice-Líder">Vice-Líder</option>
+                        <option value="Líder">Líder</option>
+                    </select>
+                    <i class="ph ph-caret-down select-arrow"></i>
                 </div>
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <select id="cargoNovo">
-                            <option value="" disabled selected>NOVO CARGO</option>
-                            <option value="Fiscalizador">Fiscalizador</option>
-                            <option value="Superintendente">Superintendente</option>
-                            <option value="Vice-Líder">Vice-Líder</option>
-                            <option value="Líder">Líder</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div id="formSaida" class="tipo-form" style="display: none;">
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <input type="text" id="saidaNick" placeholder="NICK">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <input type="text" id="saidaPermissao" placeholder="PERMISSÃO">
-                    </div>
+                <div class="field">
+                    <span class="field-label">Novo cargo</span>
+                    <i class="ph ph-arrow-up"></i>
+                    <select id="cargoNovo">
+                        <option value="" disabled selected>Novo cargo</option>
+                        <option value="Fiscalizador">Fiscalizador</option>
+                        <option value="Superintendente">Superintendente</option>
+                        <option value="Vice-Líder">Vice-Líder</option>
+                        <option value="Líder">Líder</option>
+                    </select>
+                    <i class="ph ph-caret-down select-arrow"></i>
                 </div>
             </div>
 
-            <div id="formExpulsao" class="tipo-form" style="display: none;">
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <input type="text" id="expulsaoNick" placeholder="NICK">
-                    </div>
+            <div id="formSaida" class="tipo-form" style="margin-bottom:14px;">
+                <div class="field">
+                    <span class="field-label">Nick</span>
+                    <i class="ph ph-user-minus"></i>
+                    <input type="text" id="saidaNick" placeholder="Nick do membro">
                 </div>
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <input type="text" id="expulsaoMotivo" placeholder="MOTIVO">
-                    </div>
-                </div>
-            </div>
-
-            <div id="formReintegracao" class="tipo-form" style="display: none;">
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <input type="text" id="reintegracaoNick" placeholder="NICK">
-                    </div>
+                <div class="field">
+                    <span class="field-label">Permissão</span>
+                    <i class="ph ph-check-square"></i>
+                    <input type="text" id="saidaPermissao" placeholder="Permissão de saída">
                 </div>
             </div>
 
-            <div id="formLicenca" class="tipo-form" style="display: none;">
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <input type="text" id="licencaNick" placeholder="NICK">
-                    </div>
+            <div id="formExpulsao" class="tipo-form" style="margin-bottom:14px;">
+                <div class="field">
+                    <span class="field-label">Nick</span>
+                    <i class="ph ph-user-x"></i>
+                    <input type="text" id="expulsaoNick" placeholder="Nick do membro">
                 </div>
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <input type="number" id="licencaDias" placeholder="DIAS (7-30 = LICENÇA, +30 = RESERVA)" min="1">
-                    </div>
-                </div>
-            </div>
-
-            <div id="formRetorno" class="tipo-form" style="display: none;">
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <input type="text" id="retornoNick" placeholder="NICK">
-                    </div>
+                <div class="field">
+                    <span class="field-label">Motivo</span>
+                    <i class="ph ph-note"></i>
+                    <input type="text" id="expulsaoMotivo" placeholder="Motivo da expulsão">
                 </div>
             </div>
 
-            <div id="formAlteracao" class="tipo-form" style="display: none;">
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <input type="text" id="alteracaoNickAtual" placeholder="NICK ATUAL">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="input-wrapper">
-                        <input type="text" id="alteracaoNickNovo" placeholder="NICK NOVO">
-                    </div>
+            <div id="formReintegracao" class="tipo-form" style="margin-bottom:14px;">
+                <div class="field">
+                    <span class="field-label">Nick</span>
+                    <i class="ph ph-arrow-clockwise"></i>
+                    <input type="text" id="reintegracaoNick" placeholder="Nick do membro">
                 </div>
             </div>
 
-            <button class="btn-primary" onclick="enviarRequerimento()">
-                ENVIAR REQUERIMENTO
-            </button>
-        </div>
+            <div id="formLicenca" class="tipo-form" style="margin-bottom:14px;">
+                <div class="field">
+                    <span class="field-label">Nick</span>
+                    <i class="ph ph-moon-stars"></i>
+                    <input type="text" id="licencaNick" placeholder="Nick do membro">
+                </div>
+                <div class="field">
+                    <span class="field-label">Dias (7–30 = Licença · +30 = Reserva)</span>
+                    <i class="ph ph-calendar-blank"></i>
+                    <input type="number" id="licencaDias" placeholder="Quantidade de dias" min="1">
+                </div>
+            </div>
 
-        <div class="requerimentos-list">
-            <div class="card-title">
-                REQUERIMENTOS
+            <div id="formRetorno" class="tipo-form" style="margin-bottom:14px;">
+                <div class="field">
+                    <span class="field-label">Nick</span>
+                    <i class="ph ph-user-check"></i>
+                    <input type="text" id="retornoNick" placeholder="Nick do membro">
+                </div>
             </div>
-            <div id="requerimentosContainer">
-                <div class="empty-message">Nenhum requerimento encontrado</div>
+
+            <div id="formAlteracao" class="tipo-form" style="margin-bottom:14px;">
+                <div class="field">
+                    <span class="field-label">Nick atual</span>
+                    <i class="ph ph-pencil"></i>
+                    <input type="text" id="alteracaoNickAtual" placeholder="Nick atual">
+                </div>
+                <div class="field">
+                    <span class="field-label">Nick novo</span>
+                    <i class="ph ph-pencil-line"></i>
+                    <input type="text" id="alteracaoNickNovo" placeholder="Nick novo">
+                </div>
             </div>
+
+            <button class="btn-submit" onclick="enviarRequerimento()">Enviar requerimento</button>
         </div>
     </div>
 
-    <script src="js/supabase.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/session.js"></script>
-    <script src="js/chat.js"></script>
-    <script src="js/version-checker.js"></script>
+    <div class="section-wrap">
+        <div class="page-header">
+            <div class="page-title-icon"><i class="ph ph-clipboard-text"></i></div>
+            <span class="page-title">Requerimentos</span>
+        </div>
 
-    <script>
-        let currentUser = null;
-        let activeSubmenu = null;
+        <div class="card">
+            <div class="req-list" id="requerimentosContainer">
+                <div class="empty-message">Carregando...</div>
+            </div>
+        </div>
+    </div>
+</div>
 
-        function getBrasiliaTime() {
-            const data = new Date();
-            const offsetBrasilia = -3;
-            const utc = data.getTime() + (data.getTimezoneOffset() * 60000);
-            return new Date(utc + (3600000 * offsetBrasilia));
+<script src="js/supabase.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/session.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/version-checker.js"></script>
+<script>
+    let currentUser = null;
+    let activeSubmenu = null;
+    let mobileMenuOpen = false;
+
+    (function tick() {
+        const el = document.getElementById('clock');
+        if (el) el.textContent = new Date().toLocaleTimeString('pt-BR');
+        setTimeout(tick, 1000);
+    })();
+
+    function getBrasiliaTime() {
+        const data = new Date();
+        const utc = data.getTime() + (data.getTimezoneOffset() * 60000);
+        return new Date(utc + (3600000 * -3));
+    }
+
+    function toggleProfileDropdown() { document.getElementById('profileDropdown').classList.toggle('show'); }
+
+    function toggleSubmenu(menu) {
+        const submenu = document.getElementById(menu + 'Submenu');
+        if (activeSubmenu && activeSubmenu !== submenu) activeSubmenu.classList.remove('show');
+        submenu.classList.toggle('show');
+        activeSubmenu = submenu.classList.contains('show') ? submenu : null;
+    }
+
+    function toggleMobileMenu() {
+        mobileMenuOpen = !mobileMenuOpen;
+        document.getElementById('mobileMenu').classList.toggle('open', mobileMenuOpen);
+        document.getElementById('hamburgerIcon').className = mobileMenuOpen ? 'ph ph-x' : 'ph ph-list';
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.nav-item') && !e.target.closest('.submenu')) {
+            if (activeSubmenu) { activeSubmenu.classList.remove('show'); activeSubmenu = null; }
+        }
+        if (!e.target.closest('.profile-button') && !e.target.closest('.profile-dropdown')) {
+            document.getElementById('profileDropdown').classList.remove('show');
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const autenticado = await Auth.isAuthenticated();
+        if (!autenticado) { window.location.href = 'index.html'; return; }
+
+        currentUser = await Auth.getCurrentUser();
+        const userCargo = currentUser.cargo;
+
+        const podeAcessar = ['Fiscalizador', 'Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+        if (!podeAcessar) { window.location.href = 'home.html'; return; }
+
+        const podeAdmin = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
+        if (podeAdmin) {
+            const nav = document.querySelector('.nav');
+            const adminItem = document.createElement('div');
+            adminItem.className = 'nav-item';
+            adminItem.onclick = () => window.location.href = 'admin.html';
+            adminItem.textContent = 'Painel';
+            nav.appendChild(adminItem);
+
+            const mobileMenu = document.getElementById('mobileMenu');
+            const sep = document.createElement('div');
+            sep.className = 'mobile-section-title';
+            sep.textContent = 'Admin';
+            const am = document.createElement('div');
+            am.className = 'mobile-nav-item';
+            am.innerHTML = '<i class="ph ph-shield"></i> Painel';
+            am.onclick = () => window.location.href = 'admin.html';
+            mobileMenu.appendChild(sep);
+            mobileMenu.appendChild(am);
         }
 
-        function toggleProfileDropdown() {
-            const dropdown = document.getElementById('profileDropdown');
-            dropdown.classList.toggle('show');
-        }
+        document.getElementById('userNick').textContent = currentUser.nick;
+        document.getElementById('userAvatar').src = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
 
-        function toggleSubmenu(menu) {
-            const submenu = document.getElementById(menu + 'Submenu');
-            
-            if (activeSubmenu && activeSubmenu !== submenu) {
-                activeSubmenu.classList.remove('show');
-            }
-            
-            submenu.classList.toggle('show');
-            activeSubmenu = submenu.classList.contains('show') ? submenu : null;
-        }
+        await carregarRequerimentos();
+        await verificarLicencasExpiradas();
+    });
 
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.nav-item') && !event.target.closest('.submenu')) {
-                if (activeSubmenu) {
-                    activeSubmenu.classList.remove('show');
-                    activeSubmenu = null;
-                }
-            }
-            
-            if (!event.target.closest('.profile-button') && !event.target.closest('.profile-dropdown')) {
-                document.getElementById('profileDropdown').classList.remove('show');
-            }
-        });
+    function mudarTipo() {
+        const tipo = document.getElementById('tipoRequerimento').value;
+        document.querySelectorAll('.tipo-form').forEach(f => { f.style.display = 'none'; f.classList.remove('active'); });
+        const map = { ENTRADA:'formEntrada', PROMOCAO:'formPromocao', SAIDA:'formSaida', EXPULSAO:'formExpulsao', REINTEGRACAO:'formReintegracao', LICENCA:'formLicenca', RETORNO:'formRetorno', ALTERACAO:'formAlteracao' };
+        if (map[tipo]) { const el = document.getElementById(map[tipo]); el.style.display = 'flex'; el.classList.add('active'); }
+    }
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            const autenticado = await Auth.isAuthenticated();
-            if (!autenticado) {
-                window.location.href = 'index.html';
-                return;
-            }
+    async function enviarRequerimento() {
+        const tipo = document.getElementById('tipoRequerimento').value;
+        if (!tipo) { showError('Selecione um tipo de requerimento'); return; }
 
-            currentUser = await Auth.getCurrentUser();
-            const userCargo = currentUser.cargo;
+        const btn = document.querySelector('.btn-submit');
+        btn.disabled = true;
+        btn.textContent = 'Enviando...';
 
-            const podeAcessar = ['Fiscalizador', 'Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
-            if (!podeAcessar) {
-                window.location.href = 'home.html';
-                return;
-            }
+        let dados = {}, infoTexto = '', titulo = '';
 
-            const podeAcessarAdmin = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
-
-            const existingAdmin = document.querySelector('.nav-item[onclick*="admin.html"]');
-            if (existingAdmin) existingAdmin.remove();
-
-            if (podeAcessarAdmin) {
-                const nav = document.querySelector('.nav');
-                const adminItem = document.createElement('div');
-                adminItem.className = 'nav-item';
-                adminItem.onclick = () => window.location.href = 'admin.html';
-                adminItem.innerHTML = 'Painel';
-                nav.appendChild(adminItem);
-            }
-
-            document.getElementById('userNick').textContent = currentUser.nick;
-            const avatarUrl = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${currentUser.nick}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
-            document.getElementById('userAvatar').src = avatarUrl;
-
-            await carregarRequerimentos();
-            await verificarLicencasExpiradas();
-        });
-
-        function mudarTipo() {
-            const tipo = document.getElementById('tipoRequerimento').value;
-            document.querySelectorAll('.tipo-form').forEach(form => form.style.display = 'none');
-            
+        try {
             switch(tipo) {
-                case 'ENTRADA':
-                    document.getElementById('formEntrada').style.display = 'block';
+                case 'ENTRADA': {
+                    const nick = document.getElementById('entradaNick').value.trim();
+                    if (!nick) { showError('Preencha o nick'); break; }
+                    const { data: existente } = await window.supabase.from('usuarios').select('nick').eq('nick', nick).maybeSingle();
+                    if (existente) { showError('Este nick já está registrado'); break; }
+                    const { error: insertError } = await window.supabase.from('usuarios').insert([{ nick, senha: 'temp123', cargo: 'Fiscalizador', verificado: true, data_criacao: getBrasiliaTime(), status: 'ATIVO' }]);
+                    if (insertError) throw insertError;
+                    dados = { nick }; infoTexto = `NICK: ${nick}`; titulo = 'ENTRADA';
                     break;
-                case 'PROMOCAO':
-                    document.getElementById('formPromocao').style.display = 'block';
+                }
+                case 'REINTEGRACAO': {
+                    const nick = document.getElementById('reintegracaoNick').value.trim();
+                    if (!nick) { showError('Preencha o nick'); break; }
+                    const { error } = await window.supabase.from('usuarios').update({ status: 'ATIVO', data_status: getBrasiliaTime() }).eq('nick', nick);
+                    if (error) throw error;
+                    dados = { nick }; infoTexto = `NICK: ${nick}`; titulo = 'REINTEGRAÇÃO';
                     break;
+                }
+                case 'PROMOCAO': {
+                    const nick = document.getElementById('promocaoNick').value.trim();
+                    const ca = document.getElementById('cargoAntigo').value;
+                    const cn = document.getElementById('cargoNovo').value;
+                    if (!nick || !ca || !cn) { showError('Preencha todos os campos'); break; }
+                    const { data: u } = await window.supabase.from('usuarios').select('cargo').eq('nick', nick).single();
+                    if (!u) { showError('Usuário não encontrado'); break; }
+                    const { error } = await window.supabase.from('usuarios').update({ cargo: cn }).eq('nick', nick);
+                    if (error) throw error;
+                    dados = { nick, cargoAntigo: ca, cargoNovo: cn };
+                    infoTexto = `NICK: ${nick} | ANTIGO: ${ca} | NOVO: ${cn}`; titulo = 'PROMOÇÃO/REBAIXAMENTO';
+                    break;
+                }
                 case 'SAIDA':
-                    document.getElementById('formSaida').style.display = 'block';
+                case 'EXPULSAO': {
+                    const nick = tipo === 'SAIDA' ? document.getElementById('saidaNick').value.trim() : document.getElementById('expulsaoNick').value.trim();
+                    const motivo = tipo === 'SAIDA' ? document.getElementById('saidaPermissao').value.trim() : document.getElementById('expulsaoMotivo').value.trim();
+                    if (!nick || !motivo) { showError('Preencha todos os campos'); break; }
+
+                    await window.supabase.from('saidas').insert([{ usuario_nick: nick, tipo, motivo, registrado_por: currentUser.nick, data_saida: getBrasiliaTime() }]);
+
+                    const { error: deleteError } = await window.supabase.from('usuarios').delete().eq('nick', nick);
+                    if (deleteError) throw deleteError;
+
+                    dados = { nick, motivo }; infoTexto = `NICK: ${nick} | ${tipo === 'SAIDA' ? 'PERMISSÃO' : 'MOTIVO'}: ${motivo}`;
+                    titulo = tipo === 'SAIDA' ? 'SAÍDA' : 'EXPULSÃO';
+                    showWarning(`${nick} foi removido do sistema.`);
                     break;
-                case 'EXPULSAO':
-                    document.getElementById('formExpulsao').style.display = 'block';
-                    break;
-                case 'REINTEGRACAO':
-                    document.getElementById('formReintegracao').style.display = 'block';
-                    break;
-                case 'LICENCA':
-                    document.getElementById('formLicenca').style.display = 'block';
-                    break;
-                case 'RETORNO':
-                    document.getElementById('formRetorno').style.display = 'block';
-                    break;
-                case 'ALTERACAO':
-                    document.getElementById('formAlteracao').style.display = 'block';
-                    break;
-            }
-        }
-
-        async function enviarRequerimento() {
-            const tipo = document.getElementById('tipoRequerimento').value;
-            const errorDiv = document.getElementById('errorMessage');
-            const successDiv = document.getElementById('successMessage');
-            const warningDiv = document.getElementById('warningMessage');
-            
-            if (!tipo) {
-                mostrarErro('Selecione um tipo de requerimento');
-                return;
-            }
-
-            let dados = {};
-            let infoTexto = '';
-            let titulo = '';
-
-            try {
-                switch(tipo) {
-                    case 'ENTRADA':
-                        const nick = document.getElementById('entradaNick').value.trim();
-                        if (!nick) { mostrarErro('Preencha o nick'); return; }
-                        
-                        const { data: existente } = await window.supabase
-                            .from('usuarios')
-                            .select('nick')
-                            .eq('nick', nick)
-                            .maybeSingle();
-                        
-                        if (existente) {
-                            mostrarErro('Este nick já está registrado');
-                            return;
-                        }
-
-                        const { error: insertError } = await window.supabase
-                            .from('usuarios')
-                            .insert([{
-                                nick: nick,
-                                senha: 'temp123',
-                                cargo: 'Fiscalizador',
-                                verificado: true,
-                                data_criacao: getBrasiliaTime(),
-                                status: 'ATIVO'
-                            }]);
-
-                        if (insertError) throw insertError;
-
-                        dados = { nick };
-                        infoTexto = `NICK: ${nick}`;
-                        titulo = 'ENTRADA';
-                        break;
-
-                    case 'REINTEGRACAO':
-                        const reintegracaoNick = document.getElementById('reintegracaoNick').value.trim();
-                        if (!reintegracaoNick) { mostrarErro('Preencha o nick'); return; }
-
-                        const { error: reintegrarError } = await window.supabase
-                            .from('usuarios')
-                            .update({ 
-                                status: 'ATIVO',
-                                data_status: getBrasiliaTime()
-                            })
-                            .eq('nick', reintegracaoNick);
-
-                        if (reintegrarError) throw reintegrarError;
-
-                        dados = { nick: reintegracaoNick };
-                        infoTexto = `NICK: ${reintegracaoNick}`;
-                        titulo = 'REINTEGRAÇÃO';
-                        break;
-
-                    case 'PROMOCAO':
-                        const promocaoNick = document.getElementById('promocaoNick').value.trim();
-                        const cargoAntigo = document.getElementById('cargoAntigo').value;
-                        const cargoNovo = document.getElementById('cargoNovo').value;
-                        
-                        if (!promocaoNick || !cargoAntigo || !cargoNovo) { 
-                            mostrarErro('Preencha todos os campos'); 
-                            return; 
-                        }
-
-                        const { data: userPromocao } = await window.supabase
-                            .from('usuarios')
-                            .select('cargo')
-                            .eq('nick', promocaoNick)
-                            .single();
-
-                        if (!userPromocao) {
-                            mostrarErro('Usuário não encontrado');
-                            return;
-                        }
-
-                        const { error: updateCargoError } = await window.supabase
-                            .from('usuarios')
-                            .update({ cargo: cargoNovo })
-                            .eq('nick', promocaoNick);
-
-                        if (updateCargoError) throw updateCargoError;
-
-                        dados = { nick: promocaoNick, cargoAntigo, cargoNovo };
-                        infoTexto = `NICK: ${promocaoNick} | ANTIGO: ${cargoAntigo} | NOVO: ${cargoNovo}`;
-                        titulo = 'PROMOÇÃO/REBAIXAMENTO';
-                        break;
-
-                    case 'SAIDA':
-                    case 'EXPULSAO':
-                        const saidaNick = tipo === 'SAIDA' ? 
-                            document.getElementById('saidaNick').value.trim() : 
-                            document.getElementById('expulsaoNick').value.trim();
-                        
-                        const motivo = tipo === 'SAIDA' ?
-                            document.getElementById('saidaPermissao').value.trim() :
-                            document.getElementById('expulsaoMotivo').value.trim();
-
-                        if (!saidaNick || !motivo) { 
-                            mostrarErro('Preencha todos os campos'); 
-                            return; 
-                        }
-
-                        const { error: bloquearError } = await window.supabase
-                            .from('usuarios')
-                            .update({ 
-                                status: 'BLOQUEADO',
-                                data_status: getBrasiliaTime()
-                            })
-                            .eq('nick', saidaNick);
-
-                        if (bloquearError) throw bloquearError;
-
-                        await window.supabase
-                            .from('saidas')
-                            .insert([{
-                                usuario_nick: saidaNick,
-                                tipo: tipo,
-                                motivo: motivo,
-                                registrado_por: currentUser.nick,
-                                data_saida: getBrasiliaTime()
-                            }]);
-
-                        dados = { nick: saidaNick, motivo };
-                        infoTexto = `NICK: ${saidaNick} | ${tipo === 'SAIDA' ? 'PERMISSÃO' : 'MOTIVO'}: ${motivo}`;
-                        titulo = tipo === 'SAIDA' ? 'SAÍDA' : 'EXPULSÃO';
-                        
-                        warningDiv.style.display = 'block';
-                        warningDiv.innerHTML = `Usuário ${saidaNick} foi bloqueado do sistema`;
-                        setTimeout(() => warningDiv.style.display = 'none', 5000);
-                        break;
-
-                    case 'LICENCA':
-                        const licencaNick = document.getElementById('licencaNick').value.trim();
-                        const dias = parseInt(document.getElementById('licencaDias').value);
-                        
-                        if (!licencaNick || !dias) { 
-                            mostrarErro('Preencha todos os campos'); 
-                            return; 
-                        }
-
-                        const dataFim = new Date(getBrasiliaTime().getTime() + dias * 24 * 60 * 60 * 1000);
-                        
-                        const tipoLicenca = dias <= 30 ? 'LICENCA' : 'RESERVA';
-
-                        const { error: licencaError } = await window.supabase
-                            .from('usuarios')
-                            .update({ 
-                                status: tipoLicenca,
-                                data_status: getBrasiliaTime(),
-                                dias_licenca: dias,
-                                data_retorno: dataFim
-                            })
-                            .eq('nick', licencaNick);
-
-                        if (licencaError) throw licencaError;
-
-                        await window.supabase
-                            .from('licencas')
-                            .insert([{
-                                usuario_nick: licencaNick,
-                                tipo: tipoLicenca,
-                                data_inicio: getBrasiliaTime(),
-                                data_fim: dataFim,
-                                dias: dias,
-                                ativa: true
-                            }]);
-
-                        dados = { nick: licencaNick, dias };
-                        infoTexto = `NICK: ${licencaNick} | DIAS: ${dias} (${tipoLicenca}) | RETORNO: ${dataFim.toLocaleDateString('pt-BR')}`;
-                        titulo = tipoLicenca;
-                        break;
-
-                    case 'RETORNO':
-                        const retornoNick = document.getElementById('retornoNick').value.trim();
-                        if (!retornoNick) { mostrarErro('Preencha o nick'); return; }
-
-                        const { error: retornoError } = await window.supabase
-                            .from('usuarios')
-                            .update({ 
-                                status: 'ATIVO',
-                                data_status: getBrasiliaTime(),
-                                dias_licenca: null,
-                                data_retorno: null
-                            })
-                            .eq('nick', retornoNick);
-
-                        if (retornoError) throw retornoError;
-
-                        await window.supabase
-                            .from('licencas')
-                            .update({ ativa: false })
-                            .eq('usuario_nick', retornoNick)
-                            .eq('ativa', true);
-
-                        dados = { nick: retornoNick };
-                        infoTexto = `NICK: ${retornoNick}`;
-                        titulo = 'RETORNO DE LICENÇA/RESERVA';
-                        break;
-
-                    case 'ALTERACAO':
-                        const nickAtual = document.getElementById('alteracaoNickAtual').value.trim();
-                        const nickNovo = document.getElementById('alteracaoNickNovo').value.trim();
-                        
-                        if (!nickAtual || !nickNovo) { 
-                            mostrarErro('Preencha todos os campos'); 
-                            return; 
-                        }
-
-                        const { data: nickExistente } = await window.supabase
-                            .from('usuarios')
-                            .select('nick')
-                            .eq('nick', nickNovo)
-                            .maybeSingle();
-
-                        if (nickExistente) {
-                            mostrarErro('Este nick já está em uso');
-                            return;
-                        }
-
-                        await window.supabase
-                            .from('historico_nicks')
-                            .insert([{
-                                usuario_nick: nickAtual,
-                                nick_antigo: nickAtual,
-                                nick_novo: nickNovo,
-                                alterado_por: currentUser.nick,
-                                data_alteracao: getBrasiliaTime()
-                            }]);
-
-                        const { error: alterarError } = await window.supabase
-                            .from('usuarios')
-                            .update({ nick: nickNovo })
-                            .eq('nick', nickAtual);
-
-                        if (alterarError) throw alterarError;
-
-                        dados = { nickAtual, nickNovo };
-                        infoTexto = `ATUAL: ${nickAtual} | NOVO: ${nickNovo}`;
-                        titulo = 'ALTERAÇÃO DE NICKNAME';
-                        break;
                 }
+                case 'LICENCA': {
+                    const nick = document.getElementById('licencaNick').value.trim();
+                    const dias = parseInt(document.getElementById('licencaDias').value);
+                    if (!nick || !dias) { showError('Preencha todos os campos'); break; }
+                    const dataFim = new Date(getBrasiliaTime().getTime() + dias * 24 * 60 * 60 * 1000);
+                    const tipoLicenca = dias <= 30 ? 'LICENCA' : 'RESERVA';
+                    const { error } = await window.supabase.from('usuarios').update({ status: tipoLicenca, data_status: getBrasiliaTime(), dias_licenca: dias, data_retorno: dataFim }).eq('nick', nick);
+                    if (error) throw error;
+                    await window.supabase.from('licencas').insert([{ usuario_nick: nick, tipo: tipoLicenca, data_inicio: getBrasiliaTime(), data_fim: dataFim, dias, ativa: true }]);
+                    dados = { nick, dias }; infoTexto = `NICK: ${nick} | DIAS: ${dias} (${tipoLicenca}) | RETORNO: ${dataFim.toLocaleDateString('pt-BR')}`; titulo = tipoLicenca;
+                    break;
+                }
+                case 'RETORNO': {
+                    const nick = document.getElementById('retornoNick').value.trim();
+                    if (!nick) { showError('Preencha o nick'); break; }
+                    const { error } = await window.supabase.from('usuarios').update({ status: 'ATIVO', data_status: getBrasiliaTime(), dias_licenca: null, data_retorno: null }).eq('nick', nick);
+                    if (error) throw error;
+                    await window.supabase.from('licencas').update({ ativa: false }).eq('usuario_nick', nick).eq('ativa', true);
+                    dados = { nick }; infoTexto = `NICK: ${nick}`; titulo = 'RETORNO DE LICENÇA/RESERVA';
+                    break;
+                }
+                case 'ALTERACAO': {
+                    const nickAtual = document.getElementById('alteracaoNickAtual').value.trim();
+                    const nickNovo = document.getElementById('alteracaoNickNovo').value.trim();
+                    if (!nickAtual || !nickNovo) { showError('Preencha todos os campos'); break; }
+                    const { data: nickExistente } = await window.supabase.from('usuarios').select('nick').eq('nick', nickNovo).maybeSingle();
+                    if (nickExistente) { showError('Este nick já está em uso'); break; }
+                    await window.supabase.from('historico_nicks').insert([{ usuario_nick: nickAtual, nick_antigo: nickAtual, nick_novo: nickNovo, alterado_por: currentUser.nick, data_alteracao: getBrasiliaTime() }]);
+                    const { error } = await window.supabase.from('usuarios').update({ nick: nickNovo }).eq('nick', nickAtual);
+                    if (error) throw error;
+                    dados = { nickAtual, nickNovo }; infoTexto = `ATUAL: ${nickAtual} | NOVO: ${nickNovo}`; titulo = 'ALTERAÇÃO DE NICKNAME';
+                    break;
+                }
+            }
 
-                await window.supabase
-                    .from('requerimentos')
-                    .insert([{
-                        tipo: titulo || tipo,
-                        autor_nick: currentUser.nick,
-                        dados: dados,
-                        info_texto: infoTexto,
-                        data_criacao: getBrasiliaTime()
-                    }]);
-
-                successDiv.style.display = 'block';
-                successDiv.innerHTML = 'Requerimento enviado com sucesso!';
-                
-                setTimeout(() => {
-                    successDiv.style.display = 'none';
-                }, 3000);
-
+            if (titulo) {
+                await window.supabase.from('requerimentos').insert([{ tipo: titulo, autor_nick: currentUser.nick, dados, info_texto: infoTexto, data_criacao: getBrasiliaTime() }]);
+                showSuccess();
                 document.getElementById('tipoRequerimento').value = '';
-                document.querySelectorAll('.tipo-form').forEach(form => form.style.display = 'none');
-                document.querySelectorAll('input, select').forEach(input => input.value = '');
-
+                document.querySelectorAll('.tipo-form').forEach(f => { f.style.display = 'none'; f.classList.remove('active'); });
+                document.querySelectorAll('.tipo-form input, .tipo-form select').forEach(i => i.value = '');
                 await carregarRequerimentos();
-
-            } catch (error) {
-                console.error('Erro:', error);
-                mostrarErro('Erro ao processar requerimento: ' + error.message);
             }
+        } catch(e) {
+            showError('Erro ao processar: ' + e.message);
         }
 
-        async function carregarRequerimentos() {
-            try {
-                const { data: requerimentos } = await window.supabase
-                    .from('requerimentos')
-                    .select('*')
-                    .order('data_criacao', { ascending: false })
-                    .limit(50);
+        btn.disabled = false;
+        btn.textContent = 'Enviar requerimento';
+    }
 
-                const container = document.getElementById('requerimentosContainer');
+    async function carregarRequerimentos() {
+        try {
+            const { data: reqs } = await window.supabase.from('requerimentos').select('*').order('data_criacao', { ascending: false }).limit(50);
+            const container = document.getElementById('requerimentosContainer');
 
-                if (!requerimentos || requerimentos.length === 0) {
-                    container.innerHTML = '<div class="empty-message">Nenhum requerimento encontrado</div>';
-                    return;
-                }
+            if (!reqs || !reqs.length) { container.innerHTML = '<div class="empty-message">Nenhum requerimento encontrado</div>'; return; }
 
-                const autores = [...new Set(requerimentos.map(r => r.autor_nick).filter(a => a))];
-                const cargos = {};
-
-                if (autores.length > 0) {
-                    const { data: usuarios } = await window.supabase
-                        .from('usuarios')
-                        .select('nick, cargo')
-                        .in('nick', autores);
-
-                    if (usuarios) {
-                        usuarios.forEach(u => {
-                            cargos[u.nick] = u.cargo;
-                        });
-                    }
-                }
-
-                container.innerHTML = requerimentos.map(req => {
-                    const autor = req.autor_nick || 'Sistema';
-                    const cargo = cargos[autor] || '-';
-
-                    const dataUTC = new Date(req.data_criacao);
-                    const dataBrasilia = new Date(dataUTC.getTime() - (3 * 60 * 60 * 1000));
-                    
-                    const dataFormatada = dataBrasilia.toLocaleDateString('pt-BR') + ' ' + 
-                                        dataBrasilia.toLocaleTimeString('pt-BR');
-
-                    return `
-                        <div class="requerimento-item">
-                            <div class="requerimento-avatar">
-                                <img src="https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${autor}&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l" 
-                                    alt="${autor}"
-                                    onerror="this.src='https://www.habbo.com.br/habbo-imaging/avatarimage?&user=Padrao&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=0&size=b'">
-                                <div class="avatar-nick">${autor}</div>
-                                <div class="avatar-cargo">${cargo}</div>
-                            </div>
-                            <div class="requerimento-content">
-                                <div class="requerimento-titulo">${req.tipo}</div>
-                                <div class="requerimento-info">${req.info_texto}</div>
-                                <div class="requerimento-info" style="font-size: 0.8rem; margin-top: 5px;">${dataFormatada}</div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-            } catch (error) {
-                console.error('Erro ao carregar requerimentos:', error);
+            const autores = [...new Set(reqs.map(r => r.autor_nick).filter(Boolean))];
+            const cargos = {};
+            if (autores.length) {
+                const { data: users } = await window.supabase.from('usuarios').select('nick, cargo').in('nick', autores);
+                if (users) users.forEach(u => { cargos[u.nick] = u.cargo; });
             }
-        }
 
-        async function verificarLicencasExpiradas() {
-            try {
-                const agora = getBrasiliaTime();
-                
-                const { data: licencas } = await window.supabase
-                    .from('licencas')
-                    .select('*')
-                    .eq('ativa', true)
-                    .lt('data_fim', agora);
+            container.innerHTML = reqs.map(req => {
+                const autor = req.autor_nick || 'Sistema';
+                const cargo = cargos[autor] || '-';
+                const dataUTC = new Date(req.data_criacao);
+                const dataBR = new Date(dataUTC.getTime() - (3 * 60 * 60 * 1000));
+                const dataStr = dataBR.toLocaleDateString('pt-BR') + ' ' + dataBR.toLocaleTimeString('pt-BR');
+                const avatarUrl = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${autor}&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=1&size=l`;
+                const fallback = `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=Padrao&action=std&direction=2&head_direction=3&img_format=png&gesture=sml&headonly=0&size=b`;
 
-                if (licencas) {
-                    for (const licenca of licencas) {
-                        await window.supabase
-                            .from('usuarios')
-                            .update({ 
-                                status: 'ATIVO',
-                                data_status: agora,
-                                dias_licenca: null,
-                                data_retorno: null
-                            })
-                            .eq('nick', licenca.usuario_nick);
+                return `<div class="req-item">
+                    <div class="req-avatar">
+                        <img src="${avatarUrl}" alt="${autor}" onerror="this.src='${fallback}'">
+                        <div class="req-author-nick">${autor}</div>
+                        <div class="req-author-cargo">${cargo}</div>
+                    </div>
+                    <div class="req-content">
+                        <div class="req-tipo">${req.tipo}</div>
+                        <div class="req-info">${req.info_texto}</div>
+                        <div class="req-date">${dataStr}</div>
+                    </div>
+                </div>`;
+            }).join('');
+        } catch(e) { console.error(e); }
+    }
 
-                        await window.supabase
-                            .from('licencas')
-                            .update({ ativa: false })
-                            .eq('id', licenca.id);
-                    }
+    async function verificarLicencasExpiradas() {
+        try {
+            const agora = getBrasiliaTime();
+            const { data: licencas } = await window.supabase.from('licencas').select('*').eq('ativa', true).lt('data_fim', agora);
+            if (licencas) {
+                for (const lic of licencas) {
+                    await window.supabase.from('usuarios').update({ status: 'ATIVO', data_status: agora, dias_licenca: null, data_retorno: null }).eq('nick', lic.usuario_nick);
+                    await window.supabase.from('licencas').update({ ativa: false }).eq('id', lic.id);
                 }
-            } catch (error) {
-                console.error('Erro ao verificar licenças:', error);
             }
-        }
+        } catch(e) { console.error(e); }
+    }
 
-        function mostrarErro(msg) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = msg;
-            errorDiv.style.display = 'block';
-            
-            setTimeout(() => {
-                errorDiv.style.display = 'none';
-            }, 4000);
-        }
-    </script>
+    function showError(msg) {
+        const box = document.getElementById('errorMessage');
+        document.getElementById('errorText').textContent = msg;
+        box.classList.add('show');
+        setTimeout(() => box.classList.remove('show'), 4000);
+    }
+
+    function showSuccess() {
+        const box = document.getElementById('successMessage');
+        box.classList.add('show');
+        setTimeout(() => box.classList.remove('show'), 3000);
+    }
+
+    function showWarning(msg) {
+        const box = document.getElementById('warningMessage');
+        document.getElementById('warningText').textContent = msg;
+        box.classList.add('show');
+        setTimeout(() => box.classList.remove('show'), 5000);
+    }
+</script>
 </body>
 </html>
