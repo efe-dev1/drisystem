@@ -890,33 +890,43 @@
                 return copy;
             };
 
-            const criarMapaDias = () => {
+            const criarMapaDias = (escalasTipo) => {
                 const mapa = {};
-                let pool = shuffleList(fiscalizadores);
-                let poolIdx = 0;
-                for (const dataStr of diasStrs) {
-                    if (poolIdx >= pool.length) {
-                        pool = shuffleList(fiscalizadores);
-                        poolIdx = 0;
-                    }
-                    mapa[dataStr] = pool[poolIdx].nick;
-                    poolIdx++;
+                const diasComEscala = escalasTipo
+                    .filter(e => !e.fiscalizador_nick)
+                    .map(e => e.data_funcao)
+                    .sort();
+
+                const qtd = diasComEscala.length;
+                if (qtd === 0) return mapa;
+
+                const pool = shuffleList(fiscalizadores);
+                const nicksDisponiveis = pool.map(f => f.nick);
+
+                for (let i = 0; i < qtd; i++) {
+                    mapa[diasComEscala[i]] = nicksDisponiveis[i % nicksDisponiveis.length];
                 }
+
                 return mapa;
             };
 
-            const mapaAlpha = criarMapaDias();
-            const mapaBravo = criarMapaDias();
+            const escalasAlpha = escalasSemana.filter(e => e.tipo === 'ALPHA');
+            const escalasBravo = escalasSemana.filter(e => e.tipo === 'BRAVO');
+
+            const mapaAlpha = criarMapaDias(escalasAlpha);
+            const mapaBravo = criarMapaDias(escalasBravo);
 
             for (const escala of escalasSemana) {
                 if (!escala.fiscalizador_nick) {
                     const mapa = escala.tipo === 'ALPHA' ? mapaAlpha : mapaBravo;
-                    const nickEscolhido = mapa[escala.data_funcao] || fiscalizadores[Math.floor(Math.random() * fiscalizadores.length)].nick;
+                    const nickEscolhido = mapa[escala.data_funcao];
 
-                    await window.supabase
-                        .from('escalas_fiscalizador')
-                        .update({ fiscalizador_nick: nickEscolhido })
-                        .eq('id', escala.id);
+                    if (nickEscolhido) {
+                        await window.supabase
+                            .from('escalas_fiscalizador')
+                            .update({ fiscalizador_nick: nickEscolhido })
+                            .eq('id', escala.id);
+                    }
                 }
             }
         } catch (error) {
