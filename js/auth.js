@@ -123,12 +123,28 @@ const Auth = {
                 return { success: false, message: 'Nick ou senha inválidos' };
             }
 
-            if (usuario.status !== 'ATIVO') {
-                let mensagem = 'Usuário não está ativo';
-                if (usuario.status === 'BLOQUEADO') mensagem = 'Usuário bloqueado';
-                if (usuario.status === 'LICENCA') mensagem = 'Usuário em licença';
-                if (usuario.status === 'RESERVA') mensagem = 'Usuário na reserva';
-                return { success: false, message: mensagem };
+            if (usuario.status === 'BLOQUEADO') {
+                return { success: false, message: 'Usuário bloqueado. Contate a administração.' };
+            }
+
+            if (usuario.status === 'LICENCA' || usuario.status === 'RESERVA') {
+                if (usuario.data_retorno) {
+                    const dataRetorno = new Date(usuario.data_retorno);
+                    const agora = Utils.getBrasiliaTime();
+                    
+                    if (dataRetorno <= agora) {
+                        await window.supabase
+                            .from('usuarios')
+                            .update({ 
+                                status: 'ATIVO', 
+                                data_status: agora.toISOString(), 
+                                dias_licenca: null, 
+                                data_retorno: null 
+                            })
+                            .eq('nick', nick);
+                        usuario.status = 'ATIVO';
+                    }
+                }
             }
 
             const token = this.gerarToken();
@@ -141,7 +157,8 @@ const Auth = {
                 token,
                 cargo: usuario.cargo,
                 expiracao: expiracao.toISOString(),
-                manterConectado
+                manterConectado,
+                status: usuario.status
             };
 
             sessionStorage.setItem('dri_session', JSON.stringify(sessao));

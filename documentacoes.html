@@ -1026,9 +1026,9 @@
         const id = typeof docId === 'string' ? parseInt(docId) : docId;
         const doc = documentos.find(d => d.id === id);
         if (!doc) { alert('Erro ao carregar documento'); return; }
-
+        
         document.getElementById('modalDocumentoTitulo').innerHTML = `<i class="ph ph-file-text"></i> ${doc.titulo}`;
-        document.getElementById('modalDocumentoConteudo').textContent = doc.conteudo;
+        document.getElementById('modalDocumentoConteudo').innerHTML = BBCodeEditor.parseBBCode(doc.conteudo);
         document.getElementById('modalVerDocumento').classList.add('show');
     }
 

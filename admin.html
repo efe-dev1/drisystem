@@ -1143,6 +1143,12 @@
     function abrirModalNovoDocumento() {
         if (pastas.length === 0) { alert('Crie uma pasta primeiro'); return; }
         document.getElementById('modalNovoDocumento').classList.add('show');
+
+        setTimeout(() => {
+            if (!document.querySelector('.bbcode-toolbar')) {
+                BBCodeEditor.createToolbar('novoDocumentoConteudo');
+            }
+        }, 100);
     }
 
     function fecharModalNovoDocumento() {
