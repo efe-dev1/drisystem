@@ -177,6 +177,147 @@
             .profile-nick { display: none; } .profile-button { padding: 4px; border-radius: 8px; }
             .main-content { padding: 16px; }
         }
+
+                .bbcode-toolbar {
+            background: var(--input);
+            border: 1px solid var(--border2);
+            border-radius: 10px 10px 0 0;
+            padding: 6px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: -1px;
+        }
+
+        .bbcode-btn {
+            background: transparent;
+            border: 1px solid var(--border2);
+            border-radius: 6px;
+            color: var(--muted2);
+            cursor: pointer;
+            padding: 6px 8px;
+            font-size: 14px;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bbcode-btn:hover {
+            border-color: #444;
+            color: var(--white);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .bbcode-divider {
+            width: 1px;
+            height: 28px;
+            background: var(--border2);
+            margin: 0 4px;
+        }
+
+        .bbcode-color-picker {
+            position: fixed;
+            background: #161616;
+            border: 1px solid var(--border2);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .color-option {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid var(--border2);
+            transition: transform 0.15s;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .custom-color-input {
+            width: 100%;
+            height: 32px;
+            padding: 0 8px;
+            background: var(--input);
+            border: 1px solid var(--border2);
+            border-radius: 6px;
+            color: var(--white);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            margin-bottom: 8px;
+        }
+
+        .apply-color-btn {
+            width: 100%;
+            height: 32px;
+            background: var(--white);
+            border: none;
+            border-radius: 6px;
+            color: #0c0c0c;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .bbcode-quote {
+            background: rgba(255,255,255,0.03);
+            border-left: 3px solid var(--info);
+            border-radius: 8px;
+            margin: 12px 0;
+            overflow: hidden;
+        }
+
+        .quote-header {
+            background: rgba(255,255,255,0.05);
+            padding: 6px 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--muted2);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .quote-content {
+            padding: 12px;
+            color: var(--muted2);
+            font-size: 13px;
+        }
+
+        .bbcode-code {
+            background: #0c0c0c;
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            padding: 12px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--success);
+            margin: 12px 0;
+        }
+
+        .bbcode-code code {
+            font-family: inherit;
+        }
+
+        .bbcode-list {
+            margin: 8px 0 8px 24px;
+            color: var(--muted2);
+        }
+
+        .bbcode-list li {
+            margin: 4px 0;
+        }
     </style>
 </head>
 <body>
@@ -427,6 +568,7 @@
 <script src="js/utils.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/session.js"></script>
+<script src="js/bbcode.js"></script>
 <script src="js/version-checker.js"></script>
 <script>
     let currentUser = null;
