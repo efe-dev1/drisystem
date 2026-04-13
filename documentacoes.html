@@ -866,6 +866,7 @@
 <script src="js/auth.js"></script>
 <script src="js/session.js"></script>
 <script src="js/bbcode.js"></script>
+<script src="js/notif.js"></script>
 <script src="js/version-checker.js"></script>
 <script>
     let currentUser = null;
@@ -918,6 +919,10 @@
 
         const podeAcessar = ['Fiscalizador', 'Superintendente', 'Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
         if (!podeAcessar) { window.location.href = 'home.html'; return; }
+
+        if (typeof Notif !== 'undefined') {
+            Notif.iniciar();
+        }
 
         const podeAcessarAdmin = ['Vice-Líder', 'Líder', 'DEV'].includes(userCargo);
         if (podeAcessarAdmin) {

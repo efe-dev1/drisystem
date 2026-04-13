@@ -340,6 +340,7 @@
 <script src="js/auth.js"></script>
 <script src="js/session.js"></script>
 <script src="js/version-checker.js"></script>
+<script src="js/notif.js"></script>
 <script>
     (function tick() {
         const el = document.getElementById('clock');
@@ -358,6 +359,8 @@
                 ? `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=${v}&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=0&size=l`
                 : `https://www.habbo.com.br/habbo-imaging/avatarimage?&user=Padrao&action=std&direction=3&head_direction=3&img_format=png&gesture=sml&headonly=0&size=l`;
         });
+
+        Notif.iniciar();
     });
 
     async function fazerLogin() {

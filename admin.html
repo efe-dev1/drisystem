@@ -570,6 +570,7 @@
 <script src="js/session.js"></script>
 <script src="js/bbcode.js"></script>
 <script src="js/version-checker.js"></script>
+<script src="js/notif.js"></script>
 <script>
     let currentUser = null;
     let activeSubmenu = null;
@@ -624,6 +625,10 @@
     document.addEventListener('DOMContentLoaded', async () => {
         const autenticado = await Auth.isAuthenticated();
         if (!autenticado) { window.location.href = 'index.html'; return; }
+
+        if (typeof Notif !== 'undefined') {
+            Notif.iniciar();
+        }
 
         currentUser = await Auth.getCurrentUser();
         userCargo = currentUser.cargo;
