@@ -135,16 +135,40 @@
 
         .td-date { font-family: 'JetBrains Mono', monospace; font-size: 11px; white-space: nowrap; }
         .td-nick { color: var(--text); font-weight: 500; }
-        .td-crime { max-width: 160px; }
+        
+        .td-crime {
+            max-width: 180px;
+            word-wrap: break-word;
+            white-space: normal;
+            line-height: 1.4;
+        }
 
         .status-badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 500; letter-spacing: 0.5px; white-space: nowrap; }
         .status-pendente { background: rgba(212,148,58,0.1); border: 1px solid rgba(212,148,58,0.3); color: var(--warning); }
         .status-aprovado { background: rgba(76,175,125,0.1); border: 1px solid rgba(76,175,125,0.3); color: var(--success); }
         .status-reprovado { background: rgba(217,85,85,0.1); border: 1px solid rgba(217,85,85,0.3); color: var(--danger); }
 
-        .punicao-select { background: var(--input); border: 1px solid var(--border2); border-radius: 7px; color: var(--white); padding: 4px 8px; font-size: 11.5px; font-family: 'Inter', sans-serif; width: 170px; cursor: pointer; outline: none; transition: border-color 0.2s; }
-        .punicao-select:focus { border-color: #444; }
-        .punicao-select option { background: #161616; color: var(--white); }
+        .punicao-select {
+            background: var(--input);
+            border: 1px solid var(--border2);
+            border-radius: 7px;
+            color: var(--white);
+            padding: 6px 8px;
+            font-size: 11px;
+            font-family: 'Inter', sans-serif;
+            width: 160px;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .punicao-select:hover {
+            border-color: #444;
+        }
+
+        .punicao-select:focus {
+            border-color: var(--info);
+        }
 
         .comprovacao-link { color: var(--info); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; transition: opacity 0.15s; }
         .comprovacao-link:hover { opacity: 0.75; }
@@ -569,7 +593,7 @@
             const dataUTC = new Date(inf.data_criacao);
             const dataBrasilia = new Date(dataUTC.getTime() - (3 * 60 * 60 * 1000));
             const dataFormatada = dataBrasilia.toLocaleDateString('pt-BR') + ' ' +
-                                 dataBrasilia.toLocaleTimeString('pt-BR');
+                                dataBrasilia.toLocaleTimeString('pt-BR');
 
             let statusClass = 'status-pendente';
             if (inf.status === 'APROVADO') statusClass = 'status-aprovado';
@@ -585,17 +609,17 @@
                 `;
             } else {
                 punicaoDisplay = inf.punicao && inf.punicao !== 'PENDENTE' ?
-                    inf.punicao :
+                    `<span style="color:var(--muted2);">${inf.punicao}</span>` :
                     '<span style="color:var(--muted);">—</span>';
             }
 
             let botoesAcao = '';
             if (podeDefinirPunicao && inf.status === 'PENDENTE') {
                 botoesAcao = `
-                    <button class="btn-action aprovar-btn" data-id="${inf.id}">
+                    <button class="btn-action aprovar-btn" data-id="${inf.id}" onclick="aprovarInfracao('${inf.id}')">
                         <i class="ph ph-check" style="font-size:12px;"></i> Aprovar
                     </button>
-                    <button class="btn-action reprovar-btn" data-id="${inf.id}">
+                    <button class="btn-action reprovar-btn" data-id="${inf.id}" onclick="reprovarInfracao('${inf.id}')">
                         <i class="ph ph-x" style="font-size:12px;"></i> Reprovar
                     </button>
                 `;
@@ -603,12 +627,15 @@
                 botoesAcao = '<span style="color:var(--muted);font-size:11px;">—</span>';
             }
 
+            let crimeDisplay = inf.crime || '—';
+            if (crimeDisplay.length > 50) crimeDisplay = crimeDisplay.substring(0, 47) + '...';
+
             return `
-                <tr>
+                <tr data-id="${inf.id}">
                     <td class="td-date">${dataFormatada}</td>
                     <td class="td-nick">${inf.fiscalizador_nick}</td>
                     <td class="td-nick">${inf.infrator_nick}</td>
-                    <td class="td-crime">${inf.crime || '—'}</td>
+                    <td class="td-crime" title="${inf.crime || ''}">${crimeDisplay}</td>
                     <td>${punicaoDisplay}</td>
                     <td>
                         <a href="${inf.comprovacao}" target="_blank" class="comprovacao-link">
@@ -620,20 +647,6 @@
                 </tr>
             `;
         }).join('');
-
-        document.querySelectorAll('.aprovar-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const id = this.getAttribute('data-id');
-                aprovarInfracao(id);
-            });
-        });
-
-        document.querySelectorAll('.reprovar-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const id = this.getAttribute('data-id');
-                reprovarInfracao(id);
-            });
-        });
     }
 
     function atualizarPaginacao() {

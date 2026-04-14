@@ -476,7 +476,7 @@
     }
 
     async function enviarInfracao() {
-        const infrator = document.getElementById('infratorNick').value.trim();
+        const infratorRaw = document.getElementById('infratorNick').value.trim();
         let crime = document.getElementById('crime').value;
         const outroCrime = document.getElementById('outroCrime').value.trim();
         const comprovacao = document.getElementById('comprovacao').value.trim();
@@ -486,34 +486,63 @@
             crime = outroCrime;
         }
 
-        if (!infrator || !crime || !comprovacao) { showError('Preencha todos os campos'); return; }
+        if (!infratorRaw || !crime || !comprovacao) { showError('Preencha todos os campos'); return; }
+
+        let nicks = [];
+        if (infratorRaw.includes('/')) {
+            nicks = infratorRaw.split('/').map(n => n.trim()).filter(n => n);
+        } else if (infratorRaw.includes(',')) {
+            nicks = infratorRaw.split(',').map(n => n.trim()).filter(n => n);
+        } else {
+            nicks = [infratorRaw];
+        }
 
         const btn = document.querySelector('.btn-submit');
         btn.disabled = true;
         btn.textContent = 'Registrando...';
 
+        let sucessos = 0;
+        let erros = [];
+
         try {
-            const { error } = await window.supabase.from('infracoes').insert([{
-                fiscalizador_nick: currentUser.nick,
-                infrator_nick: infrator,
-                crime,
-                punicao: 'PENDENTE',
-                comprovacao,
-                status: 'PENDENTE',
-                data_criacao: getBrasiliaTime().toISOString()
-            }]);
+            for (const nick of nicks) {
+                if (!nick) continue;
+                
+                const { error } = await window.supabase.from('infracoes').insert([{
+                    fiscalizador_nick: currentUser.nick,
+                    infrator_nick: nick,
+                    crime,
+                    punicao: 'PENDENTE',
+                    comprovacao,
+                    status: 'PENDENTE',
+                    data_criacao: getBrasiliaTime().toISOString()
+                }]);
 
-            if (error) throw error;
+                if (error) {
+                    erros.push(`${nick}: ${error.message}`);
+                } else {
+                    sucessos++;
+                }
+            }
 
-            const box = document.getElementById('successMessage');
-            box.classList.add('show');
-            setTimeout(() => box.classList.remove('show'), 3000);
+            if (sucessos > 0) {
+                const box = document.getElementById('successMessage');
+                const msgBox = box.querySelector('span');
+                if (msgBox) msgBox.textContent = `${sucessos} infraçõe(s) registrada(s)!`;
+                box.classList.add('show');
+                setTimeout(() => box.classList.remove('show'), 3000);
+            }
+
+            if (erros.length > 0) {
+                showError(`Erros: ${erros.join(', ')}`);
+            }
 
             document.getElementById('infratorNick').value = '';
             document.getElementById('crime').value = '';
             document.getElementById('outroCrime').value = '';
             document.getElementById('outroCrimeGroup').style.display = 'none';
             document.getElementById('comprovacao').value = '';
+
         } catch(e) {
             showError('Erro ao registrar: ' + e.message);
         }
